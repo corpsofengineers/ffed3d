@@ -1,0 +1,196 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{b5f5ff2a-98f3-4932-b4de-4c21a6f72168}</UniqueIdentifier>
+      <Extensions>cpp;c;cxx;rc;def;r;odl;idl;hpj;bat</Extensions>
+    </Filter>
+    <Filter Include="Source Files\win">
+      <UniqueIdentifier>{1ed87afc-914a-423e-811a-196ef822226b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\win\ini">
+      <UniqueIdentifier>{b1a6bec7-976f-4964-a55d-91343d633d32}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\win\Render">
+      <UniqueIdentifier>{708a9955-5f4d-43a0-a7be-bc4749aed52e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\win\CModel">
+      <UniqueIdentifier>{ef16ebaf-9dcf-4eeb-8f2b-474f56f91f4a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\win\lua">
+      <UniqueIdentifier>{b89b131b-9cbe-4c87-a6cb-c7c6dff7efc0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\win\Object3D">
+      <UniqueIdentifier>{09ccac9d-4861-4c63-bdca-97f4dd2f1d5a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\win\Xfile">
+      <UniqueIdentifier>{15241b44-3e4d-42d2-9c68-93a954978f73}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\win\Utils">
+      <UniqueIdentifier>{ab7f9c5e-e27b-4f97-8961-2d3dc590e907}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{9db2b9b7-ffd0-4fb6-a34b-35a2cf70d52e}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{433717e6-8918-4ffc-906a-c0fa06a68130}</UniqueIdentifier>
+      <Extensions>ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe</Extensions>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ffedat.asm">
+      <Filter>Source Files</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="ffeapi.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ffecfg.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="win\bass.h">
+      <Filter>Source Files\win</Filter>
+    </ClInclude>
+    <ClInclude Include="win\ffe3d.h">
+      <Filter>Source Files\win</Filter>
+    </ClInclude>
+    <ClInclude Include="win\Macros.h">
+      <Filter>Source Files\win</Filter>
+    </ClInclude>
+    <ClInclude Include="win\planet.h">
+      <Filter>Source Files\win</Filter>
+    </ClInclude>
+    <ClInclude Include="win\win32api.h">
+      <Filter>Source Files\win</Filter>
+    </ClInclude>
+    <ClInclude Include="win\ini\INI.H">
+      <Filter>Source Files\win\ini</Filter>
+    </ClInclude>
+    <ClInclude Include="win\Render\RenderSystem.h">
+      <Filter>Source Files\win\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="win\Render\VertexFormat.h">
+      <Filter>Source Files\win\Render</Filter>
+    </ClInclude>
+    <ClInclude Include="win\CModel\CAllocateHierarchy.h">
+      <Filter>Source Files\win\CModel</Filter>
+    </ClInclude>
+    <ClInclude Include="win\CModel\CModel.h">
+      <Filter>Source Files\win\CModel</Filter>
+    </ClInclude>
+    <ClInclude Include="win\CModel\DerivedStructs.h">
+      <Filter>Source Files\win\CModel</Filter>
+    </ClInclude>
+    <ClInclude Include="win\CModel\Macros.h">
+      <Filter>Source Files\win\CModel</Filter>
+    </ClInclude>
+    <ClInclude Include="win\lua\lauxlib.h">
+      <Filter>Source Files\win\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="win\lua\lua.h">
+      <Filter>Source Files\win\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="win\lua\lua.hpp">
+      <Filter>Source Files\win\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="win\lua\luaconf.h">
+      <Filter>Source Files\win\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="win\lua\lualib.h">
+      <Filter>Source Files\win\lua</Filter>
+    </ClInclude>
+    <ClInclude Include="win\Object3D\Defines.h">
+      <Filter>Source Files\win\Object3D</Filter>
+    </ClInclude>
+    <ClInclude Include="win\Object3D\Object3D.h">
+      <Filter>Source Files\win\Object3D</Filter>
+    </ClInclude>
+    <ClInclude Include="win\XFile\MeshHierarchy.h">
+      <Filter>Source Files\win\Xfile</Filter>
+    </ClInclude>
+    <ClInclude Include="win\XFile\MeshStructures.h">
+      <Filter>Source Files\win\Xfile</Filter>
+    </ClInclude>
+    <ClInclude Include="win\XFile\Utility.h">
+      <Filter>Source Files\win\Xfile</Filter>
+    </ClInclude>
+    <ClInclude Include="win\XFile\XfileEntity.h">
+      <Filter>Source Files\win\Xfile</Filter>
+    </ClInclude>
+    <ClInclude Include="Utils\xmath.h">
+      <Filter>Source Files\win\Utils</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="ffecfg.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ffemisc.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="hmp.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="win\gfx.cpp">
+      <Filter>Source Files\win</Filter>
+    </ClCompile>
+    <ClCompile Include="win\logic.cpp">
+      <Filter>Source Files\win</Filter>
+    </ClCompile>
+    <ClCompile Include="win\planet.cpp">
+      <Filter>Source Files\win</Filter>
+    </ClCompile>
+    <ClCompile Include="win\w32dir.cpp">
+      <Filter>Source Files\win</Filter>
+    </ClCompile>
+    <ClCompile Include="win\w32input.cpp">
+      <Filter>Source Files\win</Filter>
+    </ClCompile>
+    <ClCompile Include="win\w32sound.cpp">
+      <Filter>Source Files\win</Filter>
+    </ClCompile>
+    <ClCompile Include="win\w32time.cpp">
+      <Filter>Source Files\win</Filter>
+    </ClCompile>
+    <ClCompile Include="win\w32video.cpp">
+      <Filter>Source Files\win</Filter>
+    </ClCompile>
+    <ClCompile Include="win\ini\INI.CPP">
+      <Filter>Source Files\win\ini</Filter>
+    </ClCompile>
+    <ClCompile Include="win\Render\RenderSystem.cpp">
+      <Filter>Source Files\win\Render</Filter>
+    </ClCompile>
+    <ClCompile Include="win\Render\VertexDeclaration.cpp">
+      <Filter>Source Files\win\Render</Filter>
+    </ClCompile>
+    <ClCompile Include="win\CModel\CAllocateHierarchy.cpp">
+      <Filter>Source Files\win\CModel</Filter>
+    </ClCompile>
+    <ClCompile Include="win\CModel\CModel.cpp">
+      <Filter>Source Files\win\CModel</Filter>
+    </ClCompile>
+    <ClCompile Include="win\Object3D\Object3D.cpp">
+      <Filter>Source Files\win\Object3D</Filter>
+    </ClCompile>
+    <ClCompile Include="win\XFile\MeshHierarchy.cpp">
+      <Filter>Source Files\win\Xfile</Filter>
+    </ClCompile>
+    <ClCompile Include="win\XFile\Utility.cpp">
+      <Filter>Source Files\win\Xfile</Filter>
+    </ClCompile>
+    <ClCompile Include="win\XFile\XfileEntity.cpp">
+      <Filter>Source Files\win\Xfile</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="ffe.asm">
+      <Filter>Source Files</Filter>
+    </CustomBuild>
+    <CustomBuild Include="ffebmp.asm">
+      <Filter>Source Files</Filter>
+    </CustomBuild>
+  </ItemGroup>
+</Project>
