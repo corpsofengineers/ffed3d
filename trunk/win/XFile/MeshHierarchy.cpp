@@ -105,8 +105,61 @@ HRESULT CMeshHierarchy::CreateMeshContainer(
 	LPDIRECT3DDEVICE9 pd3dDevice = 0;
 	meshData->pMesh->GetDevice(&pd3dDevice);
 
-	// Changed 24/09/07 - can just assign pointer and add a ref rather than need to clone
-	newMeshContainer->MeshData.pMesh=meshData->pMesh;
+
+// -----------------------------------------------------------------------------
+LPD3DXMESH pMeshSysMem2 = NULL;
+
+// dcl_position 
+// dcl_normal
+// dcl_texcoord
+// dcl_tangent
+
+D3DVERTEXELEMENT9 decl[]=
+{
+//stream, offset, type, method, semantic type
+{0,0, D3DDECLTYPE_FLOAT3,D3DDECLMETHOD_DEFAULT,D3DDECLUSAGE_POSITION,0},
+{0,12,D3DDECLTYPE_FLOAT2,D3DDECLMETHOD_DEFAULT,D3DDECLUSAGE_NORMAL,  0},
+{0,24,D3DDECLTYPE_FLOAT3,D3DDECLMETHOD_DEFAULT,D3DDECLUSAGE_TEXCOORD,0},
+{0,36,D3DDECLTYPE_FLOAT3,D3DDECLMETHOD_DEFAULT,D3DDECLUSAGE_TANGENT, 0},
+D3DDECL_END()
+};
+
+//m_pd3dDevice->CreateVertexDeclaration(decl,&m_pDecl);
+
+// Clone SysMesh #1 into SesMesh #2.
+meshData->pMesh->CloneMesh(D3DXMESH_MANAGED,decl,pd3dDevice,&pMeshSysMem2); 
+
+//D3DXComputeNormals(pMeshSysMem2,NULL); // compute the normals
+D3DXComputeTangent(pMeshSysMem2,0,0,0,TRUE,NULL); // compute tangent(u)
+                                                  // and later binormal (v)
+
+// New vertex declaration
+// dcl_position 
+// dcl_normal
+// dcl_texcoord
+// dcl_tangent
+
+D3DVERTEXELEMENT9 decl2[]=
+{
+{0,0, D3DDECLTYPE_FLOAT3,D3DDECLMETHOD_DEFAULT,D3DDECLUSAGE_POSITION,0},
+{0,12,D3DDECLTYPE_FLOAT2,D3DDECLMETHOD_DEFAULT,D3DDECLUSAGE_NORMAL,   0},
+{0,24,D3DDECLTYPE_FLOAT3,D3DDECLMETHOD_DEFAULT,D3DDECLUSAGE_TEXCOORD, 0},
+{0,36,D3DDECLTYPE_FLOAT3,D3DDECLMETHOD_DEFAULT,D3DDECLUSAGE_TANGENT,  0},
+D3DDECL_END()
+};
+
+// Clone SysMesh into ResultMesh.
+pMeshSysMem2->CloneMesh(D3DXMESH_MANAGED,decl2,pd3dDevice,&newMeshContainer->MeshData.pMesh); 
+    
+//delete(pMeshSysMem2);pMeshSysMem2 = NULL;
+// -----------------------------------------------------------------------------
+
+//  if(FAILED(h))
+//     {
+//      MessageBox(0, "D3DXComputeTangentFrame failed", 0, 0);
+//     }
+
+	//newMeshContainer->MeshData.pMesh=meshData->pMesh;
 	newMeshContainer->MeshData.pMesh->AddRef();
 
 	// Create material and texture arrays. Note that I always want to have at least one

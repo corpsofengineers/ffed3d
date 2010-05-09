@@ -28,6 +28,8 @@ private:
     LPD3DXANIMATIONCONTROLLER   m_animController;
 	D3DXMESHCONTAINER_EXTENDED* m_firstMesh;
 
+	ID3DXEffect* effect;
+
 	// Bone data
 	D3DXMATRIX *m_boneMatrices;
 	int m_maxBones;
@@ -50,6 +52,7 @@ private:
 	void DrawMeshContainer(LPD3DXMESHCONTAINER meshContainerBase, LPD3DXFRAME frameBase);
 	void SetupBoneMatrices(D3DXFRAME_EXTENDED *pFrame, LPD3DXMATRIX pParentMatrix);	
 public:
+
 	CXFileEntity(LPDIRECT3DDEVICE9 d3dDevice);
 	~CXFileEntity(void);
 
@@ -73,5 +76,6 @@ public:
 	double GetAnimationSetLength(unsigned int index);
 	int GetNumAnimationSets();
 	D3DXMATRIX GetMatrix();
+	void SetEffect(ID3DXEffect* effectF);
 	std::string GetFilename() const {return m_filename;}
 };
