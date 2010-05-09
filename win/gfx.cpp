@@ -117,6 +117,7 @@ extern int vertexNum;
 extern MODEL modelList[6000];
 extern int modelNum;
 int mainModelNum=0;
+int mainObjectNum=0;
 int previousModel=0;
 extern FFTEXT ffText[2000];
 extern int textNum;
@@ -126,6 +127,7 @@ extern int maxsprite;
 D3DXVECTOR3 mainModelCoord;
 extern D3DXVECTOR3 playerLightPos;
 extern bool playerLightPosEnable;
+extern MODELCONFIG modelconfig[500];
 
 //extern CMD2Model g_model[500];
 extern CXFileEntity *objectList[500];
@@ -201,6 +203,7 @@ int currentNormal;
 unsigned char currentAmbientR=15;
 unsigned char currentAmbientG=15;
 unsigned char currentAmbientB=15;
+DWORD fullAmbientColor;
 D3DXVECTOR3 curLightPos;
 D3DXVECTOR3 sunLightPos;
 bool transparent;
@@ -809,6 +812,142 @@ void DrawRealCylinder(float *p1, float *p2, float radius1, float radius2, bool s
 	renderSystem->UnlockVertexBuffer(vertexBuffer);
 }
 
+_inline float Noise(int x, int y)
+{
+  int n = x + y * 57;
+  n = (n<<13) ^ n;
+  float ret = ( 1.0f - ( (n * (n * n * 15731 + 789221) + 1376312589) & 0x7fffffff) / 1073741824.0f);
+  if (ret < 0) ret = 0;
+  return ret;
+}
+
+void DrawPlanetSphere(float *p1, float radius, int tex, int n) {
+	D3DXVECTOR3 vNormal;
+	Color4c color;
+	int i, j;
+	double theta1,theta2,theta3;
+	
+	if (exportb[currentModel]==true && splineExport==true) 
+		return;
+
+	int amount=0;
+
+	float cx=(float)*p1;
+	float cy=(float)*(p1+1);
+	float cz=(float)*(p1+2);
+
+	int l=n/2*n*2+2;
+    //Lock the vertex buffer
+	//if(FAILED(d3d_vb->Lock(sizeof(CUSTOMVERTEX)*vertexNum,l,(BYTE**)&Vertices,0))) return;
+
+	VertexXYZNDT1* Vertices = (VertexXYZNDT1*)renderSystem->LockVertexBuffer(vertexBuffer,vertexNum,l*vertexBuffer.vertexSize);
+
+	//if (currentTex==0 || useLocalColor)
+		color = currentColor;
+	//else
+	//	color.set(255,255,255);
+
+	int curver=vertexNum;
+
+    const float PI     = 3.14159265358979f;
+    const float TWOPI  = 6.28318530717958f;
+    const float PIDIV2 = 1.57079632679489f;
+
+    float ex = 0.0f;
+    float ey = 0.0f;
+    float ez = 0.0f;
+
+    float px = 0.0f;
+    float py = 0.0f;
+    float pz = 0.0f;
+
+    // Disallow a negative number for radius.
+    //if( r < 0 )
+    //    r = -r;
+
+    // Disallow a negative number for precision.
+    //if( p < 0 )
+    //    p = -p;
+
+    // If the sphere is too small, just render a OpenGL point instead.
+	/*
+    if( p < 4 || r <= 0 ) 
+    {
+        glBegin( GL_POINTS );
+        glVertex3f( cx, cy, cz );
+        glEnd();
+        return;
+    }
+*/
+	float snt1, cnt1, snt2, cnt2, snt3, cnt3;
+	float radius2;
+
+	if (n<60)
+		j = 1;
+	else
+		j = 0;
+
+    for(;j < n/2; j++ )
+    {
+        theta1 = j * TWOPI / n - PIDIV2;
+        theta2 = (j + 1) * TWOPI / n - PIDIV2;
+		snt1 = sin(theta1);
+		snt2 = sin(theta2);
+		cnt1 = cos(theta1);
+		cnt2 = cos(theta2);
+		amount=0;
+		curver=vertexNum;
+        for( int i = 0; i <= n; i++ )
+        {
+            theta3 = i * (TWOPI) / n;
+			snt3 = sin(theta3);
+			cnt3 = cos(theta3);
+			
+			radius2 = radius;// + Noise(i/(double)n*100, 2*j/(double)n*100)*1000;
+            ex = cnt1 * cnt3;
+            ey = snt1;
+            ez = cnt1 * snt3;
+            px = cx + radius2 * ex;
+            py = cy + radius2 * ey;
+            pz = cz + radius2 * ez;
+
+			Vertices->pos.set(px,py,pz);
+			Vertices->difuse = color;
+			Vertices->u1() = i/(double)n;
+			Vertices->v1() = 2*j/(double)n;
+			Vertices->n.set(ex,ey,ez);
+			Vertices++;
+			vertexNum++;
+			amount++;
+			
+			radius2 = radius;// + Noise(i/(double)n*100, 2*(j+1)/(double)n*100)*1000;
+            ex = cnt2 * cnt3;
+            ey = snt2;
+            ez = cnt2 * snt3;
+            px = cx + radius2 * ex;
+            py = cy + radius2 * ey;
+            pz = cz + radius2 * ez;
+
+			Vertices->pos.set(px,py,pz);
+			Vertices->difuse = color;
+			Vertices->u1() = i/(double)n;
+			Vertices->v1() = 2*(j+1)/(double)n;
+			Vertices->n.set(ex,ey,ez);
+			Vertices++;
+			vertexNum++;
+			amount++;
+        }
+		vertexType[curver].type = GL_TRIANGLE_STRIP;
+		vertexType[curver].amount = amount;
+		vertexType[curver].textNum = tex;
+		vertexType[curver].doLight=doLight;
+		vertexType[curver].transparent=transparent;
+    }
+
+	renderSystem->UnlockVertexBuffer(vertexBuffer);
+    //d3d_vb->Unlock();
+}
+
 // Кривовато
 void DrawRealSphere(float *p1, float radius, int tex, int n) {
 	D3DXVECTOR3 vNormal;
@@ -906,7 +1045,7 @@ void DrawRealSphere(float *p1, float radius, int tex, int n) {
 			Vertices++;
 			vertexNum++;
 			amount++;
-
+			
             ex = cnt2 * cnt3;
             ey = snt2;
             ez = cnt2 * snt3;
@@ -956,9 +1095,9 @@ void DrawRealLine(float *p1, float *p2)
 	Vertices->v1() = (float)0;
 	vertexType[vertexNum].type = GL_LINES;
 	vertexType[vertexNum].amount = 2;
-	vertexType[vertexNum].textNum = 0;
+	vertexType[vertexNum].textNum = -1;
 	vertexType[vertexNum].doLight=doLight;
-	vertexType[vertexNum].transparent=transparent;
+	vertexType[vertexNum].transparent=false;
 
 	//vNormal = GetVertexNormal(&(Vertices->pos)); 
 	Vertices->n = GetVertexNormal(&(Vertices->pos));
@@ -972,9 +1111,6 @@ void DrawRealLine(float *p1, float *p2)
 	Vertices->difuse = color;
 	Vertices->u1() = (float)1;
 	Vertices->v1() = (float)1;
-	vertexType[vertexNum].type = 0;
-	vertexType[vertexNum].textNum = 0;
-	vertexType[vertexNum].doLight=doLight;
 
 	//vNormal = GetVertexNormal(&D3DXVECTOR3(Vertices->pos.x, Vertices->pos.y, Vertices->pos.z)); 
 	Vertices->n = GetVertexNormal(&(Vertices->pos));
@@ -1017,7 +1153,7 @@ void addVertex(double *p1, int type)
 	Vertices->u1() = (float)0;
 	Vertices->v1() = (float)0;
 	vertexType[vertexNum].type = 0;
-	vertexType[vertexNum].textNum = 0;
+	vertexType[vertexNum].textNum = currentTex;
 	vertexType[vertexNum].doLight=doLight;
 	vertexType[vertexNum].transparent=transparent;
 
@@ -1174,10 +1310,15 @@ void DrawRealSquare2(float *p1, float *p2, float *p3, float *p4, int normal)
 	if (vertexNum>MAXVERT-100)
 		return;
 
-	p1[1]-=0.002f;
-	p2[1]-=0.002f;
-	p3[1]-=0.002f;
-	p4[1]-=0.002f;
+	//p1[1]-=0.002f;
+	//p2[1]-=0.002f;
+	//p3[1]-=0.002f;
+	//p4[1]-=0.002f;
+
+	//p1[2]+=0.02f;
+	//p2[2]+=0.02f;
+	//p3[2]+=0.02f;
+	//p4[2]+=0.02f;
 
 	Vect3f curPoint;
 
@@ -1208,38 +1349,10 @@ void DrawRealSquare2(float *p1, float *p2, float *p3, float *p4, int normal)
 	cy=ay/2+by/2;
 	cz=az/2+bz/2;
 
-	//if (currentTex==0 || useLocalColor)
-		color = currentColor;
-	//else
-	//	color.set(255,255,255);
+	vNormal = getNormal(normal);
 
-	//if (!checkOrientation(p1,p2,p4)) {
-	/*
-	currentColor = D3DCOLOR_XRGB(255,0,0);
-	D3DXVECTOR3 oldNormal=getNormal(currentNormal);
-	ppp1[0]=cx;
-	ppp1[1]=cy;
-	ppp1[2]=cz;
-	ppp2[0]=cx+(vNormal.x*10);
-	ppp2[1]=cy+(vNormal.y*10);
-	ppp2[2]=cz+(vNormal.z*10);
+	color = currentColor;
 
-	DrawRealLine(ppp1,ppp2);
-	*/
-	//}
-/*
-	currentColor = D3DCOLOR_XRGB(0,255,0);
-	ppp1[0]=cx;
-	ppp1[1]=cy;
-	ppp1[2]=cz;
-	ppp2[0]=cx+(vNormal.x*10);
-	ppp2[1]=cy+(vNormal.y*10);
-	ppp2[2]=cz+(vNormal.z*10);
-
-	DrawRealLine(ppp1,ppp2);
-*/
-
-	//if(FAILED(d3d_vb->Lock(sizeof(CUSTOMVERTEX)*vertexNum,sizeof(CUSTOMVERTEX)*6,(BYTE**)&Vertices,0))) return;
 	VertexXYZNDT1* Vertices = (VertexXYZNDT1*)renderSystem->LockVertexBuffer(vertexBuffer,vertexNum,6*vertexBuffer.vertexSize);
 
 	Vertices->pos.x = (float)cx;
@@ -1254,12 +1367,9 @@ void DrawRealSquare2(float *p1, float *p2, float *p3, float *p4, int normal)
 	vertexType[vertexNum].doLight=doLight;
 	vertexType[vertexNum].transparent=transparent;
 
-	if (normal!=0) {
-		//vNormal = getNormal(normal);
-		Vertices->n = getNormal(normal);
-	} else {
-		Vertices->n.set(0,0,0);
-	}
+	Vertices->n.x = vNormal.x;
+	Vertices->n.y = vNormal.y;
+	Vertices->n.z = vNormal.z;
 
 	Vertices++;
 	vertexNum++;
@@ -1271,12 +1381,10 @@ void DrawRealSquare2(float *p1, float *p2, float *p3, float *p4, int normal)
 	Vertices->u1() = (float)0;
 	Vertices->v1() = (float)1;
 
-	if (normal!=0) {
-		//vNormal = getNormal(normal);
-		Vertices->n = getNormal(normal);
-	} else {
-		Vertices->n.set(0,0,0);
-	}
+	Vertices->n.x = vNormal.x;
+	Vertices->n.y = vNormal.y;
+	Vertices->n.z = vNormal.z;
+
 
 	Vertices++;
 	vertexNum++;
@@ -1288,12 +1396,9 @@ void DrawRealSquare2(float *p1, float *p2, float *p3, float *p4, int normal)
 	Vertices->u1() = (float)0;
 	Vertices->v1() = (float)0;
 
-	if (normal!=0) {
-		//vNormal = getNormal(normal);
-		Vertices->n = getNormal(normal);
-	} else {
-		Vertices->n.set(0,0,0);
-	}
+	Vertices->n.x = vNormal.x;
+	Vertices->n.y = vNormal.y;
+	Vertices->n.z = vNormal.z;
 
 	Vertices++;
 	vertexNum++;
@@ -1305,12 +1410,9 @@ void DrawRealSquare2(float *p1, float *p2, float *p3, float *p4, int normal)
 	Vertices->u1() = (float)1;
 	Vertices->v1() = (float)0;
 
-	if (normal!=0) {
-		//vNormal = getNormal(normal);
-		Vertices->n = getNormal(normal);
-	} else {
-		Vertices->n.set(0,0,0);
-	}
+	Vertices->n.x = vNormal.x;
+	Vertices->n.y = vNormal.y;
+	Vertices->n.z = vNormal.z;
 
 	Vertices++;
 	vertexNum++;
@@ -1322,12 +1424,9 @@ void DrawRealSquare2(float *p1, float *p2, float *p3, float *p4, int normal)
 	Vertices->u1() = (float)1;
 	Vertices->v1() = (float)1;
 
-	if (normal!=0) {
-		//vNormal = getNormal(normal);
-		Vertices->n = getNormal(normal);
-	} else {
-		Vertices->n.set(0,0,0);
-	}
+	Vertices->n.x = vNormal.x;
+	Vertices->n.y = vNormal.y;
+	Vertices->n.z = vNormal.z;
 
 	Vertices++;
 	vertexNum++;
@@ -1339,12 +1438,9 @@ void DrawRealSquare2(float *p1, float *p2, float *p3, float *p4, int normal)
 	Vertices->u1() = (float)0;
 	Vertices->v1() = (float)1;
 
-	if (normal!=0) {
-		//vNormal = getNormal(normal);
-		Vertices->n = getNormal(normal);
-	} else {
-		Vertices->n.set(0,0,0);
-	}
+	Vertices->n.x = vNormal.x;
+	Vertices->n.y = vNormal.y;
+	Vertices->n.z = vNormal.z;
 
 	Vertices++;
 	vertexNum++;
@@ -1420,6 +1516,8 @@ void DrawRealTriangle(float *p1, float *p2, float *p3, int type, int normal)
 	//if(FAILED(d3d_vb->Lock(sizeof(CUSTOMVERTEX)*vertexNum,sizeof(CUSTOMVERTEX)*3,(BYTE**)&Vertices,0))) return;
 	VertexXYZNDT1* Vertices = (VertexXYZNDT1*)renderSystem->LockVertexBuffer(vertexBuffer,vertexNum,3*vertexBuffer.vertexSize);
 
+	vNormal = getNormal(normal);
+
 	//if (currentTex==0 || useLocalColor)
 		color = currentColor;
 	//else
@@ -1437,12 +1535,10 @@ void DrawRealTriangle(float *p1, float *p2, float *p3, int type, int normal)
 	vertexType[vertexNum].doLight=doLight;
 	vertexType[vertexNum].transparent=transparent;
 
-	if (normal!=0) {
-		//vNormal = getNormal(normal);
-		Vertices->n = getNormal(normal);
-	} else {
-		Vertices->n.set(0,0,0);
-	}
+	Vertices->n.x = vNormal.x;
+	Vertices->n.y = vNormal.y;
+	Vertices->n.z = vNormal.z;
+
 
 	Vertices++;
 	vertexNum++;
@@ -1453,16 +1549,10 @@ void DrawRealTriangle(float *p1, float *p2, float *p3, int type, int normal)
 	Vertices->difuse = color;
 	Vertices->u1() = (float)0;
 	Vertices->v1() = (float)0;
-	vertexType[vertexNum].type = 0;
-	vertexType[vertexNum].textNum = currentTex;
-	vertexType[vertexNum].doLight=true;
 
-	if (normal!=0) {
-		//vNormal = getNormal(normal);
-		Vertices->n = getNormal(normal);
-	} else {
-		Vertices->n.set(0,0,0);
-	}
+	Vertices->n.x = vNormal.x;
+	Vertices->n.y = vNormal.y;
+	Vertices->n.z = vNormal.z;
 
 	Vertices++;
 	vertexNum++;
@@ -1473,16 +1563,10 @@ void DrawRealTriangle(float *p1, float *p2, float *p3, int type, int normal)
 	Vertices->difuse = color;
 	Vertices->u1() = (float)0;
 	Vertices->v1() = (float)1;
-	vertexType[vertexNum].type = 0;
-	vertexType[vertexNum].textNum = currentTex;
-	vertexType[vertexNum].doLight=true;
 
-	if (normal!=0) {
-		//vNormal = getNormal(normal);
-		Vertices->n = getNormal(normal);
-	} else {
-		Vertices->n.set(0,0,0);
-	}
+	Vertices->n.x = vNormal.x;
+	Vertices->n.y = vNormal.y;
+	Vertices->n.z = vNormal.z;
 
 	Vertices++;
 	vertexNum++;
@@ -2187,8 +2271,13 @@ void CALLBACK endCallback(void)
 
 	Vect3f vNormal,oldNormal;
 	oldNormal = getNormal(currentNormal);
+	oldNormal.normalize();
 
-	
+	vNormal = GetTriangeNormal(&Vect3f(pVertices[1].x, pVertices[1].y, pVertices[1].z),
+								&Vect3f(pVertices[2].x, pVertices[2].y, pVertices[2].z),
+								&Vect3f(pVertices[3].x, pVertices[3].y, pVertices[3].z));
+
+	/*
 	for(int i=0;i<ucount;i+=3) {
 	
 		vNormal = GetTriangeNormal(&Vect3f(pVertices[i].x, pVertices[i].y, pVertices[i].z),
@@ -2264,7 +2353,7 @@ void CALLBACK endCallback(void)
 		pNormals[i].y=n.y;
 		pNormals[i].z=n.z;
 	}
-	
+	*/
 	//if(FAILED(d3d_vb->Lock(sizeof(CUSTOMVERTEX)*curVer,sizeof(CUSTOMVERTEX)*ucount,(BYTE**)&Vertices,0))) return;
 	VertexXYZNDT1* Vertices = (VertexXYZNDT1*)renderSystem->LockVertexBuffer(vertexBuffer,curVer,ucount*vertexBuffer.vertexSize);
 	for(int i=0;i<ucount;i++) {
@@ -2304,6 +2393,8 @@ void CALLBACK vertexCallback(double *vertex)
 
    if (!skipCurrentModel)
 		addVertex(p,0);
+   else
+	   return;
 
    pVertices[ucount].x=(float)p[0];
    pVertices[ucount].y=(float)p[1];
@@ -2343,8 +2434,12 @@ void CALLBACK combineCallback(GLdouble coords[3],
 void setMaterial(short cmd) {
 
 	useLocalColor=false;
-	currentTex=0;
+	currentTex=-1;
 
+	if (currentModel==166) {
+		int a=0;
+	}
+	
 	if ((short)(cmd & 0x2000)==0x2000) {
 		doLight=false;
 	} else {
@@ -2367,7 +2462,7 @@ void setMaterial(short cmd) {
 			currentColor.set(255,255,255);
 		}
 	} else if (!useLocalColor) {
-		currentTex=0;
+		currentTex=-1;
 		short rgb=(cmd & 0x0FFF);
 		short r=(rgb&0x0F00)>>8;
 		short g=(rgb&0x00F0)>>4;
@@ -2585,7 +2680,11 @@ extern void drawModel(int num, float *origin, unsigned char orient, int scale)
 
 	//currentColor.set(localColor[0],localColor[1],localColor[2]);
 	currentColor.set(255,255,255);
-	currentTex=0;
+	currentTex=-1;
+
+	modelList[modelNum].splineR=0;
+	modelList[modelNum].splineG=0;
+	modelList[modelNum].splineB=0;
 
 	int vert=vertexNum;
 	
@@ -2618,7 +2717,7 @@ extern void drawModel(int num, float *origin, unsigned char orient, int scale)
 			return;
 		if (*(unsigned int*)DATA_007824==0)
 			return;
-		if (currentModel<3)
+		if (currentModel==2)
 			transparent=true;
 		else
 			transparent=false;
@@ -2652,8 +2751,8 @@ extern void drawModel(int num, float *origin, unsigned char orient, int scale)
 			}
 
 			if (getByte(command, 5)&0x80) { // Лампочка
-				transparent=false;
-
+				transparent=true;
+/*
 				D3DXVECTOR4 out;
 				D3DXMATRIX invMatrix;
 
@@ -2665,7 +2764,7 @@ extern void drawModel(int num, float *origin, unsigned char orient, int scale)
 				p1[0]=out.x;
 				p1[1]=out.y;
 				p1[2]=out.z;
-
+*/
 				DrawRealPoint(p1, *(command+2));
 
 				for(int ii=0;ii<10;ii++) {
@@ -2753,7 +2852,7 @@ extern void drawModel(int num, float *origin, unsigned char orient, int scale)
 						DrawBillboard(p1, width*4);
 				}
 			} else {
-				currentTex=0;
+				currentTex=-1;
 				if (!skipCurrentModel)
 					DrawRealLine(p1, p2);
 			}
@@ -2778,8 +2877,7 @@ extern void drawModel(int num, float *origin, unsigned char orient, int scale)
 		}	
 		if (*command==0x0004) {		// Square
 			setMaterial(*(command+1));
-			if (currentModel==15 && (getByte(command, 2)>=12 && getByte(command, 2)<=15))
-				int a=0;
+
 			getVertex(p1, getByte(command, 2), origin, scale, orient);
 			getVertex(p2, getByte(command, 5), origin, scale, orient);
 			getVertex(p3, getByte(command, 3), origin, scale, orient);
@@ -2790,7 +2888,9 @@ extern void drawModel(int num, float *origin, unsigned char orient, int scale)
 				transparent=true;
 			}
 			if (currentModel==169 || currentModel==170) { // cross
-				//transparent=true;
+				doLight=false;
+				currentColor.set(200,200,200);
+				transparent=true;
 			}
 
 			if (currentTex>=464 && currentTex<=493) { // explode
@@ -2818,9 +2918,7 @@ extern void drawModel(int num, float *origin, unsigned char orient, int scale)
 			int spl=16;
 			int firstVertex=-1;
 			int lastVertex=0;
-			if (currentModel==248) {
-				int a=0;
-			}
+
 			vcount=0;		
 			startpoly=0;
 			setMaterial(*(command+1));
@@ -2828,6 +2926,12 @@ extern void drawModel(int num, float *origin, unsigned char orient, int scale)
 			int c=getByte(command, 0);
 			currentNormal=getByte(command, 1);
 			numpoly++;
+
+			if (modelList[modelNum].splineR==0 && modelList[modelNum].splineG==0 && modelList[modelNum].splineB==0) {
+				modelList[modelNum].splineR=currentColor.r;
+				modelList[modelNum].splineG=currentColor.g;
+				modelList[modelNum].splineB=currentColor.b;
+			}
 
 			if (tobj == NULL) {
 				tobj = gluNewTess ();
@@ -2951,7 +3055,7 @@ extern void drawModel(int num, float *origin, unsigned char orient, int scale)
 					
 					//if (lastVertex==firstVertex)
 					//	vcount--;
-
+/*
 					// Центр полигона по Y. Небольшой патч для пересчета нормалей.
 					p1[0]=0;
 					p1[1]=0;
@@ -2979,7 +3083,7 @@ extern void drawModel(int num, float *origin, unsigned char orient, int scale)
 					p1[1]=pcenter.y;
 					p1[2]=pcenter.z;
 					//DrawRealPoint(p1, 10);
-
+*/
 					// Тут я пытался определить направление обхода вершин полигона.
 					// Не сработало, так что не используется
 					
@@ -3912,6 +4016,7 @@ void DrawClipSprite(int index, int x, int y, int z, int h, int w, float NPx1, fl
 	modelList[modelNum].doMatrix=2;
 	modelList[modelNum].vertStart=vertexNum;
 	modelList[modelNum].zwrite=false;
+	modelList[modelNum].backsprite=false;
 
 	Vertices->pos.x = (float)x;
 	Vertices->pos.y = (float)y;
@@ -4020,7 +4125,12 @@ extern "C" void C_BlitClipInternal (int index, int xpos, int ypos, char *ptr, in
 			case 178: panellight[5]=true; break;
 			case 177: panellight[6]=true; break;
 			case 176: panellight[7]=true; break;
+			case 175: panellight[8]=true; break;
 			case 174: panellight[9]=true; break;
+			case 173: panellight[10]=true; break;
+			case 172: panellight[11]=true; break;
+			case 170: panellight[13]=true; break;
+			case 169: panellight[14]=true; break;
 
 			// F2
 			case 166: panellight[2]=true; break;
@@ -4028,7 +4138,11 @@ extern "C" void C_BlitClipInternal (int index, int xpos, int ypos, char *ptr, in
 			case 189: panellight[5]=true; break;
 			case 188: panellight[6]=true; break;
 			case 187: panellight[7]=true; break;
+			case 186: panellight[8]=true; break;
+			case 185: panellight[9]=true; break;
 			case 184: panellight[10]=true; break;
+			case 183: panellight[11]=true; break;
+			case 182: panellight[12]=true; break;
 
 			// F3
 			case 165: panellight[3]=true; break;
@@ -4051,10 +4165,6 @@ extern "C" void C_BlitClipInternal (int index, int xpos, int ypos, char *ptr, in
 			case 150: panellight[7]=true; break;
 			case 149: panellight[8]=true; break;
 			case 148: panellight[9]=true; break;
-
-			// Other
-			case 170: panellight[13]=true; break;
-			case 169: panellight[14]=true; break;
 
 			default: break;
 		}
@@ -4134,9 +4244,9 @@ extern "C" void C_BlitClipInternal (int index, int xpos, int ypos, char *ptr, in
 		if (y>=158) {
 			z=0;
 		}
-		if (index>=254 || index<=261) {
+		if (index>=254 && index<=261) {
 			z = 1;
-			//vertexType[vertexNum].transparent=false;
+			vertexType[vertexNum].transparent=false;
 		}
 
 	if (index==96) {
@@ -4448,6 +4558,7 @@ void DrawTriangle(u16 *p1, u16 *p2, u16 *p3, u16 *t1, u16 *t2, u16 *t3, int colo
 		color = pWinPal32[(unsigned char)color];
 	}
 
+	//texture = 88;
 	//color = pWinPal32[*(unsigned char *)(ambColor)];
 /*
 	if (texture>0 && color==15) {
@@ -4511,7 +4622,8 @@ void DrawTriangle(u16 *p1, u16 *p2, u16 *p3, u16 *t1, u16 *t2, u16 *t3, int colo
 	modelList[modelNum].vertStart=vertexNum;
 	modelList[modelNum].zwrite=false;
 	modelList[modelNum].cull=CULL_NONE;
-	modelList[modelNum].material=0;
+	modelList[modelNum].material=GALAXY;
+	modelList[modelNum].backsprite=false;
 
 	Vertices->pos.x = (float)v1_x;
 	Vertices->pos.y = (float)v1_y;
@@ -4744,9 +4856,6 @@ extern "C" void C_DrawLine(u16 *p1, u16 *p2, int col)
 	Vertices->pos.y = (float)~(end_y*curheight/400-curheight/2);
 	Vertices->pos.z = 0.0f;
 	Vertices->difuse = color;
-	vertexType[vertexNum].type = 0;
-	vertexType[vertexNum].textNum = 0;
-	vertexType[vertexNum].doLight=false;
 
 	Vertices->n.x = 1.0f;
 	Vertices->n.y = 1.0f;
@@ -4860,7 +4969,7 @@ void C_Galaxy(int a, int b, int c, int size) {
 
 extern "C" unsigned short* C_FUNC_001752_SkipIfNotVisible(char *gptr, unsigned short *var2, unsigned short var1) 
 {
-	if ((*var2 & 0x8000) == 0 || currentModel==235) {
+	if ((*var2 & 0x8000) == 0 || currentModel==235 || currentModel<3) {
 		return FUNC_001752_SkipIfNotVisible(gptr, var2, var1);
 	} else {
 		return var2+1;
@@ -5042,7 +5151,7 @@ extern "C" void C_DrawHLine(int x, int y, int len, int col)
 	Vertices->difuse = color;
 	vertexType[vertexNum].type = GL_LINES;
 	vertexType[vertexNum].amount = 2;
-	vertexType[vertexNum].textNum = 0;
+	vertexType[vertexNum].textNum = -1;
 	vertexType[vertexNum].doLight=false;
 
 	Vertices->n.x = 1.0f;
@@ -5056,9 +5165,6 @@ extern "C" void C_DrawHLine(int x, int y, int len, int col)
 	Vertices->pos.y = (float)~(end_y*curheight/400-curheight/2);
 	Vertices->pos.z = 1.0f;
 	Vertices->difuse = color;
-	vertexType[vertexNum].type = 0;
-	vertexType[vertexNum].textNum = 0;
-	vertexType[vertexNum].doLight=false;
 
 	Vertices->n.x = 1.0f;
 	Vertices->n.y = 1.0f;
@@ -5211,12 +5317,95 @@ extern "C" char *C_TextWriteInternal(char *pStr, int xpos, int ypos, int col, ch
 
 }
 
+void DrawClouds(float *p1, float radius, int tex, int n) {
+	D3DXVECTOR3 vNormal;
+	Color4c color;
+	int i, j;
+	double theta1,theta2,theta3;
+	float pp[3];
+	
+	if (exportb[currentModel]==true && splineExport==true) 
+		return;
+
+	float cx=(float)*p1;
+	float cy=(float)*(p1+1);
+	float cz=(float)*(p1+2);
+
+	int l=n/2*n*2+2;
+
+	//VertexXYZNDT1* Vertices = (VertexXYZNDT1*)renderSystem->LockVertexBuffer(vertexBuffer,vertexNum,l*vertexBuffer.vertexSize);
+
+	color.set(255,255,255);
+
+	currentTex=704;
+	doLight=0;
+	transparent=0;
+
+    const float PI     = 3.14159265358979f;
+    const float TWOPI  = 6.28318530717958f;
+    const float PIDIV2 = 1.57079632679489f;
+
+    float ex = 0.0f;
+    float ey = 0.0f;
+    float ez = 0.0f;
+
+	float snt1, cnt1, snt2, cnt2, snt3, cnt3;
+
+	if (n<60)
+		j = 1;
+	else
+		j = 0;
+
+	D3DXMatrixIdentity(&posMatrix);
+	D3DXMatrixIdentity(&mainRotMatrix);
+	D3DXMatrixMultiply(&mainRotMatrix, &mainRotMatrix, &mainRotMatrixO);
+
+    for(;j < n/2; j++ )
+    {
+        theta1 = j * TWOPI / n - PIDIV2;
+        theta2 = (j + 1) * TWOPI / n - PIDIV2;
+		snt1 = sin(theta1);
+		snt2 = sin(theta2);
+		cnt1 = cos(theta1);
+		cnt2 = cos(theta2);
+
+        for( int i = 0; i <= n; i++ )
+        {
+            theta3 = i * (TWOPI) / n;
+			snt3 = sin(theta3);
+			cnt3 = cos(theta3);
+			
+            ex = cnt1 * cnt3;
+            ey = snt1;
+            ez = cnt1 * snt3;
+            pp[0] = cx + radius * ex;
+            pp[1] = cy + radius * ey;
+            pp[2] = cz + radius * ez;
+			
+			posMatrix[12]=pp[0];
+			posMatrix[13]=pp[1];
+			posMatrix[14]=pp[2];
+
+			DrawBillboard(&pp[0], 1000);
+        }
+    }
+
+	//renderSystem->UnlockVertexBuffer(vertexBuffer);
+    //d3d_vb->Unlock();
+}
+
+
 D3DXVECTOR3 a, b, c;
 D3DXVECTOR3 pos;
 D3DXMATRIX matScale;
 
+bool inAtmo;
+float atmoW;
+float atmoR;
+
 void DrawAtmosphere(char *ptr, float c=1.0f) 
 {
+
 		D3DXMATRIX atm, pposMatrix;
 		float scal=1.0f;
 		
@@ -5226,9 +5415,12 @@ void DrawAtmosphere(char *ptr, float c=1.0f)
 		pposMatrix[13]=pos.y;
 		pposMatrix[14]=pos.z;
 
-		modelList[modelNum].index=0;
+		modelList[modelNum].index=445;
 		modelList[modelNum].doMatrix=1;
+		modelList[modelNum].subObject=false;
+
 		transparent=false;
+		doLight=true;
 
 		modelList[modelNum].vertStart=vertexNum;
 
@@ -5241,15 +5433,22 @@ void DrawAtmosphere(char *ptr, float c=1.0f)
 		modelList[modelNum].lightPos.z=-(float)*(int*)(ptr+316)*1500;
 
 
-		modelList[modelNum].ambientR=255;//min(255,currentAmbientR*36);
-		modelList[modelNum].ambientG=255;//min(255,currentAmbientG*36);
-		modelList[modelNum].ambientB=255;//min(255,currentAmbientB*36);
+		modelList[modelNum].ambientR=currentAmbientR*17/2+128;//min(255,currentAmbientR*36);
+		modelList[modelNum].ambientG=currentAmbientG*17/2+128;//min(255,currentAmbientG*36);
+		modelList[modelNum].ambientB=currentAmbientB*17/2+128;//min(255,currentAmbientB*36);
 
-		currentTex=0;
+		currentTex=-1;
 		currentColor.set(0,0,0);
 
-		if (dist>radius2*1.04f) {
-			scal=0.03f*(*(int*)(ptr+0x130));
+		if (currentModel!=445 && currentModel!=447 && currentModel!=449) {
+			if (dist>radius2*1.04f) {
+				scal=0.01f*(*(int*)(ptr+0x130));
+				pposMatrix[12]*=scal;
+				pposMatrix[13]*=scal;
+				pposMatrix[14]*=scal;
+			}
+		} else {
+			scal=0.03f;
 			pposMatrix[12]*=scal;
 			pposMatrix[13]*=scal;
 			pposMatrix[14]*=scal;
@@ -5267,8 +5466,12 @@ void DrawAtmosphere(char *ptr, float c=1.0f)
 		D3DXMatrixMultiply(&modelList[modelNum].world, &matScale, &modelList[modelNum].world);
 
 		if (dist<radius2*c) {
+			inAtmo=true;
+			atmoW=(radius2*c)/dist;
+			atmoR=(radius2*c);
 			modelList[modelNum].cull=CULL_CW;
 			modelList[modelNum].zwrite=false;
+			modelList[modelNum].zenable=false;
 			modelList[modelNum].material=ATMO2;
 			DrawRealSphere(nullOrigin, radius2 * c, 699, 60);
 		} else {
@@ -5291,11 +5494,15 @@ float mPosZ=0;
 
 extern void RenderDirect3D(void);
 
-inline bool Planet(int modelNum)
+bool Rings(int modelNum)
+{
+	return (modelNum==314 || modelNum==319);
+}
+bool Planet(int modelNum)
 {
 	return ((modelNum>=113 && modelNum<=136) || modelNum==445 || modelNum==447 || modelNum==449);
 }
-inline bool PlanetWithLife(int modelNum)
+bool PlanetWithLife(int modelNum)
 {
 	return ((modelNum>=121 && modelNum<=131) || modelNum==449);
 }
@@ -5353,16 +5560,14 @@ extern "C" int C_Break(char *ptr, unsigned short *cmd)
 
 	modelList[modelNum].landingGear=*(unsigned short *)(iPtr+158);
 
-	int MainObjNum=*(unsigned char *)(iPtr+130);
+	mainObjectNum=*(unsigned short *)(iPtr+130);
 
-	if (MainObjNum==objNum) {
+	if (mainObjectNum==objNum) {
 		subObject=false;
-		mainModelNum=MainObjNum;
+		mainModelNum=modelNum;
 	} else {
 		subObject=true;		
 	}
-
-	modelList[modelNum].subObject=subObject;
 
 	// Локальный цвет модели
 	localColor[0]=*(ptr+244);
@@ -5410,18 +5615,19 @@ extern "C" int C_Break(char *ptr, unsigned short *cmd)
 
 	// rotate
 	// Получаем матрицу поворота модели
-	a=D3DXVECTOR3((float)*(int*)(ptr+20)/DIVIDER,
-				  (float)*(int*)(ptr+24)/DIVIDER,
-				  (float)*(int*)(ptr+28)/DIVIDER);
-	b=D3DXVECTOR3((float)*(int*)(ptr+32)/DIVIDER,
-				  (float)*(int*)(ptr+36)/DIVIDER,
-				  (float)*(int*)(ptr+40)/DIVIDER);
-	c=D3DXVECTOR3((float)*(int*)(ptr+44)/DIVIDER,
-				  (float)*(int*)(ptr+48)/DIVIDER,
-				  (float)*(int*)(ptr+52)/DIVIDER);
-	D3DXVec3Normalize(&a, &a);
-	D3DXVec3Normalize(&b, &b);
-	D3DXVec3Normalize(&c, &c);
+	unsigned int dd=0x80009fff;
+	a=D3DXVECTOR3((float)((double)*(int*)(ptr+20)/dd),
+				  (float)((double)*(int*)(ptr+24)/dd),
+				  (float)((double)*(int*)(ptr+28)/dd));
+	b=D3DXVECTOR3((float)((double)*(int*)(ptr+32)/dd),
+				  (float)((double)*(int*)(ptr+36)/dd),
+				  (float)((double)*(int*)(ptr+40)/dd));
+	c=D3DXVECTOR3((float)((double)*(int*)(ptr+44)/dd),
+				  (float)((double)*(int*)(ptr+48)/dd),
+				  (float)((double)*(int*)(ptr+52)/dd));
+	//D3DXVec3Normalize(&a, &a);
+	//D3DXVec3Normalize(&b, &b);
+	//D3DXVec3Normalize(&c, &c);
 
 	mainRotMatrix[0]=mainRotMatrixO[0]=a.x;
 	mainRotMatrix[1]=mainRotMatrixO[1]=a.y;
@@ -5535,6 +5741,7 @@ extern "C" int C_Break(char *ptr, unsigned short *cmd)
 	//	return 0;
 
 	// Пропускаем отрисовку векторного текста на внешних моделях
+	/*
 	if (objNum<3 && 
 		subObject==true && 
 		objectList[previousModel] && 
@@ -5542,10 +5749,25 @@ extern "C" int C_Break(char *ptr, unsigned short *cmd)
 		(*(unsigned char*)(iPtr+0x14c)& 0x20)==0 &&
 		(*(unsigned char*)(iPtr+0x14c)& 0x40)==0)
 		return 0;
-	
+	*/
 	// Пропускаем отрисовку всего кроме ракет на внешних моделях кораблей
 	//if (objNum>=179 && objNum<=206 && objNum!=201 && subObject==true && (previousModel >= 14 && previousModel < 70) && objectList[previousModel])
 	//	return 0;
+
+//	if (modelconfig[mainObjectNum].skip)
+//		return 0;
+
+	if (subObject==true && objNum<3 && modelconfig[mainObjectNum].notdrawtext)
+		return 0;
+
+	if (subObject==true && objNum<3 && modelconfig[previousModel].notdrawtext)
+		return 0;
+
+	//if (subObject==true && objNum>=3 && modelconfig[mainObjectNum].notdrawsubmodels)
+	//	return 0;
+
+	if (subObject==true && objNum>=3 && modelconfig[previousModel].notdrawsubmodels)
+		skipCurrentModel=true;
 
 	if (objNum>=233 && objNum<=235)
 		clearBeforeRender=true;
@@ -5559,7 +5781,7 @@ extern "C" int C_Break(char *ptr, unsigned short *cmd)
 
 	char txt[256];
 
-	if (*DATA_008874!=0) {
+	if (0 && *DATA_008874!=0) {
 		zaza=C_GetModelInstancePtr(*DATA_008874, oiList);
 		zazaindex=*(unsigned short *)((char *)zaza+0x82);
 		zazamodel=FUNC_001538_GetModelPtr(zazaindex);
@@ -5635,6 +5857,8 @@ extern "C" int C_Break(char *ptr, unsigned short *cmd)
 		}
 	}
 
+	modelList[modelNum].subObject=subObject;
+
 	// Материал 
 	modelList[modelNum].zwrite=true;
 	modelList[modelNum].zenable=true;
@@ -5651,7 +5875,7 @@ extern "C" int C_Break(char *ptr, unsigned short *cmd)
 		modelList[modelNum].zwrite=false;
 	} else if (Planet(currentModel)==true) {
 		modelList[modelNum].material=PLANET;
-		modelList[modelNum].cull=CULL_CW;
+		modelList[modelNum].cull=CULL_NONE;
 		modelList[modelNum].zwrite=true;
 	} else if (currentModel==314) {
 		modelList[modelNum].material=-1;
@@ -5677,6 +5901,9 @@ extern "C" int C_Break(char *ptr, unsigned short *cmd)
 	modelList[modelNum].ambientG=currentAmbientG*17/2+128;
 	modelList[modelNum].ambientB=currentAmbientB*17/2+128;
 
+	modelList[modelNum].localR=*(unsigned char*)(ptr+0xf4)*17;
+	modelList[modelNum].localG=*(unsigned char*)(ptr+0xf5)*17;
+	modelList[modelNum].localB=*(unsigned char*)(ptr+0xf6)*17;
 
 	// Получаем позицию источника света для текущей модели
 	modelList[modelNum].lightPos.x=-(float)*(int*)(ptr+308)*1500;
@@ -5698,8 +5925,6 @@ extern "C" int C_Break(char *ptr, unsigned short *cmd)
 	// Текущая вершина
 	curVer=vertexNum;
 
-	// Самая Главная Функция Обработки Скрипта Модели (СГФОСМ)
-
 	mxVertices=0;
 	mxIndexes=0;
 
@@ -5707,14 +5932,15 @@ extern "C" int C_Break(char *ptr, unsigned short *cmd)
 	modelList[modelNum].vertStart=vertexNum;
 
 
-	// Если существует модель в md2, то пропускаем скрипт
-	if (exportb[currentModel]==true || !objectList[currentModel]) {
-		skipCurrentModel=false;
-	} else {
+	// Если существует внешняя модель, то пропускаем отрисовку из скрипта
+	if (exportb[currentModel]==false && (objectList[currentModel] || modelconfig[currentModel].skip!=0)) {
 		skipCurrentModel=true;
 	}
+//	} else {
+//		skipCurrentModel=false;
+//	}
 	
-	if ((currentModel==186 || currentModel==187) && objectList[MainObjNum])
+	if ((currentModel==186 || currentModel==187) && objectList[mainObjectNum])
 		skipCurrentModel=true;
 
 	if (objNum==166) { // starmap grid
@@ -5727,19 +5953,31 @@ extern "C" int C_Break(char *ptr, unsigned short *cmd)
 		D3DXMatrixIdentity(&mainRotMatrix);
 		//D3DXMatrixIdentity(&posMatrix);
 		
-		if (dis > radius2*1.04) {
-			scale2=0.03f*(*(int*)(ptr+0x130));
+		if (currentModel!=445 && currentModel!=447 && currentModel!=449) {
+			if (dis > radius2*1.04) {
+				scale2=0.01f*(*(int*)(ptr+0x130));
+				posMatrix[12]*=scale2;
+				posMatrix[13]*=scale2;
+				posMatrix[14]*=scale2;
+
+				if (pos.z<0)
+					return 0;
+				if ((currentModel<134 && currentModel>137) && currentModel!=148 && currentModel!=445) {
+					//modelList[modelNum].zclear=true;
+				}
+			} else {
+				modelList[modelNum].zclear=true;
+			}
+		} else {
+			//modelList[modelNum].zclear=true;
+			//modelList[modelNum].zwrite=false;
+
+			scale2=0.03f;
 			posMatrix[12]*=scale2;
 			posMatrix[13]*=scale2;
 			posMatrix[14]*=scale2;
-
-			if (pos.z<0)
-				return 0;
-			if ((currentModel<134 && currentModel>137) && currentModel!=148 && currentModel!=445) {
-				//modelList[modelNum].zclear=true;
-			}
 		}
-
+/*
 		//if (!incabin) {
 			scale2*=50;
 			if (PlanetWithLife(currentModel)) {
@@ -5751,21 +5989,20 @@ extern "C" int C_Break(char *ptr, unsigned short *cmd)
 				posMatrix[13]*=50.0025;
 				posMatrix[14]*=50.0025;
 			}
+			*/
 		//}
-		if (currentModel==447 || currentModel==449)
-			modelList[modelNum].zclear=true;
 		//if (incabin)
 			//modelList[modelNum].zclear=true;
 	}
 
-  	if (mainModelNum==154) { // planet ring
+  	if (mainObjectNum==154) { // 
 		scale2=100;//*(int*)(ptr+0x148);
 		posMatrix[12]*=scale2;
 		posMatrix[13]*=scale2;
 		posMatrix[14]*=scale2;
 	}
   	if (currentModel==314) { // planet ring
-		scale2=0.03f*(*(int*)(ptr+0x130));
+		scale2=0.01f*(*(int*)(ptr+0x130));
 		posMatrix[12]*=scale2;
 		posMatrix[13]*=scale2;
 		posMatrix[14]*=scale2;
@@ -5882,6 +6119,7 @@ extern "C" int C_Break(char *ptr, unsigned short *cmd)
 
 	modelList[modelNum].doMatrix=1;
 	modelList[modelNum].vertEnd=vertexNum;
+	modelList[modelNum].backsprite=false;
 
 	modelList[modelNum].dist=dis;
 
@@ -5897,63 +6135,6 @@ extern "C" int C_Break(char *ptr, unsigned short *cmd)
 		}
 	}
 
-
-	if (0) { //currentModel==314) {
-		D3DXMATRIX atm, pposMatrix;
-		int scal=1.0f;
-
-		D3DXMatrixIdentity(&pposMatrix);
-		pposMatrix[12]=pos.x;
-		pposMatrix[13]=pos.y;
-		pposMatrix[14]=pos.z;
-
-		//pposMatrix[12] *= 1.4;
-		//pposMatrix[13] *= 1.4;
-		//pposMatrix[14] *= 1.4;
-		//scale2=1.5f;
-
-		float bp1[3], bp2[3], bp3[3], bp4[3];
-		float radius2=lastPlanetRadius;
-		//float radius2=(float)((mod->field_2C-1)<<(mod->Scale + mod->Scale2 - 8))/DIVIDER*2;
-		radius2*=3.5;
-		bp1[0]=-radius2;	bp1[2]=-radius2;	bp1[1]=0;
-		bp2[0]=-radius2;	bp2[2]=radius2;	    bp2[1]=0;
-		bp3[0]=radius2;     bp3[2]=-radius2;    bp3[1]=0; 
-		bp4[0]=radius2;	    bp4[2]=radius2;	    bp4[1]=0;
-
-		doLight=true;
-		int b=(localvar[1]&0x00FF0000)>>16;
-		int g=(localvar[1]&0x0000FF00)>>8;
-		int r=(localvar[1]&0x000000FF);
-		useLocalColor=true;
-		currentColor.set(r*31, g*31, b*31);
-		//currentColor.set(128,128,128);
-		currentTex=708;
-
-		modelList[modelNum].index=0;
-		modelList[modelNum].doMatrix=1;
-		modelList[modelNum].zwrite=true;
-		transparent=false;
-		modelList[modelNum].cull=CULL_NONE;
-		modelList[modelNum].material=TRANSP;
-
-		modelList[modelNum].vertStart=vertexNum;
-
-		modelList[modelNum].ambientR=min(255,currentAmbientR*28);
-		modelList[modelNum].ambientG=min(255,currentAmbientG*28);
-		modelList[modelNum].ambientB=min(255,currentAmbientB*28);
-
-		modelList[modelNum].lightPos.x=-(float)*(int*)(ptr+308);
-		modelList[modelNum].lightPos.y=-(float)*(int*)(ptr+312);
-		modelList[modelNum].lightPos.z=-(float)*(int*)(ptr+316);
-
-		DrawRealSquare(bp1, bp4, bp3, bp2, 0);
-		D3DXMatrixMultiply(&modelList[modelNum].world, &mainRotMatrixO, &pposMatrix);
-
-		modelList[modelNum].vertEnd=vertexNum;
-		modelNum++;
-
-	}
 
 	D3DXMatrixIdentity(&currentMatrix);
 	return 1;
@@ -6067,6 +6248,10 @@ extern "C" void C_Break3(unsigned char *ptr) {
 		currentAmbientR=starColors[objNum-138][0];
 		currentAmbientG=starColors[objNum-138][1];
 		currentAmbientB=starColors[objNum-138][2];
+		fullAmbientColor=(currentAmbientR*17)<<16;
+		fullAmbientColor|=(currentAmbientG*17)<<8;
+		fullAmbientColor|=(currentAmbientB*17);
+
 	}
 
 }

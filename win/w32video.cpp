@@ -25,7 +25,7 @@ static int wireframe = 0;
 
 static int fswidth = 640;
 static int fsheight = 400;
-static int fsbpp = 16;
+static int fsbpp = 32;
 
 static int winwidth = 640;
 static int winheight = 400;
@@ -34,7 +34,7 @@ static int vidInit = 0;
 static int active = 1;
 static int ptrEnabled = 1;
 static int error = 0;
-static int bpp = 16;
+static int bpp = 32;
 
 static int wndwidth;		// window width/height including borders
 static int wndheight;
@@ -80,6 +80,8 @@ int textNum=0;
 FFEsprite spriteList[400];
 int maxsprite;
 
+bool renderAvi=false;
+
 //Set up the time stuff
 double starttime;
 LARGE_INTEGER nowtime;
@@ -87,18 +89,28 @@ LONGLONG ticks;
 
 LARGE_INTEGER time;
 
+DWORD CurrentTime;
+DWORD LastTime;
+int FPS = 0;
+float DeltaTime;
+float tt = 0.0f;
+
 bool InitD3D(HWND hWnd);
 void Render();
 void setupLight();
 void CreateLocalFont();
 void ViewPort();
 void loadTextures();
+void loadDirectXModel();
 void checkExport();
+void DrawText(LPSTR pText, int x, int y, D3DCOLOR rgbFontColour);
 
 static FILE *pLog = NULL;
 
 extern "C" int asmmain (int argc, char **argv);
 
+extern "C" unsigned char *DATA_008604;
+extern "C" unsigned char *DATA_008605; // avi frame buffer
 extern "C" char *DATA_008804;
 extern "C" char *DATA_008861;
 extern "C" char *DATA_008872;
@@ -149,6 +161,13 @@ HWND Win32GetWnd()
 HINSTANCE Win32GetInst()
 {
 	return hInst;
+}
+
+void inline UpdateDeltaTime()
+{
+	CurrentTime = timeGetTime();
+	DeltaTime = ((float)CurrentTime - (float)LastTime) * 0.001f;
+	LastTime = timeGetTime();
 }
 
 extern "C" void InputMouseReadPos (long *pXPos, long *pYPos)
@@ -256,12 +275,13 @@ static void ResetWindowParams()
 
 static void VideoReset (void)
 {
-	Win32SetMouseNorm();
-
-	if (fullscreen) 
+	if (fullscreen) {
+		Win32SetMouseNorm();
 		InitFullscreen();
-	else 
+	} else {
+		Win32SetMouseNorm();
 		InitWindowed();
+	}
 
 	if (InitD3D(hWnd)==false) {
 		PostQuitMessage(0);
@@ -272,6 +292,7 @@ static void VideoReset (void)
 
 static void RestoreSurfaces()
 {
+	VideoReset();
 }
 
 static LRESULT CALLBACK WndProc (HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam)
@@ -450,13 +471,11 @@ void VideoInit()
 
 	ResetWindowParams();
 
-	VideoReset();
-
     ShowWindow(hWnd, SW_SHOWNORMAL);
     UpdateWindow(hWnd);
 
-	D3DXCreateSprite(renderSystem->GetDevice(),&textSprite);
-    
+	VideoReset();
+
 	vidInit = 1;
 }
 
@@ -598,24 +617,54 @@ bool FFED3DCreateTextureFromFileRT(LPDIRECT3DDEVICE9 pDevice, LPCTSTR buf, LPDIR
 CXFileEntity* panelObj;
 CXFileEntity* sphereObj;
 CXFileEntity* atmoObj;
-LPDIRECT3DTEXTURE9 panelTex[5];
-LPDIRECT3DTEXTURE9 panelIcons[30];
+LPDIRECT3DTEXTURE9 aviTex;
+LPDIRECT3DTEXTURE9 panelTex, battlepanel, navigatepanel, voidbutton;
+LPDIRECT3DTEXTURE9 panelIcons[4];
 LPDIRECT3DSURFACE9 texSurface, oldSurface;
 int panelnum=0;
 CXFileEntity* objectList[500];
 CXFileEntity* splineList[500];
+ID3DXEffect* effectList[500];
 
-LPDIRECT3DTEXTURE9 g_texture[500];
+LPDIRECT3DTEXTURE9 skin[500][10];
 MODELCONFIG modelconfig[500];
+
 
 extern bool exportb[500];
 
 void loadTextures() {
 	char buf[1000];
 
-	sprintf_s(buf,"textures/panelicons/1_f13.png");
+	sprintf_s(buf,"textures/panelicons/panel.png");
+	if (FAILED(FFED3DCreateTextureFromFileRT(renderSystem->GetDevice(), buf, &panelTex))) {
+		panelTex=NULL;
+	}	
+	sprintf_s(buf,"textures/panelicons/battlepanel.png");
+	if (FAILED(FFED3DCreateTextureFromFileRT(renderSystem->GetDevice(), buf, &battlepanel))) {
+		battlepanel=NULL;
+	}	
+	sprintf_s(buf,"textures/panelicons/navigatepanel.png");
+	if (FAILED(FFED3DCreateTextureFromFileRT(renderSystem->GetDevice(), buf, &navigatepanel))) {
+		navigatepanel=NULL;
+	}	
+	sprintf_s(buf,"textures/panelicons/voidbutton.png");
+	if (FAILED(FFED3DCreateTextureFromFileRT(renderSystem->GetDevice(), buf, &voidbutton))) {
+		voidbutton=NULL;
+	}	
+
+	sprintf_s(buf,"textures/panelicons/icons0.png");
 	if (FAILED(FFED3DCreateTextureFromFile(renderSystem->GetDevice(), buf, &panelIcons[0])))
 		panelIcons[0]=NULL;
+	sprintf_s(buf,"textures/panelicons/icons1.png");
+	if (FAILED(FFED3DCreateTextureFromFile(renderSystem->GetDevice(), buf, &panelIcons[1])))
+		panelIcons[1]=NULL;
+	sprintf_s(buf,"textures/panelicons/icons2.png");
+	if (FAILED(FFED3DCreateTextureFromFile(renderSystem->GetDevice(), buf, &panelIcons[2])))
+		panelIcons[2]=NULL;
+	sprintf_s(buf,"textures/panelicons/icons3.png");
+	if (FAILED(FFED3DCreateTextureFromFile(renderSystem->GetDevice(), buf, &panelIcons[3])))
+		panelIcons[3]=NULL;
+
 
 	for (int i=0;i<1000;i++) {
 		sprintf_s(buf,"textures/tex%i.png",i);
@@ -633,34 +682,18 @@ void loadTextures() {
 		}
 	}
 
-	sprintf_s(buf,"models\\panel.png");
-	if (FAILED(FFED3DCreateTextureFromFileRT(renderSystem->GetDevice(), buf, &panelTex[0]))) {
-		panelTex[0]=NULL;
-	}	
-	sprintf_s(buf,"models\\panelF2.png");
-	if (FAILED(D3DXCreateTextureFromFile(renderSystem->GetDevice(), buf, &panelTex[1]))) {
-		panelTex[1]=NULL;
-	}	
-	sprintf_s(buf,"models\\panelF3.png");
-	if (FAILED(D3DXCreateTextureFromFile(renderSystem->GetDevice(), buf, &panelTex[2]))) {
-		panelTex[2]=NULL;
-	}	
-	sprintf_s(buf,"models\\panelF4.png");
-	if (FAILED(D3DXCreateTextureFromFile(renderSystem->GetDevice(), buf, &panelTex[3]))) {
-		panelTex[3]=NULL;
-	}	
-
 	for(int i=3;i<500;i++) {
-		if (objectList[i]) {
-			if (i==38) {
-				//objectList[i]->ExportX(i);
+		sprintf_s(buf,"models\\%i\\skin.png",i);
+		if (FAILED(D3DXCreateTextureFromFile(renderSystem->GetDevice(), buf, &skin[i][0]))) {
+			sprintf_s(buf,"models\\%i\\skin.tga",i);
+			if (FAILED(D3DXCreateTextureFromFile(renderSystem->GetDevice(), buf, &skin[i][0]))) {
+				skin[i][0]=NULL;
 			}
-			sprintf_s(buf,"models\\%i\\skin.png",i);
-			if (FAILED(D3DXCreateTextureFromFile(renderSystem->GetDevice(), buf, &g_texture[i]))) {
-				sprintf_s(buf,"models\\%i\\skin.tga",i);
-				if (FAILED(D3DXCreateTextureFromFile(renderSystem->GetDevice(), buf, &g_texture[i]))) {
-					g_texture[i]=NULL;
-				}
+		}
+		for(int j=1; j<10; j++) {
+			sprintf_s(buf,"models\\%i\\skin%i.png",i,(j+1));
+			if (FAILED(D3DXCreateTextureFromFile(renderSystem->GetDevice(), buf, &skin[i][j]))) {
+				skin[i][j]=NULL;
 			}
 		}
 	}
@@ -684,6 +717,26 @@ void checkExport() {
 		if (e==0 || e==0xffffffff) {
 			exportb[i]=true;
 		}
+	}
+}
+
+void loadEffects() {
+	char buf[1000];
+	LPD3DXBUFFER err=NULL;
+	char* data=NULL;
+
+	for(int i=3;i<500;i++) {
+		sprintf_s(buf,"models/%i/effect.fx",i);
+			if ( FAILED(D3DXCreateEffectFromFileA(renderSystem->GetDevice(), (LPCSTR)buf, 0, 0, 0, 0, &effectList[i], &err))) {
+				effectList[i]=NULL;
+				if (err) {
+					MessageBox(0, (char*)err->GetBufferPointer(), 0, 0);
+					//CLEAR(err);
+					//data = new char[err->GetBufferSize()];
+					//memcpy( data, err->GetBufferPointer(), err->GetBufferSize() );
+					//printf(data);
+				}
+			}
 	}
 }
 
@@ -717,13 +770,16 @@ void loadDirectXModel() {
 
 		sprintf_s(buf,"/models/%i/model.x",i);
 		objectList[i] = new CXFileEntity(renderSystem->GetDevice());
-		if (objectList[i]->LoadXFile(CUtility::GetTheCurrentDirectory()+buf,0)) {
+		if (objectList[i]->LoadXFile(CUtility::GetTheCurrentDirectory()+buf,0)) {			
 			if (i==38) {
 				//objectList[i]->ExportX(i);
 			}
 
 			sprintf_s(buf,"models\\%i\\tris.ini",i);
 			file.SetFileName (buf);
+			file.GetIntValue (modelconfig[i].skip,"MODEL", "skip");
+			file.GetIntValue (modelconfig[i].notdrawtext,"MODEL", "notdrawtext");
+			file.GetIntValue (modelconfig[i].notdrawsubmodels,"MODEL", "notdrawsubmodels");
 			file.GetFloatValue (modelconfig[i].scale,"MODEL", "scale");
 			file.GetFloatValue (modelconfig[i].scale_x,"MODEL", "scale_x");
 			file.GetFloatValue (modelconfig[i].scale_y,"MODEL", "scale_y");
@@ -771,6 +827,10 @@ void loadDirectXModel() {
 			file.GetFloatValue (modelconfig[i].missile[9].z,"MISSILE9", "z");
 
 		} else {
+			sprintf_s(buf,"models\\%i\\tris.ini",i);
+			file.SetFileName (buf);
+			file.GetIntValue (modelconfig[i].skip,"MODEL", "skip");
+
 			SAFE_DELETE(objectList[i]);
 		}
 	}
@@ -788,15 +848,48 @@ bool InitD3D(HWND hWnd)
 	renderSystem->CreateVertexBuffer(spriteVB,4,VertexXYZWDT1::declaration);
 
 	CreateLocalFont();
-	loadDirectXModel();
-	loadTextures();
-	checkExport();
-
-	if ((curheight-curwidth/1.6f)==0)
-		aspectfix=0;
+	D3DXCreateSprite(renderSystem->GetDevice(),&textSprite);
 
 	if (renderSystem->GetDevice()!=NULL)
 		renderSystem->GetDevice()->Clear(0,NULL,D3DCLEAR_TARGET|D3DCLEAR_ZBUFFER,D3DCOLOR_XRGB(0,0,0),1.0f,0);	
+
+	renderSystem->BeginScene();    
+	textSprite->Begin(D3DXSPRITE_ALPHABLEND);
+	DrawText("Loading models...", curwidth/2-100, curheight/2, D3DCOLOR_XRGB(255,255,255));
+	textSprite->End();
+	renderSystem->EndScene();  
+
+	loadDirectXModel();
+
+	if (renderSystem->GetDevice()!=NULL)
+		renderSystem->GetDevice()->Clear(0,NULL,D3DCLEAR_TARGET|D3DCLEAR_ZBUFFER,D3DCOLOR_XRGB(0,0,0),1.0f,0);	
+
+	renderSystem->BeginScene();    
+	textSprite->Begin(D3DXSPRITE_ALPHABLEND);
+	DrawText("Loading textures...", curwidth/2-100, curheight/2, D3DCOLOR_XRGB(255,255,255));
+	textSprite->End();
+	renderSystem->EndScene();  
+
+	loadTextures();
+
+	if (renderSystem->GetDevice()!=NULL)
+		renderSystem->GetDevice()->Clear(0,NULL,D3DCLEAR_TARGET|D3DCLEAR_ZBUFFER,D3DCOLOR_XRGB(0,0,0),1.0f,0);	
+
+	renderSystem->BeginScene();    
+	textSprite->Begin(D3DXSPRITE_ALPHABLEND);
+	DrawText("Loading effects...", curwidth/2-100, curheight/2, D3DCOLOR_XRGB(255,255,255));
+	textSprite->End();
+	renderSystem->EndScene();  
+
+	loadEffects();
+
+	checkExport();
+
+	textSprite->End();
+	renderSystem->EndScene();    
+
+	if ((curheight-curwidth/1.6f)==0)
+		aspectfix=0;
 
 	pl.x = -1.35f;
 	pl.y = -0.64f;
@@ -866,18 +959,18 @@ void DrawText(LPSTR pText, int x, int y, D3DCOLOR rgbFontColour)
 }
 
 D3DCOLORVALUE rgbaDiffuse0 = {0.0f, 0.0f, 0.0f, 0.0f,};
-D3DCOLORVALUE rgbaDiffuse1 = {1.0f, 1.0f, 1.0f, 0.5f,};
+D3DCOLORVALUE rgbaDiffuse1 = {1.0f, 1.0f, 1.0f, 1.0f,};
 D3DCOLORVALUE rgbaDiffuse2 = {0.75f, 0.75f, 0.75f, 0.5f,};
 D3DCOLORVALUE rgbaDiffuse3 = {0.5f, 0.5f, 0.5f, 0.0f,};
 D3DCOLORVALUE rgbaDiffuse4 = {0.25f, 0.25f, 0.25f, 0.25f,};
-D3DCOLORVALUE rgbaDiffuse11 = {2.0f, 2.0f, 2.0f, 2.0f,};
+D3DCOLORVALUE rgbaDiffuse11 = {2.0f, 2.0f, 2.0f, 1.0f,};
 D3DCOLORVALUE rgbaAmbient0 = {0.0f, 0.0f, 0.0f, 0.0f,};
-D3DCOLORVALUE rgbaAmbient1 = {1.0f, 1.0f, 1.0f, 5.0f,};
-D3DCOLORVALUE rgbaAmbient2 = {0.5f, 0.5f, 0.5f, 5.0f,};
-D3DCOLORVALUE rgbaAmbient3 = {0.25f, 0.25f, 0.25f, 5.0f,};
+D3DCOLORVALUE rgbaAmbient1 = {1.0f, 1.0f, 1.0f, 1.0f,};
+D3DCOLORVALUE rgbaAmbient2 = {1.0f, 1.0f, 1.0f, 0.5f,};
+D3DCOLORVALUE rgbaAmbient3 = {0.25f, 0.25f, 0.25f, 0.5f,};
 D3DCOLORVALUE rgbaSpecular0 = {0.0f, 0.0f, 0.0f, 0.0f,};
-D3DCOLORVALUE rgbaSpecular1 = {0.774597f, 0.774597f, 0.774597f, 5.0f,};
-D3DCOLORVALUE rgbaSpecular2 = {1.0f, 1.0f, 1.0f, 0.0f,};
+D3DCOLORVALUE rgbaSpecular1 = {0.774597f, 0.774597f, 0.774597f, 1.0f,};
+D3DCOLORVALUE rgbaSpecular2 = {1.0f, 1.0f, 1.0f, 0.5f,};
 D3DCOLORVALUE rgbaSpecular3 = {0.5f, 0.5f, 0.5f, 0.0f,};
 D3DCOLORVALUE rgbaEmissive0 = {0.0f, 0.0f, 0.0f, 0.0f,};
 D3DCOLORVALUE rgbaEmissive1 = {1.0f, 1.0f, 1.0f, 0.0f,};
@@ -902,7 +995,7 @@ renderSystem->SetRenderState (D3DRS_DESTBLEND,D3DBLEND_INVSRCALPHA);
 	m_matMaterial.Power = 30;
 	switch(type) {
 	case SUN:
-		renderSystem->SetRenderState( D3DRS_ALPHABLENDENABLE, false);
+		//renderSystem->SetRenderState( D3DRS_ALPHABLENDENABLE, false);
 		rgbaEmissive.r=1.0f/250*cR;
 		rgbaEmissive.g=1.0f/250*cG;
 		rgbaEmissive.b=1.0f/250*cB;
@@ -940,7 +1033,7 @@ renderSystem->SetRenderState (D3DRS_DESTBLEND,D3DBLEND_INVSRCALPHA);
 	    m_matMaterial.Emissive = rgbaEmissive0;
 		break;
 	case GALAXY:
-		renderSystem->SetRenderState( D3DRS_ALPHABLENDENABLE, true);
+		//renderSystem->SetRenderState( D3DRS_ALPHABLENDENABLE, true);
 		renderSystem->SetRenderState(D3DRS_AMBIENT, D3DCOLOR_XRGB(255, 255, 255));
 		m_matMaterial.Diffuse = rgbaDiffuse0; 
 		m_matMaterial.Ambient = rgbaAmbient1; 
@@ -948,7 +1041,7 @@ renderSystem->SetRenderState (D3DRS_DESTBLEND,D3DBLEND_INVSRCALPHA);
 	    m_matMaterial.Emissive = rgbaEmissive0;
 		break;
 	case ATMO:
-		renderSystem->SetRenderState( D3DRS_ALPHABLENDENABLE, true);
+		//renderSystem->SetRenderState( D3DRS_ALPHABLENDENABLE, true);
 		renderSystem->SetRenderState(D3DRS_AMBIENT, D3DCOLOR_XRGB(0, 0, 0));
 		//renderSystem->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
 		//renderSystem->SetRenderState(D3DRS_DIFFUSEMATERIALSOURCE, D3DMCS_COLOR1);
@@ -961,7 +1054,7 @@ renderSystem->SetRenderState (D3DRS_DESTBLEND,D3DBLEND_INVSRCALPHA);
 	    m_matMaterial.Emissive = rgbaEmissive0;
 		break;
 	case ATMO2:
-		renderSystem->SetRenderState( D3DRS_ALPHABLENDENABLE, false);
+		//renderSystem->SetRenderState( D3DRS_ALPHABLENDENABLE, false);
 		renderSystem->SetRenderState(D3DRS_AMBIENT, D3DCOLOR_XRGB(0, 0, 0));
 		//renderSystem->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
 		//renderSystem->SetRenderState(D3DRS_DIFFUSEMATERIALSOURCE, D3DMCS_COLOR1);
@@ -974,22 +1067,14 @@ renderSystem->SetRenderState (D3DRS_DESTBLEND,D3DBLEND_INVSRCALPHA);
 	    m_matMaterial.Emissive = rgbaEmissive0;
 		break;
 	case TRANSP:
-		//renderSystem->SetRenderState(D3DRS_DIFFUSEMATERIALSOURCE, D3DMCS_MATERIAL);
-		//renderSystem->SetRenderState(D3DRS_AMBIENTMATERIALSOURCE, D3DMCS_COLOR1);
-		renderSystem->SetRenderState( D3DRS_ALPHABLENDENABLE, true);
 		renderSystem->SetRenderState(D3DRS_AMBIENT, D3DCOLOR_XRGB(64, 64, 64));
-		//renderSystem->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
-		//renderSystem->SetRenderState(D3DRS_DIFFUSEMATERIALSOURCE, D3DMCS_COLOR1);
-		renderSystem->SetRenderState(D3DRS_SPECULARENABLE, false);
-		//renderSystem->SetRenderState (D3DRS_SRCBLEND, D3DBLEND_SRCCOLOR  );
-		//renderSystem->SetRenderState (D3DRS_DESTBLEND,D3DBLEND_INVSRCALPHA );
-		m_matMaterial.Diffuse = rgbaDiffuse0; 
-		m_matMaterial.Ambient = rgbaAmbient1; 
-		m_matMaterial.Specular = rgbaSpecular0; 
-	    m_matMaterial.Emissive = rgbaEmissive0;
+		m_matMaterial.Diffuse = rgbaDiffuse2; 
+		m_matMaterial.Ambient = rgbaAmbient2; 
+		m_matMaterial.Specular = rgbaSpecular2; 
+		m_matMaterial.Emissive = rgbaEmissive0;
 		break;
 	case ATMOSTAR:
-		renderSystem->SetRenderState( D3DRS_ALPHABLENDENABLE, true);
+		//renderSystem->SetRenderState( D3DRS_ALPHABLENDENABLE, true);
 		renderSystem->SetRenderState(D3DRS_SPECULARENABLE, false);
 		renderSystem->SetRenderState (D3DRS_SRCBLEND, D3DBLEND_ONE);
 		renderSystem->SetRenderState (D3DRS_DESTBLEND,D3DBLEND_INVSRCALPHA);
@@ -1003,8 +1088,19 @@ renderSystem->SetRenderState (D3DRS_DESTBLEND,D3DBLEND_INVSRCALPHA);
 		m_matMaterial.Specular = rgbaSpecular0; 
 	    m_matMaterial.Emissive = rgbaEmissive;
 		break;
+	case SPLINE:
+		rgbaDiffuse.r=1.0f/255*cR;
+		rgbaDiffuse.g=1.0f/255*cG;
+		rgbaDiffuse.b=1.0f/255*cB;
+		rgbaDiffuse.a=1.0f;
+
+		m_matMaterial.Diffuse = rgbaDiffuse; 
+		m_matMaterial.Ambient = rgbaDiffuse; 
+		m_matMaterial.Specular = rgbaDiffuse; 
+	    m_matMaterial.Emissive = rgbaEmissive0;
+		break;
 	default:
-		renderSystem->SetRenderState( D3DRS_ALPHABLENDENABLE, false);
+		//renderSystem->SetRenderState( D3DRS_ALPHABLENDENABLE, false);
 		renderSystem->SetRenderState(D3DRS_AMBIENT, D3DCOLOR_XRGB(92, 92, 92));
 		m_matMaterial.Diffuse = rgbaDiffuse1; 
 		m_matMaterial.Ambient = rgbaAmbient1; 
@@ -1107,15 +1203,15 @@ void doMatrixes(D3DXMATRIX world) {
 
 #define corrector 0.0f
 
+D3DXMATRIX matProj;
+D3DXMATRIX matView;
+
 void doPerspectiveNear()
 {
-	D3DXMATRIX matView;
 	D3DXMatrixLookAtLH(&matView, &D3DXVECTOR3(0.0f, corrector, 0.0f), //Camera Position
 		&D3DXVECTOR3(0.0f, corrector, 1.0f), //Look At Position
 		&D3DXVECTOR3(0.0f, 1.0f, 0.0f)); //Up Direction
 	renderSystem->GetDevice()->SetTransform(D3DTS_VIEW, &matView);
-
-	D3DXMATRIX matProj;
 
 	float ratio, fov;
 
@@ -1124,6 +1220,7 @@ void doPerspectiveNear()
 	ratio = 2.0253f;
 	//fov = 0.5972f;
 	fov = 0.5972f;
+	//fov = 0.8726f;
 	
 	// ближнюю плоскость отсечени€ ставить меньше нельз€, будут проблемы с 
 	// буфером глубины. ¬озникает проблема с лазером, он начинает рисоватьс€ на 
@@ -1134,13 +1231,10 @@ void doPerspectiveNear()
 
 void doPerspectiveFar()
 {
-	D3DXMATRIX matView;
 	D3DXMatrixLookAtLH(&matView, &D3DXVECTOR3(0.0f, corrector, 0.0f), //Camera Position
 		&D3DXVECTOR3(0.0f, corrector, 1.0f), //Look At Position
 		&D3DXVECTOR3(0.0f, 1.0f, 0.0f)); //Up Direction
 	renderSystem->GetDevice()->SetTransform(D3DTS_VIEW, &matView);
-
-	D3DXMATRIX matProj;
 
 	float ratio, fov;
 
@@ -1149,6 +1243,7 @@ void doPerspectiveFar()
 	ratio = 2.0253f;
 	//fov = 0.5972f;
 	fov = 0.5972f;
+	//fov = 0.8726f;
 	
 	// ближнюю плоскость отсечени€ ставить меньше нельз€, будут проблемы с 
 	// буфером глубины. ¬озникает проблема с лазером, он начинает рисоватьс€ на 
@@ -1156,6 +1251,43 @@ void doPerspectiveFar()
 	D3DXMatrixPerspectiveFovLH(&matProj, fov, ratio, 1.0f, 10e6);
 	renderSystem->GetDevice()->SetTransform(D3DTS_PROJECTION, &matProj);
 }
+extern DWORD fullAmbientColor;
+extern bool inAtmo;
+extern float atmoW;
+extern float atmoR;
+
+//void SetupPixelFog(DWORD Color, DWORD Mode) 
+//{ 
+//    float Start  = 1.0f;    // For linear mode 
+//    float End    = 400000.0f; 
+//    float Density = 0.66f;  // For exponential modes
+//
+//	if (!inAtmo) {
+//		renderSystem->GetDevice()->SetRenderState(D3DRS_FOGENABLE, FALSE);
+//		return;
+//	}
+//
+//	End = atmoR*30*atmoW;
+//	//Density = atmoW;
+//    // Enable fog blending. 
+//    renderSystem->GetDevice()->SetRenderState(D3DRS_FOGENABLE, TRUE);
+//
+//    // Set the fog color. 
+//    renderSystem->GetDevice()->SetRenderState(D3DRS_FOGCOLOR, (Color+fullAmbientColor)/2);
+//
+//    // Set fog parameters. 
+//    if( Mode == D3DFOG_LINEAR ) 
+//    { 
+//        renderSystem->GetDevice()->SetRenderState(D3DRS_FOGTABLEMODE, Mode); 
+//        renderSystem->GetDevice()->SetRenderState(D3DRS_FOGSTART, *(DWORD *)(&Start)); 
+//        renderSystem->GetDevice()->SetRenderState(D3DRS_FOGEND,  *(DWORD *)(&End)); 
+//    } 
+//    else 
+//    { 
+//        renderSystem->GetDevice()->SetRenderState(D3DRS_FOGTABLEMODE, Mode); 
+//        renderSystem->GetDevice()->SetRenderState(D3DRS_FOGDENSITY, *(DWORD *)(&Density)); 
+//    } 
+//}
 
 // Andis: ¬ дальнейшем ортогональна€ матрица не понадобитс€, спрайты будут выводитьс€
 // другим способом.
@@ -1183,6 +1315,7 @@ void doOrtoRT(int w, int h) {
     renderSystem->GetDevice()->SetTransform(D3DTS_VIEW, &matIdentity);
 }
 
+
 struct TRANSPBUF {
 	int modelNum;
 	int index;
@@ -1193,23 +1326,27 @@ int modelSort[19000];
 int transpMax;
 bool doTransp;
 int currMod;
+int currModIndex;
 
 inline DWORD FtoDW(FLOAT f) {return *((DWORD*)&f);}
+
+float tn;
 
 void drawModelPrimitives(int startVert, int endVert) 
 {
 	int zwritemem;
 	//renderSystem->SetRenderState(D3DRS_CULLMODE, D3DCULL_CCW);
 	//renderSystem->GetDevice()->SetVertexShader(D3DFVF_CUSTOMVERTEX);
+	//renderSystem->GetDevice()->SetFVF( D3DFVF_CUSTOMVERTEX );
 	renderSystem->SetVertexDeclaration(vertexBuffer);
 	renderSystem->SetStreamSource(vertexBuffer);
 	DWORD a;
-
-	zwritemem = renderSystem->GetRenderState(D3DRS_ZWRITEENABLE);
-	renderSystem->SetRenderState( D3DRS_ALPHATESTENABLE, false);
+	unsigned int pass;
+//	zwritemem = renderSystem->GetRenderState(D3DRS_ZWRITEENABLE);
+//	renderSystem->SetRenderState( D3DRS_ALPHATESTENABLE, false);
 
 	for(int i=startVert;i<endVert;i++) {
-		renderSystem->SetRenderState(D3DRS_ZWRITEENABLE, zwritemem);
+//		renderSystem->SetRenderState(D3DRS_ZWRITEENABLE, zwritemem);
 		//if (vertexType[i].textNum>0 && textures[vertexType[i].textNum]==NULL)
 		//	return;
 		if (vertexType[i].textNum==43) return;
@@ -1224,23 +1361,39 @@ void drawModelPrimitives(int startVert, int endVert)
 			renderSystem->SetRenderState(D3DRS_ALPHAFUNC, D3DCMP_GREATEREQUAL);
 		}
 */
+		if (currModIndex==166) {
+			int a=0;
+		}
+		// textures
+		if (textures[vertexType[i].textNum] != NULL) {
+			//renderSystem->SetRenderState( D3DRS_ALPHABLENDENABLE, true);
+			renderSystem->GetDevice()->SetTexture(0, textures[vertexType[i].textNum]);
+		} else {
+			//renderSystem->SetRenderState( D3DRS_ALPHABLENDENABLE, false);
+			if (renderAvi && vertexType[i].textNum==-100) {
+				renderSystem->GetDevice()->SetTexture(0, aviTex);
+			} else
+				renderSystem->GetDevice()->SetTexture(0, NULL);
+		}
 
-		// matrixes
-		if (vertexType[i].doLight==true || textures[vertexType[i].textNum] != NULL) {
+		if (vertexType[i].doLight==true || (textures[vertexType[i].textNum] != NULL && currModIndex!=169 && currModIndex!=170)) {
 			renderSystem->SetRenderState(D3DRS_LIGHTING, TRUE);
 		} else {
 			renderSystem->SetRenderState(D3DRS_LIGHTING, FALSE);
 			//selectMaterial(GALAXY, 0, 0, 0);
 			//renderSystem->GetDevice()->SetMaterial(&m_matMaterial);
 		}
-	
-		// textures
-		if (textures[vertexType[i].textNum] != NULL) {
-			renderSystem->SetRenderState( D3DRS_ALPHABLENDENABLE, true);
-			renderSystem->GetDevice()->SetTexture(0, textures[vertexType[i].textNum]);
-		} else {
-			renderSystem->SetRenderState( D3DRS_ALPHABLENDENABLE, false);
-			renderSystem->GetDevice()->SetTexture(0, NULL);
+
+		if (doTransp==false && vertexType[i].transparent==true) {
+
+		} else if (effectList[currModIndex]) {
+			tn = vertexType[i].textNum;
+			effectList[currModIndex]->SetTexture("tex",textures[vertexType[i].textNum]);
+			effectList[currModIndex]->SetValue("tangent", &vertexType[i].tangent, D3DX_DEFAULT);
+			if (vertexType[i].textNum==720)
+				effectList[currModIndex]->BeginPass(1);
+			else
+				effectList[currModIndex]->BeginPass(0);
 		}
 
 		// primitives
@@ -1248,29 +1401,26 @@ void drawModelPrimitives(int startVert, int endVert)
 			if (doTransp==false)
 				renderSystem->GetDevice()->DrawPrimitive(D3DPT_LINELIST, i, vertexType[i].amount/2);
 			i+=vertexType[i].amount-1;
-			continue;
 		}
-		if (vertexType[i].type==GL_LINE_STRIP) {
+		else if (vertexType[i].type==GL_LINE_STRIP) {
 			if (doTransp==false)
 				renderSystem->GetDevice()->DrawPrimitive(D3DPT_LINESTRIP, i, vertexType[i].amount-1);
 			i+=vertexType[i].amount-1;
-			continue;
 		}
-		if (vertexType[i].type==GL_LINE_LOOP) {
+		else if (vertexType[i].type==GL_LINE_LOOP) {
 			if (doTransp==false)
 				renderSystem->GetDevice()->DrawPrimitive(D3DPT_LINESTRIP, i, vertexType[i].amount-1);
 			i+=vertexType[i].amount-1;
-			continue;
 		}
-		if (vertexType[i].type==GL_TRIANGLES) {
-			renderSystem->SetRenderState(D3DRS_SPECULARENABLE, vertexType[i].specular);
+		else if (vertexType[i].type==GL_TRIANGLES) {
+			if ((currModIndex>=121 && currModIndex<=131) || currModIndex==449)
+				renderSystem->SetRenderState(D3DRS_SPECULARENABLE, vertexType[i].specular);
 			//renderSystem->SetRenderState(D3DRS_ZWRITEENABLE, vertexType[i].doLight);
 			if (doTransp==false)
 				renderSystem->GetDevice()->DrawPrimitive(D3DPT_TRIANGLELIST, i, vertexType[i].amount/3);
 			i+=vertexType[i].amount-1;
-			continue;
 		}
-		if (vertexType[i].type==GL_TRIANGLE_STRIP) {
+		else if (vertexType[i].type==GL_TRIANGLE_STRIP) {
 			// прозрачные полигоны будем рисовать потом
 			if (doTransp==false && vertexType[i].transparent==true) {
 				transpBuf[transpMax].index=i;
@@ -1282,9 +1432,8 @@ void drawModelPrimitives(int startVert, int endVert)
 			//renderSystem->SetRenderState(D3DRS_ZWRITEENABLE, vertexType[i].doLight);
 			renderSystem->GetDevice()->DrawPrimitive(D3DPT_TRIANGLESTRIP, i, vertexType[i].amount-2);
 			i+=vertexType[i].amount-1;
-			continue;
 		}
-		if (vertexType[i].type==GL_TRIANGLE_FAN) {
+		else if (vertexType[i].type==GL_TRIANGLE_FAN) {
 			
 			// прозрачные полигоны будем рисовать потом
 			if (doTransp==false && vertexType[i].transparent==true) {
@@ -1297,10 +1446,8 @@ void drawModelPrimitives(int startVert, int endVert)
 			//renderSystem->SetRenderState(D3DRS_ZWRITEENABLE, vertexType[i].doLight);
 			renderSystem->GetDevice()->DrawPrimitive(D3DPT_TRIANGLEFAN, i, vertexType[i].amount-2);
 			i+=vertexType[i].amount-1;
-			continue;
 		}
-
-		if (vertexType[i].type==GL_POINTS) { // лампочки
+		else if (vertexType[i].type==GL_POINTS) { // лампочки
 			
 			if (doTransp==false) {
 				transpBuf[transpMax].index=i;
@@ -1336,10 +1483,8 @@ void drawModelPrimitives(int startVert, int endVert)
 			renderSystem->SetRenderState(D3DRS_AMBIENT, a);
 			//renderSystem->SetRenderState(D3DRS_ZBIAS,0);
 			
-			continue;
 		}
-
-		if (vertexType[i].type==GL_POINTS2) { // далекие планеты/звезды
+		else if (vertexType[i].type==GL_POINTS2) { // далекие планеты/звезды
 //			renderSystem->SetRenderState(D3DRS_ZENABLE, true);
 			//renderSystem->SetRenderState( D3DRS_ALPHABLENDENABLE, true);
 			
@@ -1359,10 +1504,182 @@ void drawModelPrimitives(int startVert, int endVert)
 			//renderSystem->SetRenderState(D3DRS_ZWRITEENABLE, true);
 //			renderSystem->SetRenderState(D3DRS_AMBIENT, a);
 			//renderSystem->SetRenderState(D3DRS_ZBIAS,0);
-			
-			continue;
+		}
+		if (effectList[currModIndex]) {
+			effectList[currModIndex]->EndPass();
 		}
 	}
+}
+
+void BattleMode(bool mode)
+{
+	D3DXVECTOR3 spos;
+	RECT rectsize;
+	rectsize.left=0;
+	rectsize.top=0;
+	rectsize.right=512;
+	rectsize.bottom=256;
+	spos.x=73;
+	spos.y=239;
+	spos.z=0;
+	if (mode)
+		textSprite->Draw(battlepanel,&rectsize,NULL,&spos,0xFFFFFFFF);
+	else
+		textSprite->Draw(navigatepanel,&rectsize,NULL,&spos,0xFFFFFFFF);
+}
+
+void VoidButton(int x, int y)
+{
+	D3DXVECTOR3 spos;
+	RECT rectsize;
+	rectsize.left=0;
+	rectsize.top=0;
+	rectsize.right=50;
+	rectsize.bottom=50;
+	spos.x=x;
+	spos.y=y;
+	spos.z=0;
+	textSprite->Draw(voidbutton,&rectsize,NULL,&spos,0xFFFFFFFF);
+}
+
+extern "C" Model_t * FUNC_001538_GetModelPtr(int);
+
+extern void DrawClipSprite(int index, int x, int y, int z, int h, int w, float NPx1, float NPx2, float NPy1, float NPy2);
+
+extern "C" void ResetAviFrame(void)
+{
+	aviTex=NULL;
+	renderAvi=false;
+}
+
+extern "C" void FillAviFrame(void)
+{
+	D3DLOCKED_RECT lockrect_out;
+
+	if (aviTex==NULL) {
+		D3DXCreateTexture(renderSystem->GetDevice(),  120,  120,  0,  0,  D3DFMT_A8R8G8B8,  D3DPOOL_MANAGED,  &aviTex);
+	}
+	aviTex->LockRect(0, &lockrect_out, 0, 0);
+	ULONG *Pixel = (ULONG *)lockrect_out.pBits;
+	int addr=14400;
+
+	ULONG al;
+	int dJump = (lockrect_out.Pitch>>2) - 120;
+	Pixel+=dJump;
+	for(int i=0;i<120;i++){
+		for(int j=0;j<120;j++){
+			*Pixel=0;
+			al = DATA_008604[DATA_008605[addr]];
+			if (al==0 /*|| i & 1*/)
+				*Pixel=0x00000000;
+			else {
+				*Pixel=pWinPal32[al] | 0xFF000000;
+			}
+			addr--;
+			Pixel++;
+		}
+		Pixel+=dJump;
+	}
+
+	aviTex->UnlockRect(0);
+	renderAvi=true;
+	int asp=120*(curwidth/320);
+	int x=(-curwidth/2);
+	int y=(curheight/2)-asp;
+	int x2=(-curwidth/2)+asp;
+	int y2=(curheight/2);
+	int xadd=1*(curwidth/320);
+	int yadd=33*(curwidth/320);
+	DrawClipSprite(-100,x+xadd,y-yadd,0,y2-yadd,x2+xadd,0,1,0,1);
+}
+
+bool panellight[20];
+
+void PreparePanel(void)
+{
+	D3DXMATRIX mat;
+	char *instance;
+	Model_t *model;
+
+	instance = (char*)*(int*)((int)DATA_008804+0xc8);
+	if (instance==NULL)
+		return;
+
+	model = FUNC_001538_GetModelPtr(*(short*)((int)instance+0x82));
+
+	if (model->Shipdef_ptr==NULL)
+		return;
+
+	renderSystem->SetRenderState(D3DRS_ZENABLE, false);
+
+	renderSystem->GetDevice()->GetRenderTarget(0, &oldSurface);
+	panelTex->GetSurfaceLevel(0,&texSurface);
+	renderSystem->GetDevice()->SetRenderTarget(0, texSurface);
+	//doOrtoRT(1024, 1024);
+	D3DVIEWPORT9 viewport;
+
+	viewport.X = 0;
+	viewport.Y = 0;
+	viewport.Width = 1024;
+	viewport.Height = 1024; 
+	viewport.MinZ = 0; 
+	viewport.MaxZ = 1; 
+	renderSystem->GetDevice()->SetViewport( &viewport ); 	
+
+	D3DXVECTOR3 spos;
+	RECT rectsize;
+	rectsize.left=0;
+	rectsize.top=0;
+	rectsize.right=773;
+	rectsize.bottom=51;
+	spos.x=34;
+	spos.y=595;
+	spos.z=0;
+	textSprite->Begin(D3DXSPRITE_ALPHABLEND);
+	D3DXMatrixIdentity(&mat);
+	textSprite->SetTransform(&mat);
+	textSprite->Draw(panelIcons[panelnum],&rectsize,NULL,&spos,0xFFFFFFFF);
+
+	if (panelnum == 0) {
+		if (panellight[5]==true)
+			BattleMode(true);
+		else
+			BattleMode(false);
+
+		// turret view
+		if (model->Shipdef_ptr->Gunmountings < 3)
+			VoidButton(34+(7*52), 595);
+		// missile viewer
+		if ((*(int*)((int)instance+0xc8) & 0x200) == 0)
+			VoidButton(34+(9*52), 595);
+		// combat computer
+		if ((*(int*)((int)instance+0xc8) & 0x40) == 0)
+			VoidButton(34+(10*52), 595);
+		// escape capsule
+		if ((*(int*)((int)instance+0xc8) & 0x8) == 0 && (*(int*)((int)instance+0xc8) & 0x8000000) == 0)
+			VoidButton(34+(11*52), 595);
+		// navigation computer
+		if ((*(int*)((int)instance+0xc8) & 0x20) == 0)
+			VoidButton(34+(12*52), 595);
+	} else if (panelnum == 1) {
+		// crew roster
+		if (model->Shipdef_ptr->Crew == 1)
+			VoidButton(34+(7*52), 595);	
+		// passenger roster
+		if (*(int*)((int)DATA_008804+0x0124) == 0) // cabins used
+			VoidButton(34+(8*52), 595);	
+		// missions roster
+		if (*(int*)((int)DATA_008804+0x4ef0) == 0) // missions in list
+			VoidButton(34+(10*52), 595);	
+		// MB4 roster
+		if (*(int*)((int)DATA_008804+0x511a) == 0) // MB4 count
+			VoidButton(34+(11*52), 595);	
+	}
+
+	textSprite->End();
+
+	renderSystem->GetDevice()->SetRenderTarget(0, oldSurface);
+
 }
 
 
@@ -1374,9 +1691,13 @@ extern unsigned char currentAmbientR;
 extern unsigned char currentAmbientG;
 extern unsigned char currentAmbientB;
 
-bool panellight[20];
+
 extern int incabin;
 extern bool clearBeforeRender;
+extern bool Planet(int modelNum);
+extern bool Rings(int modelNum);
+
+//extern int lastPlanetLod;
 
 void Render()
 {
@@ -1386,10 +1707,46 @@ void Render()
 	float dtime;
 	float lG;
 
-    if(renderSystem->GetDevice() == NULL)
+	UpdateDeltaTime();
+
+	if(renderSystem->GetDevice()==NULL) {
+		vertexNum=0;
+		textNum=0;
+		modelNum=0;
+		maxsprite=0;
+		sprites.clear();
+		playerLightPosEnable=false;
+		clearBeforeRender=false;
+		return;
+	}
+
+	int hr = renderSystem->GetDevice()->TestCooperativeLevel();
+
+	if (hr == D3DERR_DEVICENOTRESET)
+	{
+		RestoreSurfaces();
+		vertexNum=0;
+		textNum=0;
+		modelNum=0;
+		maxsprite=0;
+		sprites.clear();
+		playerLightPosEnable=false;
+		clearBeforeRender=false;
+		return;
+	}
+
+    if(hr != 0)
     {
-        return;
+		vertexNum=0;
+		textNum=0;
+		modelNum=0;
+		maxsprite=0;
+		sprites.clear();
+		playerLightPosEnable=false;
+		clearBeforeRender=false;
+		return;
     }
+
 
 	if (clearBeforeRender)
 		renderSystem->GetDevice()->Clear(0,NULL,D3DCLEAR_TARGET|D3DCLEAR_ZBUFFER,D3DCOLOR_XRGB(0,0,0),1.0f,0);
@@ -1414,7 +1771,8 @@ void Render()
 	}
 	char cBuff[200];
 	sprintf(cBuff,"FFED3D x: %f, y: %f, z: %f, size: %f", pl.x, pl.y, pl.z, plsize);
-	//SetWindowText(hWnd,cBuff);
+	//sprintf(cBuff,"FFED3D %i", lastPlanetLod);
+	SetWindowText(hWnd,cBuff);
 
 	//if (*(unsigned char*)DATA_008809==254)
 	//	renderSystem->GetDevice()->Clear(0,NULL,D3DCLEAR_TARGET|D3DCLEAR_ZBUFFER,D3DCOLOR_XRGB(0,0,0),1.0f,0);	
@@ -1433,50 +1791,11 @@ void Render()
 	}
 
 
-		{
-			renderSystem->SetRenderState(D3DRS_ZENABLE, false);
-
-			renderSystem->GetDevice()->GetRenderTarget(0, &oldSurface);
-			panelTex[0]->GetSurfaceLevel(0,&texSurface);
-			renderSystem->GetDevice()->SetRenderTarget(0, texSurface);
-			//doOrtoRT(1024, 1024);
-			D3DVIEWPORT9 viewport;
-
-			viewport.X = 0;
-			viewport.Y = 0;
-			viewport.Width = 1024;
-			viewport.Height = 1024; 
-			viewport.MinZ = 0; 
-			viewport.MaxZ = 1; 
-			renderSystem->GetDevice()->SetViewport( &viewport ); 	
-
-			D3DXVECTOR3 spos;
-			RECT rectsize;
-			rectsize.left=0;
-			rectsize.top=0;
-			rectsize.right=49;
-			rectsize.bottom=50;
-			spos.x=549;
-			spos.y=595;
-			spos.z=0;
-			textSprite->Begin(D3DXSPRITE_ALPHABLEND);
-			D3DXMatrixIdentity(&mat);
-			textSprite->SetTransform(&mat);
-			textSprite->Draw(panelIcons[0],&rectsize,NULL,&spos,0xFFFFFFFF);
-			textSprite->End();
-			//rect.x1=512;
-			//rect.y1=512;
-			//rect.x2=750;
-			//rect.y2=750;
-			//renderSystem->GetDevice()->Clear(1,(D3DRECT *)&rect,D3DCLEAR_TARGET,D3DCOLOR_XRGB(0,0,0),1.0f,0);	
-
-
-			renderSystem->GetDevice()->SetRenderTarget(0, oldSurface);
-
-		}
+	PreparePanel();
 
     renderSystem->BeginScene();
 
+	//SetupPixelFog(0xffffff, D3DFOG_LINEAR);
 
     //renderSystem->GetDevice()->SetVertexShader(D3DFVF_CUSTOMVERTEX);
 	//renderSystem->GetDevice()->SetStreamSource(0, d3d_vb, sizeof(CUSTOMVERTEX));
@@ -1500,14 +1819,18 @@ void Render()
 	//renderSystem->GetDevice()->SetTextureStageState( 0, D3DTSS_COLORARG2, D3DTA_TEXTURE );
 	//renderSystem->GetDevice()->SetTextureStageState( 0, D3DTSS_COLOROP, D3DTOP_MODULATE);
 
-	renderSystem->GetDevice()->SetSamplerState(0, D3DSAMP_MAGFILTER, 3);
-	renderSystem->GetDevice()->SetSamplerState(0, D3DSAMP_MINFILTER, 3 );
-	renderSystem->GetDevice()->SetSamplerState(0, D3DSAMP_MIPFILTER, 3 );
+	renderSystem->GetDevice()->SetSamplerState(0, D3DSAMP_MAGFILTER, D3DTEXF_LINEAR);
+	renderSystem->GetDevice()->SetSamplerState(0, D3DSAMP_MINFILTER, D3DTEXF_LINEAR );
+	renderSystem->GetDevice()->SetSamplerState(0, D3DSAMP_MIPFILTER, D3DTEXF_LINEAR );
 
 	renderSystem->SetRenderState(D3DRS_POINTSPRITEENABLE, TRUE); 
 	renderSystem->SetRenderState(D3DRS_POINTSCALEENABLE, TRUE); 
 
 	renderSystem->SetRenderState( D3DRS_ALPHATESTENABLE, false);
+    //renderSystem->GetDevice()->SetRenderState(D3DRS_ALPHAREF, 255);
+    //renderSystem->GetDevice()->SetRenderState(D3DRS_ALPHATESTENABLE, TRUE); 
+    //renderSystem->GetDevice()->SetRenderState(D3DRS_ALPHAFUNC, D3DCMP_EQUAL);
+
 	renderSystem->SetRenderState(D3DRS_LIGHTING, true);
 
 	// draw galaxy background
@@ -1523,7 +1846,7 @@ void Render()
 	renderSystem->SetRenderState(D3DRS_ZENABLE, false);
 
 	// nebula
-	if (*(unsigned char*)(DATA_008804+0x20)!=0 || *(unsigned char*)(DATA_008804+0x21)!=0 || *(unsigned char*)(DATA_008804+0x22)!=0)
+	if (objectList[315] && (*(unsigned char*)(DATA_008804+0x20)!=0 || *(unsigned char*)(DATA_008804+0x21)!=0 || *(unsigned char*)(DATA_008804+0x22)!=0))
 	for(int m=0;m<modelNum;m++) {
 		if (modelList[m].index==315 || 
 			modelList[m].index==444) {
@@ -1582,14 +1905,13 @@ void Render()
 		}
 	}
 	*/
-	for(int m=0;m<modelNum;m++) {
+	int starMod=316;
+	for(int m=0;objectList[starMod] && m<modelNum;m++) {
 		if (modelList[m].index==315 || 
 			modelList[m].index==444) {
 			D3DXMATRIX mdscale, mdworld, mdrotate;
 			float scale;
 			
-			int starMod=316;
-
 			D3DXMatrixIdentity(&mdworld);
 					
 			D3DXMatrixMultiply(&mdworld, &mdworld, &modelList[m].world);
@@ -1597,13 +1919,13 @@ void Render()
 			//mdworld[12]*=1000;
 			//mdworld[13]*=1000;
 			//mdworld[14]*=1000;
-			scale=0.1;
+			scale=10.0;
 			D3DXMatrixScaling(&mdscale, scale, scale, scale);
 			D3DXMatrixMultiply(&mdworld, &mdscale, &mdworld);
 			doMatrixes(mdworld);
 			
 
-			renderSystem->GetDevice()->SetTexture(0, g_texture[starMod]);
+			renderSystem->GetDevice()->SetTexture(0, skin[starMod][0]);
 			//renderSystem->GetDevice()->SetRenderState(D3DRS_CULLMODE, g_model[starMod].cullmode);
 			renderSystem->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
 			objectList[starMod]->FrameMove(0,0,&mdworld);
@@ -1620,22 +1942,22 @@ void Render()
 		// panel
 
 
-		if (*(unsigned char*)DATA_008835!=32 && *(unsigned char*)DATA_008835!=35) {
+		if (panelObj && *(unsigned char*)DATA_008835!=32 && *(unsigned char*)DATA_008835!=35) {
 
 			renderSystem->GetDevice()->SetSamplerState(0, D3DSAMP_MIPFILTER, 0);
 			renderSystem->SetRenderState(D3DRS_SPECULARENABLE, true);
 			selectMaterial(-1, 0, 0, 0);
 			renderSystem->GetDevice()->SetMaterial(&m_matMaterial);
-			renderSystem->SetRenderState( D3DRS_ALPHABLENDENABLE, false);
+			//renderSystem->SetRenderState( D3DRS_ALPHABLENDENABLE, false);
 			renderSystem->SetRenderState(D3DRS_ZWRITEENABLE, true);
 			renderSystem->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
 			for(int i=0;i<10;i++) {
 				renderSystem->GetDevice()->LightEnable(i, false);
 			}
 			int c=0;
-			float cr = 0.5f;
+			float cr = 0.0f;
 			float cg = 1.0f;
-			float cb = 0.5f;
+			float cb = 0.0f;
 			D3DXVECTOR3 lpos;
 			for(int i=1;i<=15;i++) {
 				if (panellight[i]) {
@@ -1770,7 +2092,7 @@ void Render()
 			mdworld[14]=4.0f;
 			doMatrixes(mdworld);
 			panelObj->FrameMove(0,0,&mdworld);
-			renderSystem->GetDevice()->SetTexture(0, panelTex[panelnum]);
+			renderSystem->GetDevice()->SetTexture(0, panelTex);
 			panelObj->Render();
 		}
 		for(int i=0;i<20;i++) {
@@ -1794,13 +2116,15 @@ void Render()
 		drawModelPrimitives(modelList[m].vertStart, modelList[m].vertEnd);
 	}
 
-	// ќтображаем внешние модели
+	// ќтображаем модели
 
 	renderSystem->GetDevice()->SetSamplerState(0, D3DSAMP_MIPFILTER, 2);
 	renderSystem->SetRenderState(D3DRS_ZENABLE, true);
 
 	ViewPort(true);
-	doPerspectiveFar();
+
+	unsigned int pass;
+	D3DXMATRIX Full, WorldInverse;
 
 	for(int m=0;m<modelNum;m++) {
 		if (modelList[m].index==315 || 
@@ -1811,15 +2135,21 @@ void Render()
 		}
 		if (modelList[m].doMatrix==1) {
 			currMod=m;
+			currModIndex=modelList[m].index;
+			D3DXMatrixInverse(&WorldInverse,NULL, &modelList[m].world);
 
-			renderSystem->SetRenderState(D3DRS_ZWRITEENABLE, modelList[m].zwrite);
-			renderSystem->SetRenderState(D3DRS_ZENABLE, modelList[m].zenable);
-			renderSystem->SetRenderState(D3DRS_CULLMODE, modelList[m].cull);
-			selectMaterial(modelList[m].material, modelList[m].ambientR, modelList[m].ambientG, modelList[m].ambientB);
-			renderSystem->GetDevice()->SetMaterial(&m_matMaterial);
+			if (Planet(modelList[m].index)==true || Rings(modelList[m].index)==true) {
+				doPerspectiveFar();
+			} else {
+				doPerspectiveNear();
+			}
+			for(int ii=0;ii<=10 && !modelList[m].subObject;ii++) {
+				renderSystem->GetDevice()->LightEnable(ii, false);
+			}
 
 			// ќбщий свет
-			setupLight(modelList[m].lightPos, 1.0f/255*modelList[m].ambientR, 1.0f/255*modelList[m].ambientG, 1.0f/255*modelList[m].ambientB);
+			if (!modelList[m].subObject)
+				setupLight(modelList[m].lightPos, 1.0f/255*modelList[m].ambientR, 1.0f/255*modelList[m].ambientG, 1.0f/255*modelList[m].ambientB);
 			// —убисточники света
 			for(int ii=0;ii<10 && !modelList[m].subObject;ii++) {
 				if (modelList[m].light[ii].enable==true) {
@@ -1827,15 +2157,58 @@ void Render()
 				}
 			}
 
+			if (effectList[currModIndex]) {
+				effectList[currModIndex]->SetTechnique("Main");
+				effectList[currModIndex]->SetValue("light", new D3DXVECTOR4(modelList[m].lightPos.x,modelList[m].lightPos.y,modelList[m].lightPos.z,0.0f), D3DX_DEFAULT);
+				effectList[currModIndex]->SetValue("lightcol", new D3DXVECTOR4(1.0f/255*modelList[m].ambientR,1.0f/255*modelList[m].ambientG,1.0f/255*modelList[m].ambientB,1), D3DX_DEFAULT);
+				effectList[currModIndex]->SetValue("ambient", new D3DXVECTOR4(1.0f/255*32,1.0f/255*32,1.0f/255*32, 1), D3DX_DEFAULT);
+				tt +=DeltaTime*0.3f;
+				effectList[currModIndex]->SetValue("time",&tt, D3DX_DEFAULT);
+
+				D3DXMatrixMultiply(&Full, &matProj, &matView);
+				effectList[currModIndex]->SetMatrix("viewprojmat",&Full);
+				effectList[currModIndex]->SetMatrix("worldInverse",&WorldInverse);
+			}
+
+			renderSystem->SetRenderState(D3DRS_LIGHTING, TRUE);
+			renderSystem->SetRenderState(D3DRS_ZWRITEENABLE, modelList[m].zwrite);
+			renderSystem->SetRenderState(D3DRS_ZENABLE, modelList[m].zenable);
+			renderSystem->SetRenderState(D3DRS_CULLMODE, modelList[modelList[m].index].cull);
+			selectMaterial(modelList[m].material, modelList[m].ambientR, modelList[m].ambientG, modelList[m].ambientB);
+			renderSystem->GetDevice()->SetMaterial(&m_matMaterial);
+
 			// —плайны
-			if (splineList[modelList[m].index]) {
+			if (splineList[currModIndex]) {
+
+				if (effectList[currModIndex]) {
+					effectList[currModIndex]->SetMatrix("worldmat",&modelList[m].world);
+
+					effectList[currModIndex]->Begin(&pass,0);
+					effectList[currModIndex]->BeginPass(0);
+				}
+
+				selectMaterial(SPLINE, modelList[m].splineR, modelList[m].splineG, modelList[m].splineB);
+				renderSystem->GetDevice()->SetMaterial(&m_matMaterial);
 				renderSystem->GetDevice()->SetTexture(0, 0);
 				splineList[modelList[m].index]->FrameMove(0,0,&modelList[m].world);
 				splineList[modelList[m].index]->Render();
+				selectMaterial(modelList[m].material, modelList[m].ambientR, modelList[m].ambientG, modelList[m].ambientB);
+				renderSystem->GetDevice()->SetMaterial(&m_matMaterial);
+
+				if (effectList[currModIndex]) {
+					effectList[currModIndex]->EndPass();
+					effectList[currModIndex]->End();
+				}
 			}
 
-			// ћодели
-			if (objectList[modelList[m].index]) {
+			if (effectList[currModIndex]) {
+				effectList[currModIndex]->SetTexture("skin8",skin[modelList[m].index][7]);
+				effectList[currModIndex]->SetTexture("skin9",skin[modelList[m].index][8]);
+				effectList[currModIndex]->SetTexture("skin10",skin[modelList[m].index][9]);
+			}
+
+			// ¬нешние модели
+			if (objectList[currModIndex]) {
 				D3DXMatrixIdentity(&mdworld);				
 				mdworld[12]+=modelconfig[modelList[m].index].offset_x;
 				mdworld[13]+=modelconfig[modelList[m].index].offset_y;
@@ -1853,15 +2226,22 @@ void Render()
 				D3DXMatrixScaling(&mdscale, scale_x, scale_y, scale_z);
 				D3DXMatrixMultiply(&mdworld, &mdscale, &mdworld);
 
-				renderSystem->GetDevice()->SetTexture(0, g_texture[modelList[m].index]);
+				renderSystem->GetDevice()->SetTexture(0, skin[modelList[m].index][0]);
 
 				//find the time difference
 				QueryPerformanceCounter(&nowtime);
 				dtime = ((nowtime.QuadPart - starttime)/ticks);
-				if (modelList[m].index > 14 && modelList[m].index < 70) {
+				if ((modelList[m].index > 14 && modelList[m].index < 70) || modelList[m].index==227 || modelList[m].index==234 || modelList[m].index==236) {
 					if (modelList[m].landingGear>0 || objectList[modelList[m].index]->GetNumAnimationSets()==1) {
 						objectList[modelList[m].index]->SetAnimationSet(0);
-						lG = (float)modelList[m].landingGear/65536*objectList[modelList[m].index]->GetAnimationSetLength(0);
+						if (modelList[m].index==227) {
+							char cBuff[32];
+							sprintf(cBuff,"FFED3D: %i", modelList[m].landingGear);
+							SetWindowText(hWnd,cBuff);
+							lG = ((float)modelList[m].landingGear/65535)*objectList[modelList[m].index]->GetAnimationSetLength(0);
+						}
+						else
+							lG = (float)modelList[m].landingGear/65536*objectList[modelList[m].index]->GetAnimationSetLength(0);
 						objectList[modelList[m].index]->FrameMove(0, lG,&mdworld);
 					} else {
 						objectList[modelList[m].index]->SetAnimationSet(1);
@@ -1872,23 +2252,39 @@ void Render()
 					objectList[modelList[m].index]->FrameMove(1, dtime,&mdworld);
 				}
 				starttime = nowtime.QuadPart;
+
+				if (effectList[currModIndex]) {
+					effectList[currModIndex]->SetTexture("skin",skin[modelList[m].index][0]);
+				}
+				
+				objectList[modelList[m].index]->SetEffect(effectList[currModIndex]);
 				objectList[modelList[m].index]->Render();
 			}
 
 			// ќтрисовываем внутренние модели
 			doMatrixes(modelList[m].world);
+			if (effectList[currModIndex]) {
+				effectList[currModIndex]->SetMatrix("worldmat",&modelList[m].world);
+				effectList[currModIndex]->Begin(&pass,0);
+			}
 			drawModelPrimitives(modelList[m].vertStart, modelList[m].vertEnd);
-			//if (modelList[m].zclear==true)
-			//	renderSystem->GetDevice()->Clear(0,NULL,D3DCLEAR_ZBUFFER,D3DCOLOR_XRGB(0,0,0),1.0f,0);	
-
-			//for(int ii=1;ii<=10 && !modelList[m].subObject;ii++) {
-			///	renderSystem->GetDevice()->LightEnable(ii, false);
-			//}
+			if (effectList[currModIndex]) {
+				effectList[currModIndex]->End();
+			}
+			if (modelList[m].zclear==true)
+				renderSystem->GetDevice()->Clear(0,NULL,D3DCLEAR_ZBUFFER,D3DCOLOR_XRGB(0,0,0),1.0f,0);	
+			for(int ii=0;ii<10 && !modelList[m].subObject;ii++) {
+				modelList[m].light[ii].enable=false;
+			}
 		}
 	}
 
 	// ќтображаем спрайты
-			
+
+	renderSystem->GetDevice()->SetSamplerState( 0, D3DSAMP_ADDRESSU,  D3DTADDRESS_CLAMP ); 
+	renderSystem->GetDevice()->SetSamplerState( 0, D3DSAMP_ADDRESSV,  D3DTADDRESS_CLAMP ); 
+
+	renderSystem->SetRenderState( D3DRS_ALPHABLENDENABLE, true);
 	renderSystem->GetDevice()->SetSamplerState(0, D3DSAMP_MIPFILTER, 0);
 	renderSystem->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
 	renderSystem->SetRenderState(D3DRS_ZENABLE, true);
@@ -1914,12 +2310,11 @@ void Render()
 
 	// теперь нужно отрисовать прозрачные полигоны
 
+	renderSystem->SetRenderState(D3DRS_LIGHTING, TRUE);
 	renderSystem->SetRenderState(D3DRS_ZENABLE, true);
 	renderSystem->SetRenderState(D3DRS_SPECULARENABLE, FALSE);
 	selectMaterial(GALAXY, 0, 0, 0);
 	renderSystem->GetDevice()->SetMaterial(&m_matMaterial);
-	renderSystem->SetRenderState( D3DRS_ALPHABLENDENABLE, true);
-	renderSystem->SetRenderState(D3DRS_ZWRITEENABLE, false);
 	doTransp=true;
 	renderSystem->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
 	for(int m=0;m<transpMax;m++) {
@@ -1931,7 +2326,7 @@ void Render()
 			//renderSystem->SetRenderState(D3DRS_DIFFUSEMATERIALSOURCE, D3DMCS_MATERIAL);
 			renderSystem->SetRenderState(D3DRS_ZENABLE, true);
 			ViewPort(true);
-			doPerspectiveFar();
+			doPerspectiveNear();
 			doMatrixes(modelList[currMod].world);
 		} else { // это спрайт
 			//renderSystem->SetRenderState(D3DRS_AMBIENTMATERIALSOURCE, D3DMCS_MATERIAL );
@@ -1946,9 +2341,10 @@ void Render()
 
 	renderSystem->SetRenderState(D3DRS_ZWRITEENABLE, true );
 	renderSystem->SetRenderState(D3DRS_ZENABLE, true);
+	renderSystem->SetRenderState(D3DRS_LIGHTING, TRUE);
 
 	// panel sphere
-	if (*(unsigned char*)DATA_008835!=32 && *(unsigned char*)DATA_008835!=35) {
+	if (sphereObj && *(unsigned char*)DATA_008835!=32 && *(unsigned char*)DATA_008835!=35) {
 		renderSystem->GetDevice()->SetSamplerState(0, D3DSAMP_MIPFILTER, 2);
 		for(int i=0;i<10;i++) {
 			renderSystem->GetDevice()->LightEnable(i, false);
@@ -1980,20 +2376,11 @@ void Render()
 		mdworld[14]=4.0f;
 		doMatrixes(mdworld);
 
-		selectMaterial(GALAXY, 0, 0, 0);
-		renderSystem->SetRenderState(D3DRS_ALPHABLENDENABLE, true);
-		renderSystem->SetRenderState(D3DRS_ALPHATESTENABLE, false);
-		renderSystem->SetRenderState(D3DRS_SPECULARENABLE, true);
-		renderSystem->SetRenderState(D3DRS_LIGHTING, true);
-		renderSystem->SetRenderState(D3DRS_AMBIENT, D3DCOLOR_XRGB(64, 64, 64));
-		m_matMaterial.Diffuse = rgbaDiffuse1; 
-		m_matMaterial.Ambient = rgbaAmbient1; 
-		m_matMaterial.Specular = rgbaSpecular2; 
-		m_matMaterial.Emissive = rgbaEmissive0;
+		selectMaterial(TRANSP, 0, 0, 0);
 
 		sphereObj->FrameMove(0,0,&mdworld);
 		renderSystem->GetDevice()->SetMaterial(&m_matMaterial);
-		renderSystem->GetDevice()->SetTexture(0, textures[0]);
+		renderSystem->GetDevice()->SetTexture(0, NULL);
 		sphereObj->Render();
 	}
 

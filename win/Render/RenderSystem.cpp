@@ -24,7 +24,7 @@ bool RenderSystem::Initialize(int xScr,int yScr,int mode,HWND hWnd,int RefreshRa
 	
 	if(!lpD3D)
 	{
-		MessageBox (NULL, "Failed Direct3DCreate8",
+		MessageBox (NULL, "Failed Direct3DCreate9",
 			"WinFFE startup error", MB_OK | MB_ICONWARNING);
 		return false;
 	}

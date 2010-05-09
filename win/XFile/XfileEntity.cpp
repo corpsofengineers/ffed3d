@@ -12,6 +12,7 @@ CXFileEntity::CXFileEntity(LPDIRECT3DDEVICE9 d3dDevice) : m_d3dDevice(d3dDevice)
 	m_currentTrack(0),m_currentTime(0),m_numAnimationSets(0),m_currentAnimationSet(0),m_maxBones(0),m_sphereRadius(0),
 	m_sphereCentre(0,0,0),m_boneMatrices(0)
 {
+	effect=NULL;
 }
 
 // Destructor
@@ -260,7 +261,8 @@ D3DXMATRIX CXFileEntity::GetMatrix()
 {
     D3DXFRAME_EXTENDED *currentFrame = (D3DXFRAME_EXTENDED*)m_frameRoot;
 
-	return currentFrame->TransformationMatrix;
+	//return currentFrame->TransformationMatrix;
+	return currentFrame->exCombinedTransformationMatrix;
 }
 /**
  * \brief Called to update the frame matrices in the hierarchy to reflect current animation stage
@@ -295,8 +297,14 @@ void CXFileEntity::UpdateFrameMatrices(const D3DXFRAME *frameBase, const D3DXMAT
 */
 void CXFileEntity::Render()
 {
-	if (m_frameRoot)
+	//D3DVERTEXELEMENT9 pDecl[MAX_FVF_DECL_SIZE];
+
+	if (m_frameRoot) {
+		//m_frameRoot->pMeshContainer->MeshData.pMesh->GetDeclaration(pDecl);
+		//renderSystem->CreateVertexDeclaration(&pDecl[0],&vb.declaration);
+		renderSystem->SetVertexDeclaration(vb.declaration);
 		DrawFrame(m_frameRoot);
+	}
 }
 
 void CXFileEntity::RenderM()
@@ -352,6 +360,14 @@ void CXFileEntity::DrawMeshContainer(LPD3DXMESHCONTAINER meshContainerBase, LPD3
 	// Set the world transform
     m_d3dDevice->SetTransform(D3DTS_WORLD, &frame->exCombinedTransformationMatrix);
 
+	unsigned int pass;
+	if (effect) {
+		effect->SetMatrix("worldmat",&frame->exCombinedTransformationMatrix);
+
+		effect->Begin(&pass,0);
+		effect->BeginPass(0);
+	}
+
 	// Loop through all the materials in the mesh rendering each subset
     for (unsigned int iMaterial = 0; iMaterial < meshContainer->NumMaterials; iMaterial++)
     {
@@ -379,6 +395,11 @@ void CXFileEntity::DrawMeshContainer(LPD3DXMESHCONTAINER meshContainerBase, LPD3
 
 		renderSystem->DrawIndexedPrimitive(vb,0,dwNumVerticies,ib,0,dwNumFaces);
     }
+
+	if (effect) {
+		effect->EndPass();
+		effect->End();
+	}
 }
 
 /**
@@ -520,4 +541,9 @@ void CXFileEntity::ExportX(int exp)
 	char buf[200];
 	sprintf(buf,"models\\%i\\model_e.x",exp);
 	int hr=D3DXSaveMeshToX(buf, m_firstMesh->MeshData.pMesh, NULL, NULL, NULL, 0, D3DXF_FILEFORMAT_TEXT);
+}
+
+void CXFileEntity::SetEffect(ID3DXEffect* effectF)
+{
+	effect = effectF;
 }

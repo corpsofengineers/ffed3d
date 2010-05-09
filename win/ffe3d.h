@@ -28,6 +28,7 @@
 #define TRANSP  				0x05
 #define ATMO2					0x06
 #define GALAXY					0x0A
+#define SPLINE					0x0B
 #define NOTDRAW					0x0F
 
 // Cull
@@ -36,7 +37,7 @@
 #define CULL_CCW				0x03
 
 struct CUSTOMVERTEX {
-	FLOAT x,y,z;	// Трансформированная позиция вершины
+	FLOAT x,y,z;	// позиция вершины
 	D3DXVECTOR3 n; //Lighting Normal
 	DWORD color;		// Цвет вершины
 	FLOAT tu,tv;
@@ -47,6 +48,9 @@ struct MODELCONFIG {
 	float scale, scale_x, scale_y, scale_z;
 	float offset_x,offset_y,offset_z;
 	int cullmode;
+	int notdrawtext;
+	int notdrawsubmodels;
+	int skip;
 	float missile_scale;
 	D3DXVECTOR3 missile[10];
 };
@@ -73,6 +77,12 @@ struct MODEL {
 	unsigned char ambientR;
 	unsigned char ambientG;
 	unsigned char ambientB;
+	unsigned char splineR;
+	unsigned char splineG;
+	unsigned char splineB;
+	unsigned char localR;
+	unsigned char localG;
+	unsigned char localB;
 	int vertStart;
 	int vertEnd;
 	char material;
@@ -92,6 +102,7 @@ struct VERTEXTYPE {
 	float radius;
 	bool transparent;
 	bool specular;
+	D3DXVECTOR3 tangent;
 };
 
 struct FFTEXT {
