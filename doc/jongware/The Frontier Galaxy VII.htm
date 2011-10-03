@@ -1,0 +1,1284 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3c.org/TR/1999/REC-html401-19991224/loose.dtd">
+<!-- saved from url=(0036)http://www.jongware.com/galaxy7.html -->
+<HTML><HEAD><TITLE>The Frontier Galaxy VII</TITLE>
+<META http-equiv=Content-Type content="text/html; charset=windows-1251">
+<META content="Theunis de Jong" name=Author>
+<META content="FFE StarSys Home" name=Description>
+<META content="MSHTML 6.00.2900.2180" name=GENERATOR>
+<META 
+content="Frontier, First Encounters, FE2, FFE, JJFFE, galaxy, source code, jongware" 
+name=keywords><LINK href="http://www.jongware.com/favicon.ico" 
+rel="shortcut icon"><LINK href="The Frontier Galaxy VII.files/styles003.css" 
+type=text/css rel=stylesheet></HEAD>
+<BODY text=#000000 vLink=#00334d aLink=#00334d link=#00334d bgColor=#ffffff>
+<TABLE class=black width="100%" border=0>
+  <TBODY>
+  <TR>
+    <TD align=middle width="100%"><IMG alt=[Jongware] 
+      src="The Frontier Galaxy VII.files/jongware.gif"></TD></TR>
+  <TR>
+    <TD align=right><SMALL>Most recent update (All By Hand(TM)): 12-May-2006 
+      23:26</SMALL></TD></TR></TBODY></TABLE>
+<TABLE width="100%" border=0>
+  <TBODY>
+  <TR vAlign=top>
+    <TD class=sidebar width="20%">
+      <TABLE class=sidebaritem width="100%" border=0><!--tr><td class="sidebaritem_back"><a class="internal" href="index.html">Back home</a></td></tr-->
+        <TBODY>
+        <TR>
+          <TD class=sidebaritem colSpan=2><A class=internal 
+            href="http://www.jongware.com/index.html">FFE Starsys page</A></TD></TR>
+        <TR>
+          <TD>&nbsp;</TD></TR>
+        <TR>
+          <TD class=sidebaritem colSpan=2><B><FONT color=white>The Frontier 
+            Galaxy</FONT></B></TD></TR>
+        <TR>
+          <TD>&nbsp;</TD>
+          <TD class=sidebaritem><A 
+            href="http://www.jongware.com/galaxy1.html">My God- It's full of 
+            stars!</A></TD></TR>
+        <TR>
+          <TD>&nbsp;</TD>
+          <TD class=sidebaritem><A 
+            href="http://www.jongware.com/galaxy2.html">Distant suns</A></TD></TR>
+        <TR>
+          <TD>&nbsp;</TD>
+          <TD class=sidebaritem><A 
+            href="http://www.jongware.com/galaxy3.html">They Call Me The 
+            Wanderer</A></TD></TR>
+        <TR>
+          <TD>&nbsp;</TD>
+          <TD class=sidebaritem><A 
+            href="http://www.jongware.com/galaxy4.html">Getting to the Floating 
+            Point</A></TD></TR>
+        <TR>
+          <TD>&nbsp;</TD>
+          <TD class=sidebaritem><A 
+            href="http://www.jongware.com/galaxy5.html">A Planet By Any Other 
+            Name</A></TD></TR>
+        <TR>
+          <TD>&nbsp;</TD>
+          <TD class=sidebaritem><A 
+            href="http://www.jongware.com/galaxy6.html">Random Synaptic 
+            Firings</A></TD></TR>
+        <TR>
+          <TD>&nbsp;</TD>
+          <TD class=sidebaritem>Frontier Objects</TD></TR>
+        <TR>
+          <TD>&nbsp;</TD>
+          <TD class=sidebaritem><A 
+            href="http://www.jongware.com/galaxy8.html">The Flat Facts</A></TD></TR>
+        <TR>
+          <TD>&nbsp;</TD></TR>
+        <TR>
+          <TD class=sidebaritem colSpan=2><B><FONT 
+          color=white>Other</FONT></B></TD></TR>
+        <TR>
+          <TD>&nbsp;</TD>
+          <TD class=sidebaritem><A title="Who is this guy anyway?" 
+            href="http://www.jongware.com/jongware.html">A Timeline of 
+            Jongware</A><BR><SPAN class=updated>Updated: 
+14-May-2005</SPAN></TD></TR>
+        <TR>
+          <TD>&nbsp;</TD>
+          <TD class=sidebaritem><A title="Most recent code project" 
+            href="http://www.jongware.com/truelove.html">A True Love 
+            story</A><BR><SPAN class=updated>Updated: 14-May-2005</SPAN></TD></TR>
+        <TR>
+          <TD>&nbsp;</TD></TR>
+        <TR>
+          <TD class=sidebaritem colSpan=2><A class=internal 
+            title="Kilroy was here" 
+            href="http://www.jongware.com/GuestBookG">Guestbook!</A></TD></TR></TBODY></TABLE></TD>
+    <TD class=text>
+      <P>&nbsp;</P>
+      <P align=right><I>Starry, starry night<BR>Paint your palette blue and 
+      gray<BR>Look out on a summer's day<BR>With eyes that know the darkness in 
+      my soul...</I><BR>Don McClean, <I>Vincent</I></P>
+      <P>&nbsp;</P>
+      <H1>The Frontier Galaxy VII: Frontier Objects</H1>
+      <P>As mentioned first in <B>Part II: Distant Suns</B>, the 3D objects in 
+      the game are all referenced by a single number in a single large list. All 
+      of the objects in the entire galaxy! That means <I>everything</I> from a 
+      humble Escape Pod (est. size: 4 meters) up to the map locator grid (est. 
+      size: 4ly).</P>
+      <P>The game is quite clever in the way 3d objects are represented: a 
+      single structure defines each and everyone of them by size, shape and 
+      color. The coordinates are simple integers, but one of the members of this 
+      structure is Scale; the coordinates defining the object are multiplied by 
+      this (actually, more like <I>shifted left</I>).</P>
+      <P>The 3D shapes are drawn by a clever routine, reading sort of a command 
+      language that defines it as we go. The language can make objects be drawn 
+      differently for size, distance, rotation and even external parameters, 
+      such as time or global game preferences.</P>
+      <P>The commands in Frontier:First Encounters are clearly based on those in 
+      Frontier:Elite 2 -- there are a few small differences, mostly to do with 
+      suddenly having megabytes of memory instead of kilobytes; if you visit the 
+      <A href="http://sharoma.com/frontierverse">FrontierVerse</A> you can find 
+      my original doc outlining the FE2 objects. This one is all about FFE.</P>
+      <P>You might want to download the companion program <A class=internal 
+      href="http://www.jongware.com/binaries/showmesh.zip">ShowMesh</A> which I 
+      wrote to, er, "disassemble" the models into ASCII text, but this produces 
+      a long, long listing which won't mean anything to you -- yet! Read 
+      on...</P>
+      <P>&nbsp;</P>
+      <P>As usual, I'll start with the base structures. And (also as usual) 
+      there are <I>again</I> a few unknowns in here...</P>
+      <H2>The Object List</H2>
+      <P>In FE2 there are three different lists of objects: the <B>main 
+      objects</B> appearing in the game proper (starships, planets, cities, you 
+      name it), a list of <B>specials</B> (vector fonts and the tombstone when 
+      you failed to dodge something lethal), and the <B>intro objects</B> (an 
+      Explorer happily dodging Eagles and the odd space station). In FFE there 
+      is only one big list in which you can find everything.</P>
+      <P>The list itself is nothing but a long list of pointers to individual 
+      objects. There appears to be no definition of how many objects there are 
+      in the list (apparently those who create it knew how many there were). 
+      Each pointer points to either zero (no object for that number; hopefully 
+      not used in the game!), or to a Model structure.</P>
+      <H2>The Model Structure</H2>
+      <P>Every single 3D model is defined with exactly the same structure. If 
+      you ever wondered how it is possible to use an asteroid by way of 
+      spaceship, read on! It's just a matter of plugging in the right numbers in 
+      the right locations.</P>
+      <P>Each object starts like this:</P><PRE>typedef struct {
+    unsigned short * Mesh_ptr;
+    signed char *    Vertices_ptr;
+    int              NumVertices;
+    signed char *    Normals_ptr;
+    int              NumNormals;
+    int              Scale;
+    int              Scale2;
+    int              Radius;
+    int              Primitives;
+    color_t          DefaultColor;
+    char             padding;
+    int              field_28;
+    int              field_2C;
+    int              field_30;
+    unsigned short * Collision_ptr;
+    ShipDef_t *      Shipdef_ptr;
+    int              LinefeedCharacter;
+    unsigned short * Character[1];
+} Model_t;
+</PRE>
+      <P class=hang><CODE>Mesh_ptr</CODE> points to the start of the drawing 
+      commands</P>
+      <P class=hang><CODE>Vertices_ptr</CODE> points to the start of the vertex 
+      coordinates</P>
+      <P class=hang><CODE>NumVertices</CODE> is the number of coordinates 
+      <B>times 2</B>. The vertices defined here are the even-numbered ones. The 
+      odd numbered have their <CODE>x</CODE> coordinate negated.</P>
+      <P class=hang><CODE>Normals_ptr</CODE> points to Normals. These are used 
+      to determine if a certain surface is visible at the time of drawing. It 
+      may be 0 if the current model doesn't need visibility checking.</P>
+      <P class=hang><CODE>NumNormals</CODE> is the number of normals; also 
+      <B>times 2</B>, the same as with the vertices, but this gets an additional 
+      <B>plus 2</B>. If the number is "2", there are zero normals; if it is "4" 
+      there are actually 2 (and only one will appear in the code, the other gets 
+      flipped from this one).</P>
+      <P class=hang><CODE>Scale</CODE> should be applied to the coordinates by 
+      shifting them left with this number. The smallest objects have a scale of 
+      3 (pilot's head; clock in church), the largest possible value appears to 
+      be 16h (22), and with this value <CODE>Scale2</CODE> seems to kick in.</P>
+      <P class=hang><CODE>Scale2</CODE> ... actually, a guess. It is 0 for most 
+      "smallish" objects, and larger for stars, planets and (weird) the map 
+      locator crosses.</P>
+      <P class=hang><CODE>Radius</CODE> -- at some point in my life I was 
+      convinced this was the largest x coordinate, but checking against the 
+      coordinates this doesn't seem to be true. Ah well.</P>
+      <P class=hang><CODE>Primitives</CODE> has to do with the number of 
+      surfaces of this model, tho' I don't know where it is used...</P>
+      <P class=hang><CODE>DefaultColor</CODE> is an RGB triple defining the 
+      color of the dot drawn when an object is too far for real 3D. If the red 
+      component of the color (the lowermost byte) has bit 7 set (the entire word 
+      <CODE>and 0080h</CODE>) the object is "shiny" -- from far it will be 
+      displayed as a star. If not, it will be displayed as a single small dot. 
+      Stars, orbital stations and the crashed Thargoid have this bit set, 
+      planets and ships do not (except for the Thargoid Transporter, and the 
+      INRA Command Ship -- the latter displays a <I>black</I> star).</P>
+      <P class=hang><CODE>padding</CODE> is a single byte, usually zero, and 
+      pads the structure to words again.</P>
+      <P class=hang><CODE>field_28</CODE> is an unknown; usually set to a 
+      smallish value (about 10).</P>
+      <P class=hang><CODE>field_2C</CODE> is another unknown, usually set to 
+      some word value.</P>
+      <P class=hang><CODE>field_30</CODE> is yet <I>another</I> unknown. It may 
+      be set to the same value as <CODE>field_2C</CODE> and may also be -1 for 
+      reasons unknown.</P>
+      <P class=hang><CODE>Collision_ptr</CODE> is either zero, or points to a 
+      word containing the value '0', or to a small array of unknown values. I 
+      read somewhere its name was 'collision' but can't remember where (it might 
+      have been the Teddy sources).</P>
+      <P class=hang><CODE>Shipdef_ptr</CODE> is either zero (model is not a 
+      ship) or it points to a <CODE>ShipDef_t</CODE> structure. See below.</P>
+      <P class=hang><CODE>LinefeedCharacter</CODE> is the vertex number which 
+      transforms the current text cursor point one line down. Add to your 
+      original x,y and z-pos and hey! You're there. See the command 
+      <CODE>TEXT</CODE> for more.</P>
+      <P class=hang><CODE>Character[1]</CODE> is the first of an array of 
+      drawing commands for each individual character in the font. It is zero 
+      when not a font; if it <I>is</I> a font, any number of offsets may 
+      follow.</P>
+      <H2>Additional structures</H2>
+      <P>Structure <CODE>color_t</CODE> is a simple RGB triplet, containing true 
+      color values (0..255) for red, green and blue. This structure is used in a 
+      few places, sometimes with and sometimes without a padding byte following 
+      it. Where padding is required I've seperated it from this structure.</P>
+      <P><CODE>ShipDef_t</CODE> is -- by FFE standards -- a well-known 
+      structure. By altering this values, you can change just about every item 
+      of interest on your own ship! Beware, though: giving your Cobra a forward 
+      thrust of 100g will <I>also</I> make every pirate flying one deadly fast! 
+      (That'll teach you to cheat!)</P><PRE>typedef struct {
+    short ForwardThrust ;
+    short RearThrust ;
+    char  Gunmountings ;
+    char  FuelScoop ;
+    short Mass ;
+    short Capacity ;
+    short Price ;
+    short Scale ;
+    short Description ;
+    short Crew ;
+    short Missiles ;
+    char  Drive ;
+    char  IntegralDrive ;
+    short EliteBonus ;
+    short Camera1_x, Camera1_y, Camera2_x, Camera2_y ;
+    short frontMount_x, frontMount_y ;
+    short rearMount_x, rearMount_y ;
+    short topMount_x, topMount_y ;
+    short bottomMount_x, bottomMount_y ;
+} ShipDef_t ;
+</PRE>
+      <P class=hang><CODE>ForwardThrust</CODE> is a signed int. To convert it to 
+      gees divide by 545 (you may need a decimal point). Check out the specs for 
+      missiles: 60g!</P>
+      <P class=hang><CODE>RearThrust</CODE> is also a signed int, and usually a 
+      negative number (!). Also divide by 545 to get gees. Looking at the code 
+      it seems this same value is used -- negated to get it positive again... -- 
+      for the side thrusters.</P>
+      <P class=hang><CODE>Gunmountings</CODE> is... the number of gun mountings! 
+      Any number between 0 and 4; this is a hardcoded limit, so you can forget 
+      hacking in a Death Star with a thousand turrets.</P>
+      <P class=hang><CODE>FuelScoop</CODE> defines if the scoop can be mounted. 
+      Either 0 (nope) or 1 (yep).</P>
+      <P class=hang><CODE>Mass</CODE> is the "fully laden" value in the Shipyard 
+      screen. I seem to recall it is used to calculate fuel consumption 
+      (Confirm?).</P>
+      <P class=hang><CODE>Capacity</CODE> is the "capacity" value in the 
+      Shipyard screen.</P>
+      <P class=hang><CODE>Price</CODE> is the "new" price in kilocredits; 
+      mutiply with one thousand to get the price in the Shipyard screen.</P>
+      <P class=hang><CODE>Scale</CODE> relates to the size of the Scale bar in 
+      the Shipyard screen. It is only used there, not for collision testing or 
+      anything.</P>
+      <P class=hang><CODE>Description</CODE> is a number into the ubiquitous 
+      string pool. It is usally a number &gt;= 4000h ("Mine") but <I>zero</I> 
+      for one model: the Asteroid -- though why this one needs a ShipDef_t 
+      structure remains a mystery. Because it is a freely moving object? Because 
+      it needs a crew of 1?</P>
+      <P class=hang><CODE>Crew</CODE> -- the number of crew needed <I>including 
+      the captain</I>, so at least 1. This also includes the Asteroid and, for 
+      reasons not to be guessed at, the mines and missiles.</P>
+      <P class=hang><CODE>Missiles</CODE> -- Number of missile pods on this 
+      ship. Zero for the IP Shuttle, up to 8 for the Panther Clipper. This max 
+      is hardcoded in the games, so forget your Battlestar Galactica dream.</P>
+      <P class=hang><CODE>Drive</CODE> is the default "Drive Fitted". Values 
+      from 0 ("None") up to 14 ("Turner Class Drive").</P>
+      <P class=hang><CODE>IntegralDrive</CODE> -- If zero the drive is 
+      removable, Integral otherwise (Shuttle, Lifter, Imp Courier, etc.)</P>
+      <P class=hang><CODE>EliteBonus</CODE> gets added to your Elite score when 
+      you shoot one of this models down. Fighters, Missiles, the Escape pod, and 
+      the Lifter add 256 (the latter two probably never appear as agressive 
+      opponents...), freighters usually score low.</P>
+      <P class=hang><CODE>Camera1_x</CODE>, <CODE>y</CODE> and 
+      <CODE>Camera2_x</CODE>, <CODE>_y</CODE> are the camera positions for 
+      forward and backward view (though it <I>seems</I> from the code 
+      <CODE>Camera2_*</CODE> is not used, and cam pos 1 is mirrored).</P>
+      <P class=hang><CODE>frontMount_x</CODE> and <CODE>y</CODE>, and 
+      <CODE>rearMount_*</CODE>, <CODE>topMount_*</CODE> and 
+      <CODE>bottomMount_*</CODE>: these are the locations of the guns on the 3D 
+      model. The coordinates are not defined in the same scale as the ships 
+      themselves; instead of by <CODE>Scale</CODE> they should be multiplied by 
+      8 (?). Also, note the order: if there is only one gun mounting, it is 
+      taken to be the first -- front. The second is always back mounted, the 
+      next two top and bottom. It is possible the top and bottom coordinates are 
+      <CODE>y</CODE> and <CODE>z</CODE> coordinates -- the turrets appear always 
+      centred on the ship.</P>
+      <H2>Vertex and Normal definitions</H2>
+      <P>These are arrays of 6 bytes each. For <B>vertices</B>, the first byte 
+      determines the <B>type</B> of coordinate, then a padding byte follows, 
+      next are 3 signed characters for x,y and z, and closed with another 
+      padding byte.</P><PRE>typedef struct {
+	unsigned char type;
+	unsigned char pad1;
+	signed char x,y,z;
+	unsigned char pad2;
+} Vertex_t ;</PRE>
+      <P>As said above, this structure only defines the even-numbered vertices. 
+      Whereever you need an odd numbered vertex, <I>first</I> calculate the even 
+      one, <I>then</I> copy it for the odd vertex and negate the <CODE>x</CODE> 
+      value.</P>
+      <P>There are a lot of different types; I don't know the meaning of all of 
+      them. A few:</P>
+      <P><B>Type 1</B> is a normal vertex and defines a 3D point as usual 
+      everywhere in the rest of the world.</P>
+      <P><B>Type 5</B> is a negate-all vertex. The z member is another vertex 
+      number; <I>this</I> one gets the same x, y and z coordinates, all negated. 
+      The odd-numbered vertex has its <CODE>x</CODE> coordinate negated as 
+      usual.</P>
+      <P><B>Type 7</B> is a weird one, it is used when this point should ramble 
+      around at random. Experimenting with it, it seems the x value here is the 
+      number of the actual vertex (taken from the same list) serving as base, 
+      and the z value is some max amount of random movement.</P>
+      <P><B>Type 11</B> is another pretty weird one. Its y and z values are 
+      taken as vertex numbers, and <I>this</I> point should be exactly inbetween 
+      those. The x member appears to be (mostly) 1, and is not used.</P>
+      <P><B>Type 19</B> uses yet <I>another</I> feature: external variables! The 
+      variable number is in the <CODE>x</CODE> value, and its value should be 
+      interpolated between the vertices indexed by the <CODE>y</CODE> and 
+      <CODE>z</CODE> values. I take it to be something as</P><PRE>; As seen in the Adder model:
+#52/34h:  19, -63, 46, 50   // Interpolate(50,46, LOCAL[1])</PRE>
+      <P class=hang>where <CODE>52/34h</CODE> is this vertex number;</P>
+      <P class=hang><CODE>19</CODE> is the type</P>
+      <P class=hang><CODE>-63</CODE> is the variable number (C1h in hex);</P>
+      <P class=hang><CODE>45</CODE> is the first coordinate to interpolate 
+      between;</P>
+      <P class=hang><CODE>50</CODE> is the other coordinate.</P>
+      <P>The C0h prefix means "use local variable"; what remains is "1", so, use 
+      the value of local variable #1 (whatever that is at the moment). I'm not 
+      sure on the max value for the variable and whether they can have a sign; 
+      my wireframe model display program is broken (again!) so I can't try it 
+      out.</P>
+      <P>Actual coordinate values can be defined recursively, where, for 
+      example, point A is halfway between point B, which is calculated from a 
+      variable, and point C, which is fixed. When drawing, you'll need to 
+      calculate them one by one. Also note that for every <I>odd</I> vertex 
+      number, you'll need to calculate the <I>even</I> member first and then 
+      apply the negative x thingy.</P>
+      <P>&nbsp;</P>
+      <P>The <B>Normals</B> also have a "type" value -- this is, in fact, a 
+      vertex coordinate, which should be used as the reference point for 
+      visibility checking. I <I>got</I> it working somehow by rotating the 
+      normal and this reference vertex, and then check if their scalar(?) value 
+      &gt; 0 ... sort of. If you take any normal x,y,z and calculate 
+      <CODE>SQRT(x<SUP>2</SUP> + y<SUP>2</SUP> + z<SUP>2</SUP>)</CODE> you 
+      always get something near 127. Odd-numbered normals are mirrored along 
+      their x-axis, just like the vertices.</P>
+      <P>The additional <B>+2</B> is because "no normal needed" is encoded in 
+      the objects as the number '0'. If a normal is needed, its number goes up 
+      from 2 (and you should take <U>normal number minus 2</U> from the array 
+      for its values).</P>
+      <H2>Variables</H2>
+      <P>The variables are either 16-bit <CODE>word</CODE>s from the Global pool 
+      (variables defined in the game itself, such as "Display grid lines"; also, 
+      things like "Do you have a Scanner?"; "Which missile is in mounting #2?"; 
+      "How much throttle for the rear thruster?") or 32-bit <CODE>long 
+      words</CODE> from a small local pool. This local pool seems to get defined 
+      once for each separate object-to-be-drawn, and its contents can be 
+      adjusted in the drawing code. It is used for intermediate calculation 
+      results and for correct positioning of sub-objects (which don't get their 
+      own local pool [confirm that? -- it seems logical, though]).</P>
+      <P>If a variable is needed somewhere, you must inspect the bits to see 
+      where to get its value from (or store to). The def bits are the two 
+      highest ones, so masking with C0h there are four possibilities:</P><PRE>    00h: immediate value in range 0..63
+    40h: large immediate value. Shift left 10 bits for anything from 0 to &amp;FC00
+         (in steps of &amp;400).
+    80h: a value from the Global pool, numbered 0..63. Variable #0 is the TIME,
+         as can be seen in some animated objects
+    C0h: local variable, numbered 0..6. Should be initialized somewhere before being used!
+</PRE>
+      <P>The game uses local variables 0..6 only. The results of math 
+      calculations are <I>always</I> put into the local pool (oddly, the code 
+      doesn't seem to require the <CODE>C</CODE> prefix for the destination 
+      variable, although the game always uses it).</P>
+      <P>The global variable list gets filled for each <I>model instance</I>. A 
+      model instance is a single unique occurrence of any model in the current 
+      game; if you see three Vipers on your screen, each one is a single 
+      instance of the Viper model. This can be seen in the (far from complete!) 
+      list of global variables, where you can find the unique id of each 
+      model:</P><PRE> 0: Game Time/1024
+ 1: Landing State, Flags
+ 2: Unique_Id, low word
+ 3: Unique_Id, high word
+ 6: Game Time, low word
+ 7: Game Time, high word
+ 8: Game Date, low word
+ 9: Game Date, high word
+10: Planet Orbital Radius
+...
+13: Current (left?) side thrust
+14: Current (right?) side thrust
+15: Current Main thrust
+...
+22: Equipment bytes 0 and 1 (bits are set for equipment)
+23: Equipment bytes 2 and 3
+27: Front and Rear Gun types
+28: Top and Bottom Gun types
+29: Missile 0 and 1 types
+30: Missile 2 and 3 types
+31: Missile 4 and 5 types
+32: Missile 6 and 7 types
+33: Missile 8 and 9 types
+34: Hull Mass
+35: Number of Shields</PRE>
+      <P>Variable number 0 is the game time divided by 1024. The game runs 
+      internally on 49710 ticks per second; this is sort-of conversion to get a 
+      50 fps timer resolution.</P>
+      <P>Some variables can have different meanings depending on what model they 
+      are for.</P>
+      <P>A few graphic commands use a variant of the variable retrieval routine, 
+      where either an immediate value or a variable is needed:</P><PRE>    00h and 40h: immediate value of ((Value &amp; 0x7f)&lt;&lt;9)+((Value &gt;&gt; 7) &amp; 0x1ff)
+    80h: Global one as above
+    C0h: Local one as above
+</PRE>
+      <H2>Command codes</H2>
+      <P>The structure member <CODE>Mesh_ptr</CODE> points to an array of words, 
+      which draw the model itself. There are 32 different commands; the command 
+      number is in the lower 5 bits of the low byte of the word. The remaining 
+      bits may define additional data.</P>
+      <P>The <B>byte order</B> for these words is Intel-mode; I stuck to it when 
+      I realized it was a complete mess. There are cases where high and low 
+      bytes should be swapped, and others where they shouldn't.</P>
+      <P>I'll try to give a relevant example for each command, extracted using 
+      my proggie <A class=internal 
+      href="http://www.jongware.com/binaries/showmesh.zip">ShowMesh</A>. If 
+      you'd like to see <I>all</I> definitions-as-I-understand-them, download 
+      and run it. It requires to be in the same directory as an original 
+      <B>firstenc.dat</B> (size 2,101,248 bytes) as provided in, amongst others, 
+      JJFFE, and it is a console program, meaning you have to read very fast or 
+      redirect its output into a file. A number of text editors can run an 
+      external program and capture its output automatically; Jongware's personal 
+      recommendation is <A class=extern 
+      href="http://www.textpad.com/">TextPad</A>. If you don't have one of 
+      those, redirect the output to a file like this: in a command window, type 
+      <CODE>showmesh &gt; output.txt</CODE> and hit Enter; 
+      <CODE>output.txt</CODE> can be viewed with any program which loads plain 
+      text.</P>
+      <P>The first block after the command name are the parameters 
+      <B>word-wise</B>; if a word should be splitted into bytes, they are shown 
+      with a vertical bar inbetween, high byte on the left side, low byte on the 
+      right.</P>
+      <P>The example code dump is in hex, its comments are in decimal. In the 
+      explanations it should be clear from the context where I switch between 
+      those!</P>
+      <H3>0 = End</H3><PRE>0000</PRE>
+      <P>Example: in just about every model.</P><PRE>0000 ; End</PRE>
+      <P>In model #0 (Vector Font):</P><PRE>0720 ; End</PRE>
+      <P>End. Stop. Halt. Do No More.</P>
+      <P>Usually the entire word is 0000h, but in the vector fonts each separate 
+      character ends with some value in it. This value (shifted right by 
+      <U>6</U>) points to a vertex in the font model. This vertex is used 
+      <I>only</I> to transform the text cursor position to the right -- e.g., 
+      transform this vertex, then add its x, y, and z to your current text 
+      position. That's the <I>next</I> character's position. If a character 
+      value is less than 32 (space) you should insert a linefeed -- its 
+      transformation value is the vertex referenced by the 
+      <CODE>LinefeedCharacter</CODE> field in the model definition.</P>
+      <P>Every individual model should end with the <CODE>End</CODE> command. If 
+      a sub-object is ended, you should continue drawing its parent.</P>
+      <H3>1 = Ball</H3><PRE>0001 MATERIAL RADIUS VERTEX|NORMAL</PRE>A simple example first; the 
+      common mine, if it is far away: <PRE>0001 0666 8025 2200 ; Ball(RGB(6,6,6), Radius(19200), Vertex(34), Normal(NORMAL_NONE))</PRE>
+      <BLOCKQUOTE><CODE>NORMAL_NONE</CODE> in the comment is my own predefined 
+        value for normal number 0 and means, well, no normal, so don't bother 
+        about doing any math. Written out in full in my comments as a reminder 
+        that there is no normal.</BLOCKQUOTE>In the Escape Capsule (its big yellow 
+      light): <PRE>0001 2EE0 E02E 0482 ; Ball(UNLIT | COLOR_YELLOW, Radius(24000), Vertex(4), Normal(2 | LIGHT))</PRE>
+      <P align=center><IMG 
+      src="The Frontier Galaxy VII.files/model_ball.gif"></P>
+      <P>The ball is coded to use normal #2 here, but by looking at the code I 
+      understand the normal value isn't used at all... The bit <CODE>80h</CODE> 
+      in the normal defines a <CODE>LIGHT</CODE>, which should be drawn 
+      starry-like when viewed from afar, and in two colors when viewed 
+      a-near.</P>
+      <H3>2 = Line</H3><PRE>0002 MATERIAL STARTPOINT|ENDPOINT</PRE>
+      <P>An easy one. Check this out (half of the graphics font '+' when viewed 
+      from afar; the other half looks the same but uses other vertices): <PRE>0002 3000 070D ; Line(LOCALCOLOUR | UNLIT, 13,7)</PRE>
+      <P>Don't ask about the <CODE>MATERIAL</CODE> parameter and the 
+      corresponding color comment; this will be explained later.</P>
+      <P>A line can always be seen from every angle so it does not use a Normal 
+      (that would be Abnormal).</P>
+      <H3>3 = Triangle</H3><PRE>0003 MATERIAL POINT1|POINT2 POINT3|NORMAL</PRE>
+      <P>Also, an easy one. A single triangle from the StowMaster Fighter looks 
+      like this:</P><PRE>0003 4034 0809 0204 ; Triangle(Texture_034h, 8,9,2, Normal(4))</PRE>
+      <P>It's a fair bet you can optimize your drawing code if you first 
+      calculate the normal and check if the triangle is visible. If so, fetch 
+      the coordinates for the vertices (including properly re-calculating them, 
+      and in the case of coordinate number 9 here, negating its z), transform 
+      those to the screen and blit.</P>
+      <H3>4 = Square</H3><PRE>0004 MATERIAL POINT3|POINT1 POINT2|POINT4 0|NORMAL</PRE>
+      <P>It'll get complicated later on; this one is ee-zee too, apart from the 
+      vertex order. See this snippet (top [or bottom] from the Lifter):</P><PRE>0004 4016 0605 0704 0002 ; Square(Texture_016h, 5,7,6,4, Normal(2))</PRE>
+      <P>The zero aside the normal is not used. The vertex order is 
+      "heuristically derived", that means "I guessed it". If you get a strange x 
+      shape instead of a square swap coordinates until it works OK.</P>
+      <H3>5 = Polygon</H3><PRE>0005 MATERIAL NBYTES|NORMAL [POLYCMD]+ 0000</PRE>
+      <P>Previous commands to easy for you? This one is a even-odd filled 
+      polygon command, including holes and curves, and may intersect itself 
+      (hence the "even-odd"). It took me a fair bit of hacking before I got to 
+      grips with it; still haven't figgered out all possibilities.</P>
+      <P><CODE>NBYTES</CODE> is the number of bytes that follow the 6 byte 
+      header, including the double-zero at the end. <CODE>POLYCMD</CODE> words 
+      are actually <I>bytes</I>, where every first byte defines the type of line 
+      and is followed by a fixed number of vertex numbers per each type.</P>
+      <BLOCKQUOTE><I>First</I> is first in reading order in this hex dump! 
+        It's the first byte of an Intel-type word, so it is actually the 
+        <I>second</I> byte in the original code (and its first parameter byte is 
+        the <I>first</I> byte of the pair).</BLOCKQUOTE>
+      <P>I'll give examples of each sub-type since it is probably (somewhat) 
+      easier to understand that way.</P>
+      <P>&nbsp;</P>
+      <P>Object #312:Six-sided Landing pad:</P>
+      <P align=center><IMG 
+      src="The Frontier Galaxy VII.files/model_poly1.gif"></P><PRE>0005 2444 0E00 0400 0002 0604 0605 0603 0601 0000
+; Poly(UNLIT | COLOR_GRAY, Normal(NORMAL_NONE),
+	StartLine(0,2),
+	ContinueLine(4),
+	ContinueLine(5),
+	ContinueLine(3),
+	ContinueLine(1),
+	EndPoly() )</PRE>
+      <P>Following the command code <CODE>0005</CODE> itself and the required 
+      material <CODE>2444</CODE>, the first word is <CODE>0E00</CODE>: there are 
+      14 additional bytes (count'em), and this object uses no normal (if you see 
+      the landing pad from the bottom up you descended just a tad too fast).</P>
+      <P>The first byte is a <CODE>04</CODE>, meaning it is a <B>Start Line</B>. 
+      It has two additional bytes: the start coordinate (which is in the same 
+      word, the 0) and the end coordinate (next word, low byte: 2). The high 
+      byte of the second word is <I>not used</I>, and should be skipped.</P>
+      <P>The next byte is <CODE>6</CODE>, meaning a <B>Continue Line</B>. It has 
+      one additional byte, obviously the next coordinate.</P>
+      <P>The next bytes are again <CODE>6s</CODE>, drawing the next three lines. 
+      Now you have five sides of the hexagon defined.</P>
+      <P>The last command, <CODE>0000</CODE> ends the polygon. Because the last 
+      line doesn't end at the starting point you'll have to close it yourself; 
+      always do so with a straight line. Fill with a nice shade of gray and 
+      you're done.</P>
+      <P>&nbsp;</P>
+      <P>Object #35:Gyr attack fighter:</P><PRE>0005 0353 0C02 020A 0A0C 0D0B 0617 0616 0000
+; Poly(RGB(3,5,3), Normal(2),
+	StartCurve(10,12,13,11),
+	ContinueLine(23),
+	ContinueLine(22),
+	EndPoly() )</PRE>
+      <P>This one starts at the fourth word with a <CODE>02</CODE>: a <B>Start 
+      Curve</B>, from coordinate 10 to 11 and using coordinates 12 and 13 as 
+      control points. For reasons unknown, the coordinate 10 is repeated in the 
+      first word; the next word defines the start and end, followed by the 
+      control points.</P>
+      <P>&nbsp;</P>
+      <P>Object #34:Viper Defence MkII:</P><PRE>0005 4028 0E0F 0203 030F 0D07 0809 1715 0603 0000
+; Poly(Texture_028h, Normal(15),
+	StartCurve(3,15,13,7),
+	ContinueCurve(9,23,21),
+	ContinueLine(3),
+	EndPoly() )</PRE>
+      <P align=center><IMG 
+      src="The Frontier Galaxy VII.files/model_poly3.gif"><BR><SMALL>This ship 
+      has so many vertices that the model gets obscured by the numbers, so they 
+      are not shown here.</SMALL></P>
+      <P>This one also starts with a curve (the words <CODE>0203 030F 
+      0D07</CODE>), but the next byte is <CODE>08</CODE>, for a <B>Continue 
+      Curve</B>, where the first point is the last one from the previous 
+      command. This means an additional three points are needed: the end point 
+      is the number <CODE>9</CODE> in the same word, the next word 
+      <CODE>1715</CODE> defines the two control points.</P>
+      <P>The next line is a straight one, from the last point of the curve to 
+      coordinate number 3. Since this closes the figure nicely there is no close 
+      line needed.</P>
+      <P>&nbsp;</P>
+      <P>So far every polygon started with a <B>Start</B> type and continued 
+      with <B>continue</B> types. It is possible to make intersecting figures 
+      with these (on the side of the "2001" orbiting station there are gray 
+      markings which do just this); it is also possible to forcibly end a 
+      segment and start a new set of lines, creating a hole.</P><PRE>0005 3000 1800 0228 2826 2729 0809 0828 0A00 020E 0E0A 0B0F 0811 100E 0000
+; Poly(LOCALCOLOUR | UNLIT, Normal(NORMAL_NONE),
+	StartCurve(40,38,39,41),
+	ContinueCurve(9,8,40),
+	EndSegment(),
+	StartCurve(14,10,11,15),
+	ContinueCurve(17,16,14),
+	EndPoly() )</PRE>
+      <P>Here we have the letter 'O' in the vector font (object #0), which 
+      should have a big hole in the middle. Ah, there it is! Command 
+      <CODE>0A</CODE> (with a zero in its low byte) <B>ends the current 
+      segment</B>; the next segment should start with either StartLine or 
+      StartCurve (fortunately, it does so in every polygon where it is 
+used).</P>
+      <P>Easy to decode, hard to draw. To draw the big texts in my map program 
+      FFEStarSys I tried several different polyfill routines but found none 
+      which could handle both curves and holes with grace and speed. I resorted 
+      to cheating: I converted the entire vector font to EPS images and from 
+      that to a real TrueType font, and use FreeType to display it.</P>
+      <P>&nbsp;</P>
+      <P>The final subtype is to add a <B>Circle</B> to the polygon, using 
+      <CODE>0C</CODE> and apparently followed by a center vertex, a normal, and 
+      a radius. The clock on the tower in Object #369:Church is defined as a 
+      circle:</P><PRE>0005 0888 0602 0C12 0902 0000
+; Poly(COLOR_WHITE, Normal(2),
+	Circle(Vertex(18),Normal(2),Radius(9)),
+	EndPoly() )</PRE>
+      <P>... on each of the four sides, but I have no real clue on how to work 
+      with it! I can't get anything useful on my screen in the right 
+      orientation.</P>
+      <P>To make it just that more complicated, the circle command can be used 
+      more than once in a single polygon command:</P>
+      <P>Object #61:Boa Freighter</P><PRE>0005 20EE 0E0A 0C0E 030A 0C0F 030A 0C10 030A 0000
+; Poly(UNLIT | COLOR_CYAN, Normal(10),
+	Circle(Vertex(14),Normal(10),Radius(3)),
+	Circle(Vertex(15),Normal(10),Radius(3)),
+	Circle(Vertex(16),Normal(10),Radius(3)),
+	EndPoly() )</PRE>
+      <P>... draws three circles at once. I've seen no combination of "regular" 
+      polygons <I>and</I> circles in one single polygon, so this one may be a 
+      quick hack courtesy of the original coders...</P>
+      <P>&nbsp;</P>
+      <P>It is entirely possible to define a <I>3-dimensional</I> shape with a 
+      single polygon command; the Imperial Courier does this. But since there is 
+      a single Normal defined for the entire plane you can get unexpected 
+      results when you rotate such an object: the polygon is sometimes drawn 
+      when it shouldn't and sometimes not when it should. See also the Imp 
+      Courier, where its sides appear and disappear just before they should. A 
+      new version really needs Bezier patches for this!</P>
+      <H3>6 = TRANSFORMATION?</H3><PRE>XXX6 [ADDITIONAL]*</PRE>
+      <P>Used a lot. It sets or resets the active transformation matrix. Very 
+      complicated stuff. Maybe I'll tell you about it later...</P>
+      <P>There may be data in the 11 unused bits (shown as Xes above) and some 
+      additional words may follow, which clearly belong to the same command but 
+      are also unknown. Looking at the code, I've deducted that the remaining 
+      bits define how much bytes there are, in this way:</P><PRE>switch (originalCmd &gt;&gt; 13)
+{
+    case 1: Skip bytes until you see a FFh, then read another word
+    case 2: No additional bytes
+    case 3: Skip bytes until you see a FFh, then read another word
+    case 7: if (originalCmd &gt;&gt; 5) is one of
+        2045: two additional bytes
+        2046: none
+        2047: none
+        default: two additional bytes
+    default: no additional bytes
+}</PRE>
+      <P>... and I'm not even sure if I'm right ...</P>
+      <P>Wanna see examples? All taken from the original code!</P><PRE>0006 ; Cmd 6 [nop]</PRE><PRE>4746 ; Cmd 6 [2]</PRE><PRE>FFE6 ; Cmd 6 [7]: 2047</PRE><PRE>6FC6 FF26 002C ; Cmd 6 [3]</PRE><PRE>E406 FCE0 ; Cmd 6 [7]: 1824</PRE><PRE>E8E6 FFE3 ; Cmd 6 [7]: 1863</PRE>
+      <P>... where the bracketed number is my sub-classification, and the 
+      purpose of the number (derived from its parameters) is unknown.</P>
+      <H3>7 = Mirror Triangle</H3><PRE>0007 MATERIAL POINT1|POINT2 POINT3|NORMAL</PRE>
+      <P>Two triangles for the price of one in the Sidewinder:</P><PRE>0007 4027 0002 0406
+        ; Triangle(Texture_027h, 0,2,4, Normal(6))
+        ; Triangle(Texture_027h, 1,3,5, Normal(7))</PRE>
+      <P>The first triangle is defined the same way as number 3, the normal 
+      triangle; for the second one, use <I>mirror</I> coordinates and normal. 
+      This does <B>not</B> mean 'take the next one' (coordinate number 1 becomes 
+      #2) but instead flip the lowest bit (mirror of number 1 is number 0 and 
+      vice versa). The same holds for the normal.</P>
+      <H3>8 = Mirror Square</H3><PRE>0008 MATERIAL POINT1|POINT2 POINT3|POINT4 0|NORMAL</PRE>
+      <P>Two squares, also for the price of one, in the generic missile:</P><PRE>0008 1000 1604 1802 0008
+        ; Square(LOCALCOLOUR, 22,4,24,2, Normal(8))
+        ; Square(LOCALCOLOUR, 23,5,25,3, Normal(9))</PRE>
+      <P>Pretty much the same as the mirror triangle.</P>
+      <H3>9 = Pine</H3><PRE>0009 MATERIAL STARTPOINT|ENDPOINT XXXX</PRE>
+      <P>Should be named 'ellipsoid' but I like the name 'pine' coz it's used 
+      for a patch of pine trees. The <CODE>XXXX</CODE> may define the width; I'm 
+      not sure how to draw an ellipsoid so can't tell how it works out. If you 
+      take a close look to the texture mapped engine flames, you can see it's 
+      probably drawn as two intersecting bezier curves, with an additional 
+      circle thrown in if you look straight on it.</P>
+      <P>This pair of jet flames comes from the Eagle LR fighter:</P><PRE>0009 20EE 302A 04B0 ; Pine(UNLIT | COLOR_CYAN, ..)
+0009 20EE 312B 04B0 ; Pine(UNLIT | COLOR_CYAN, ..)</PRE>
+      <P>A side note: the pine trees aren't texture-mapped, but jet flames are. 
+      Pretty weird, 'cause their color is usually defined to be plain cyan.</P>
+      <H3>10 (0Ah) = Text</H3><PRE>000A MATERIAL FONT_SCALE|NORMAL ORIENTATION|VERTEX TEXTID</PRE>
+      <P>The byte <CODE>FONT_SCALE</CODE> is composed of 4 high bits 
+      <CODE>FONT</CODE> and 4 low bits <CODE>SCALE</CODE>. <CODE>FONT</CODE> is 
+      one of 0 (Vector font), 1 (Graphics font: windows and doors), or 2 
+      (Times-like bitmap font) -- these are the actual object numbers of the 
+      font objects in the main list. <CODE>SCALE</CODE> is a number between 1 
+      and 15, where "1" is very small, as in the "RADIATION PERSISTS EVEN IF 
+      ENGINES HAVE COOLED" poster on the back of the Cobra Mk III [*], and 15 is 
+      extremely large, as in the station name near the black&amp;white domes -- 
+      large enough to land on.</P>
+      <BLOCKQUOTE>[*] Did anyone ever notice that? In the game when zooming in 
+        you can barely see <I>something</I> is there, but I remember a close-up 
+        in a games magazine where it was big enough to read! Imagine my surprise 
+        when I found <I>it is actually there</I>. This Is Not A Red 
+      Herring!</BLOCKQUOTE>
+      <P>The <CODE>VERTEX</CODE> defines the left starting point for the text 
+      string; it goes to the right from there. Where text seems centred it is 
+      just positioned carefully. The <CODE>ORIENTATION</CODE> value is the 
+      same-ish as used elsewhere.</P>
+      <BLOCKQUOTE>There is something odd about the orientations. Transforming 
+        the matrices to cater for rotation and mirroring toggles a single bit 
+        flag on and off, which is only checked in the DrawText routine. This 
+        flag determines if the current total of rotations would yield the text 
+        <I>upside down</I>, and adjusts the matrix accordingly. The problem is, 
+        every time I change just about <I>anything</I> in the relevant code, 
+        <I>some</I> of my texts are upside-down or mirrored, where others stay 
+        in the correct position! </BLOCKQUOTE>
+      <P>The <CODE>TEXTID</CODE> is a value in... the string pool! Seen as 
+      constants such as 406Fh ("Rockforth Legal Academy" &lt;grin&gt; -- the 
+      <I>former</I> academy, that is), 407Ch ("RIP"), 9C00h ("GAME OVER"), and 
+      40C6h ("FIRST ENCOUNTERS"). It may also contain variable texts: 9C01h 
+      ("COMMANDER \xff\x30\x16 DIED \xFF\x30\x41", where the 0xff's introduce 
+      even more variables, to be expanded <I>before</I> this string is drawn) 
+      and 3016h (usually just a ship identifier code).</P>
+      <P>The Graphics font consists of windows and doors; they point in the code 
+      to text strings like "0J" and more of this ilk, and are pasted onto the 
+      sides of buildings.</P>
+      <P>As an example: the identifier on the side of the Interplanetary 
+      Shuttle:</P><PRE>000A 0000 0607 4612 3016
+    ; Text(COLOR_BLACK, Normal(7), Vertex(18), Scale(6), VECTOR_FONT, 3016h)</PRE>
+      <P>... where <CODE>3016h</CODE> is the ship identifier; and the text on a 
+      jettisoned cargo box:</P><PRE>000A 0888 0406 4218 3022
+    ; Text(COLOR_WHITE, Normal(6), Vertex(24), Scale(4), VECTOR_FONT, 3022h)</PRE>
+      <P>... where <CODE>3022h</CODE> presumably holds the "current contents" 
+      string.</P>
+      <H3>11 (0Bh) = Skip If Not Visible/Skip If Further Than</H3><PRE><SPAN class=func>ddd</SPAN>B DISTANCE_OR_NORMAL</PRE>
+      <P>Two commands in one. If <CODE>DISTANCE_OR_NORMAL</CODE> has bit 15 
+      cleared (&amp; 8000h equals 0), the command is this:</P><PRE><SPAN class=func>ddd</SPAN>B DISTANCE</PRE>
+      <P>(where, obviously, <CODE>DISTANCE</CODE> should be less than 32768, or 
+      8000h in hex).</P>
+      <P>If the bit is set the command is</P><PRE><SPAN class=func>ddd</SPAN>B 80h | NORMAL</PRE>
+      <P>If the <CODE>NORMAL</CODE> is <I>not</I> visible, or if the current 
+      <CODE>DISTANCE</CODE> to the model (in whatever units you might be 
+      working...) is further away than the given one, the <CODE 
+      class=func>ddd</CODE> byte-and-a-half is the number of bytes that should 
+      be skipped right after this command and its parameter word[*]. A special 
+      case is distance "000"; this is the same as <CODE>END</CODE>.</P>
+      <BLOCKQUOTE>[*] The skip bits <I>used</I> are the 11 top bits. Shifting 
+        the command right by 5 (to get rid of the command code) yields the 
+        number of <I>words</I> to skip, but since every command code and its 
+        parameters are always words I used an easy explanation. There are 
+        another 2 commands which use this same mechanism; <I>their</I> codes 
+        have a '1' in the upper nibble, so using this same text there will not 
+        work.</BLOCKQUOTE>
+      <P>Example: in the vector font, the comma won't be displayed if it gets 
+      very small:</P><PRE>       008B 0258 ; if (DISTANCE &gt; 600) goto L137
+       0003 3000 000A 0C00 ; Triangle(LOCALCOLOUR | UNLIT, 0,10,12, Normal(NORMAL_NONE))
+L137:  0620 ; End</PRE>
+      <P>(This <I>could</I> have been coded as <CODE><B>000B</B> 0258</CODE>, 
+      but in the fonts <CODE>END</CODE> apparently holds an important value, so 
+      the longer route is taken.)</P>
+      <P>In the generic missile, first the body of the missile gets drawn using 
+      a few rectangles. Then:</P><PRE>000B 0248 ; if (DISTANCE &gt; 584) end</PRE>
+      <P>..and the tail fins are drawn. After that:</P><PRE>000B 01A4 ; if (DISTANCE &gt; 420) end</PRE>
+      <P>.. and the fins at the warhead are drawn. The further away the missile 
+      is, the less is drawn!</P>
+      <P>The <B>Not Visible</B> command works quite the same. A check is made if 
+      the Normal is visible; if not, bytes are skipped.</P>
+      <P>A common example, taken here from the Sidewinder, is whether to display 
+      sub-objects:</P><PRE>       004B 8002 ; if !Visible(Normal(2)) goto L161
+       188E 4012 ; Subobject(196:ECM Antenna, Vertex(18), Orientation(40h))
+L161:  ...(more code)</PRE>
+      <P>Normal number 2 apparently points upwards, and if you can't see the top 
+      of the Sidewinder there is no point in drawing the ECM antenna there.</P>
+      <H3>12 (0Ch) = Skip If Visible/Skip If Closer Than</H3><PRE><SPAN class=func>ddd</SPAN>C DISTANCE_OR_NORMAL</PRE>
+      <P>Again, two commands in one. If <CODE>DISTANCE_OR_NORMAL</CODE> has bit 
+      15 cleared (&amp; 8000h equals 0), the command is this:</P><PRE><SPAN class=func>ddd</SPAN>C DISTANCE</PRE>
+      <P>(where, again (and hopefully <I>again</I> obvious), 
+      <CODE>DISTANCE</CODE> should be less than 32768, or 8000h in hex).</P>
+      <P>If the bit is set the command is</P><PRE><SPAN class=func>ddd</SPAN>C 80h | NORMAL</PRE>
+      <P>Pretty much the same as the previous command, just the other way 
+      around. I'll suffice with a few examples.</P>
+      <P>Again one from the generic missile (see also #11 above). It actually 
+      <I>starts</I> with these commands: <PRE>008C 0334 ; if (DISTANCE &lt; 820) goto L37
+0002 1000 1800 ; Line(LOCALCOLOUR, 0,24)
+0000 ; End</PRE>
+      <P>Meaning, if you are up close to this missile, fill in the details (and 
+      hope it is your <I>own</I> missile); otherwise, draw just a tiny line.</P>
+      <P>And a snippet of the Imp Explorer:</P><PRE>      02AC 8018 ; if Visible(Normal(24)) goto L493
+      0004 4034 3632 3830 002A ; Square(Texture_034h, 50,56,54,48, Normal(42))
+      0003 4034 3034 3E36 ; Triangle(Texture_034h, 48,52,62, Normal(54))
+      0003 4034 3234 3838 ; Triangle(Texture_034h, 50,52,56, Normal(56))
+      0003 4034 3438 3E3A ; Triangle(Texture_034h, 52,56,62, Normal(58))
+      0003 4034 3036 3E3C ; Triangle(Texture_034h, 48,54,62, Normal(60))
+L493: ...(more code)</PRE>
+      <P>... where, apparently, normal #24 points in the <I>other</I> direction 
+      -- the one you're <I>not</I> facing.</P>
+      <H3>13 (0Dh) and 29 (1Dh) = Math</H3><PRE>DEST|(OPERAND|0Dh) SOURCE1|SOURCE2</PRE>
+      <P>Looks complicated, doesn't it? <CODE>DEST</CODE>, in the high byte of 
+      the command, is a <CODE>variable</CODE>, either a global or a local one. 
+      The low byte of the command has an operand type in the higher four bits, 
+      and the lower four bits are always 0Dh. This command is grouped with 
+      command 1Dh so the bit in the upper nibble can be used in the operand 
+      type.</P>
+      <P><CODE>SOURCE1</CODE> and <CODE>SOURCE2</CODE> are the two sources, and 
+      can be a variable or a constant.</P>
+      <P>The possible operands and their results are the following:</P><PRE> 0: SOURCE1 + SOURCE2
+ 1: SOURCE1 - SOURCE2
+ 2: SOURCE1 * SOURCE2
+ 3: SOURCE1 / SOURCE2
+ 4: SOURCE1 &gt;&gt; SOURCE2 ; Logical shift
+ 5: SOURCE1 &lt;&lt; SOURCE2
+ 6: MAX(SOURCE1, SOURCE2) ; Not entirely sure...
+ 7: MIN(SOURCE1, SOURCE2) ; Ditto...
+ 8: SOURCE1 * 10000h / SOURCE2
+ 9: SOURCE1 SAR SOURCE2 ; Arithmetic shift
+10: SOURCE1 <I>unknown_op</I> SOURCE2 ; ...
+11: SOURCE1 if SOURCE1 is less than SOURCE2, 0 otherwise ; Not sure...
+12: SOURCE1 if SOURCE1 is greater than SOURCE2, 0 otherwise ; Not sure...
+13: SOURCE1 * SIN(SOURCE2)
+14: SOURCE1 * COS(SOURCE2)
+15: SOURCE1 AND SOURCE2 ; Bitwise AND</PRE>
+      <P>I'm quite unsure about all of this!</P>
+      <P>The input for the <CODE>SIN</CODE> and <CODE>COS</CODE> are probably in 
+      the range 0...16383, there is a sin/cos table of that size somewhere in 
+      the code. And the rest... Don't take my word for it.</P>
+      <P>The Skeet Cruiser has a big humping thing on the top; it is moved 
+      using</P><PRE>C35D 0A80 ; LOCAL[3] = TIME &lt;&lt; 10
+C3DD C35F ; LOCAL[3] = 31744 * SIN(LOCAL[3])
+C31D 5FC3 ; LOCAL[3] = LOCAL[3] - 31744</PRE>
+      <P>where <CODE>TIME</CODE> is Global Variable #0 and <CODE>LOCAL[3]</CODE> 
+      is used to interpolate between the top and bottom coordinates of the big 
+      thingy. The Turner Class uses the same code to wiggle its tail.</P>
+      <P>If your ship has a scanner fitted, it is rotated using</P><PRE>C35D 0980 ; LOCAL[3] = TIME &lt;&lt; 9
+103C 00C3 ; Rotate -- default 00C3
+18CE 060E ; Subobject(198:Scanner antenna, Vertex(14), Orientation(06h))</PRE>
+      <P>(but see the <B>Rotate</B> command for second thoughts on that)</P>
+      <H3>14 (0Eh) = Subobject</H3><PRE><SPAN class=func>obj</SPAN>E ORIENTATION|VERTEX ; Bit 7 of ORIENTATION clear</PRE><PRE><SPAN class=func>obj</SPAN>E ORIENTATION|VERTEX VERTEX2|VERTEX1 VERTEX4|VERTEX3 ; Bit 7 of ORIENTATION set</PRE>
+      <P>This is a sub-object -- it's a regular object from elsewhere in the 
+      list, with the number in the high 11 bits in <CODE class=func>obj</CODE>. 
+      It should be drawn with the origin on <CODE>VERTEX</CODE>.</P>
+      <P>If bit 6 (<CODE>40h</CODE>) of <CODE>ORIENTATION</CODE> is set, the 
+      light position should be updated(?). The remaining 6 bits define three 
+      rotations and three mirror operations. Unfortunately, this orientation 
+      defies human understanding (as I know it), so my missiles and scanners 
+      tend to get drawn upside down or pointing the wrong direction.</P>
+      <BLOCKQUOTE>There is also the special case of orientation 
+        <CODE>06</CODE>. I haven't checked the maths, but apparently this 
+        combination is worthless. Instead, if the value <CODE>06</CODE> is used, 
+        the actual orientation of the object should not be taken from the 
+        default model matrix but from an extra matrix, which is set with command 
+        <CODE>0006</CODE>.</BLOCKQUOTE>
+      <P>&nbsp;</P>
+      <P>If the high bit of <CODE>ORIENTATION</CODE> is clear the object is to 
+      be drawn normally. The Lifter has three sub-objects Cargo hanging under 
+      it. Each one is drawn "hanging" from its own vertex at the bottom of the 
+      Lifter:</P><PRE>C20D 8382 ; LOCAL[2] = GLOBAL[2] + GLOBAL[3]
+C1FD 1FC2 ; LOCAL[1] = LOCAL[2] &amp; 31
+132E 0B24 ; Subobject(153:Cargo, Vertex(36), Orientation(0Bh))
+C24D 05C2 ; LOCAL[2] = LOCAL[2] &gt;&gt; 5
+C1FD 1FC2 ; LOCAL[1] = LOCAL[2] &amp; 31
+132E 0B26 ; Subobject(153:Cargo, Vertex(38), Orientation(0Bh))
+C24D 05C2 ; LOCAL[2] = LOCAL[2] &gt;&gt; 5
+C1FD 1FC2 ; LOCAL[1] = LOCAL[2] &amp; 31
+132E 0B28 ; Subobject(153:Cargo, Vertex(40), Orientation(0Bh))</PRE>
+      <P>Only local variables 0, 1, and 2 are passed on to the sub-object; in 
+      addition, <CODE>LOCAL[0]</CODE> is passed on as <CODE>LOCAL[0]+1</CODE> 
+      (for reasons unknown, but hey! it works).</P>
+      <P>The Cargo object examines the variable <CODE>LOCAL[1]</CODE> to 
+      determine if it should draw a cargo box, a huge sphere, or something like 
+      an A-bomb (two spheres inside a frame).</P>
+      <P align=center><IMG 
+      src="The Frontier Galaxy VII.files/model_subobj.gif"><BR><SMALL>The engine 
+      cones are drawn as circles on their start and end points.</SMALL></P>
+      <P>&nbsp;</P>
+      <P>Missiles and other equipment bits and pieces are always drawn as 
+      sub-objects, where a global variable is tested to check if this equipment 
+      is actually in your possession. The missile itself is also an interesting 
+      example. I mentioned the "generic missile" a few times. All missiles refer 
+      to the same object; this is then drawn as a <I>sub-object</I>, where a 
+      local variable defines the colors of the missile, and for the rest they 
+      are all the same.</P>
+      <P>&nbsp;</P>
+      <P>If bit 7 of <CODE>ORIENTATION</CODE> is set, four more vertices follow 
+      the command. These vertices are passed on to the sub-object as vertices 
+      251 to 254 (these <I>special</I> vertex numbers should only be used in 
+      "real" subobjects). In a few sub-objects the number "255" pops up as 
+      vertex. this is the original origin vertex supplied in the subobject 
+      command.</P>
+      <P>An example is the Imperial Courier engine pod. It's connected to the 
+      ship with a square. In the Engine Pod one finds:</P><PRE>0004 0666 FDFC FE1A 0000 ; Square(RGB(6,6,6), 252,254,253,26, Normal(NORMAL_NONE))</PRE>
+      <P>This engine pod only defines 34 vertices, so the numbers 252 to 254 are 
+      out of range. They should be taken from the values passed on from the main 
+      definition of the Courier, where it looks like this:</P><PRE>1AEE 9028 2614 7F24
+    ; Subobject(215:Imperial Courier engine pod, Vertex(40), Orientation(10h), 38,20,127,36)</PRE>
+      <P>Note that extra vertex number 4 has a value of 127, which is way out of 
+      range for the coordinates of the Courier, but since this particular 
+      coordinate isn't used in the engine pod it is apparently never calculated 
+      and thus not a problem.</P>
+      <H3>15 (0Fh) = Never used!</H3><PRE>000F</PRE>
+      <P>What can I say? Since this code is never used, I can't tell you 
+      anything about it. We'll have to wait for Elite 4 and hope it pops up 
+      there.</P>
+      <H3>16 (10h) = Open Cone</H3><PRE>0010 ...</PRE>
+      <P>The command codes are a re-interpretation of those in Frontier:Elite 2 
+      (with a few small differences), and there this code defines a cone without 
+      top and bottom caps. The engines on the Lifter, for example, are huge grey 
+      cones, and if you rotate the Lifter you can see they are open. In FFE this 
+      command is unused; the next command is used whereever a cone is deemed 
+      necessary.</P>
+      <H3>17 (11h) = Cone</H3><PRE>0011 MATERIAL VERTEX2|VERTEX1 NORMAL1|RADIUS1 NORMAL2|RADIUS2 MATERIAL1 MATERIAL2</PRE>
+      <P>The cone is drawn between <CODE>VERTEX1</CODE> and 
+      <CODE>VERTEX2</CODE>; its diameter at the start and end are 
+      <CODE>RADIUS1</CODE> and <CODE>RADIUS2</CODE>. The color of the cone's 
+      side is the first <CODE>MATERIAL</CODE>; the circle cap at the one point 
+      has the color <CODE>MATERIAL1</CODE>, and the other one 
+      <CODE>MATERIAL2</CODE>. If <CODE>NORMAL1</CODE> is not visible, this end 
+      cap should not be drawn; the same for the other cap with 
+      <CODE>NORMAL2</CODE>.</P>
+      <P>From the Puma Clipper (one of the tiny engine cones at the back; there 
+      are actually three of'em):</P><PRE>0011 4008 100E 0106 0286 0000 20EE
+    ; Cone(Texture_008h, Vertex(14), Vertex(16),
+        Radius(6), Normal(1), COLOR_BLACK,
+        Radius(134), Normal(2), UNLIT | COLOR_CYAN)</PRE>
+      <H3>18 (12h) = DisplayText</H3><PRE>VERTEX|12 TEXTID</PRE>
+      <P>The <CODE>VERTEX</CODE> number resides in the 11 top bits of the 
+      command; at this location, draw the text from the string pool <I>in the 
+      8x8 bitmap font</I>. That's what I understand.</P>
+      <P>The proverbial example should be the IMRA Command Ship, where 
+      apparently</P><PRE>0012 4041 ; DisplayText (0, "\n\n Vaccine Carrier")</PRE>
+      <P>this appears. Being not such a wonderful Elite Commander, I wouldn't 
+      know because I never got that far.</P>
+      <P>Thumbing through my mental notes: I once traced the full code to draw a 
+      sector map in FFE, and I seem to recall that object #171 (Dummy Star 
+      Sector, with 128 zero vertices and not a lot more) gets filled with actual 
+      3D star coordinates and the names of the stars are pasted on using this 
+      command.</P>
+      <P>There is another strange object (one of the rotating space stations) 
+      which uses this snippet:</P><PRE>0312 40C9 ; DisplayText (24, "12")
+03D2 40CA ; DisplayText (30, "15")
+0352 40CB ; DisplayText (26, "13")
+0332 40CC ; DisplayText (25, "12x")
+0372 40CD ; DisplayText (27, "13x")</PRE>
+      <P>Anyone seen that in the game?</P>
+      <H3>19 (13h) = Skip If Bit Clear</H3><PRE><SPAN class=func>ddd</SPAN>|13 BIT|VARIABLE</PRE>
+      <P><CODE class=func>ddd</CODE> is the number of <I>words</I> (see the note 
+      on Cmd #11) to skip if <CODE>VARIABLE</CODE> <CODE class=func>AND</CODE> 
+      <CODE>(1 &lt;&lt; (BIT-1))</CODE> is zero. <CODE>BIT</CODE> should be a 
+      value in the range 1..16, so only words can be tested. If <CODE>BIT</CODE> 
+      is 0 it tests if <CODE>VARIABLE</CODE> is <B>equal</B> to 0.</P>
+      <P>If the skip distance <CODE class=func>ddd</CODE> is zero this command 
+      ends drawing the current model.</P>
+      <P>The following snippet controls the alternating blinking landing lights 
+      in the Eagle LR fighter:</P><PRE>       01F3 0680 ; if !(TIME &amp; 32) goto L220
+       01B3 0580 ; if !(TIME &amp; 16) goto L220
+       0006 ; Cmd 6 [nop]
+       0093 0480 ; if !(TIME &amp; 8) goto L214
+       0001 20E0 E001 1080 ; Ball(UNLIT | COLOR_GREEN, Radius(960), Vertex(16), Normal(0 | LIGHT))
+L214:  0094 0480 ; if (TIME &amp; 8) goto L220
+       0001 2E00 E001 1180 ; Ball(UNLIT | COLOR_RED, Radius(960), Vertex(17), Normal(0 | LIGHT))
+L220:  ... (more code)</PRE>
+      <P>Where <CODE>TIME</CODE> is my definition of Global Variable #0 (and 
+      don't pay attention to the <CODE>0006</CODE>, it seems to do nothing 
+      here).</P>
+      <H3>20 (14h) = Skip If Bit Set</H3><PRE><SPAN class=func>ddd</SPAN>|14 BIT|VARIABLE</PRE>
+      <P>Exactly the same as the previous code, only in reverse. <CODE 
+      class=func>ddd</CODE> is the number of <I>words</I> (see the note on Cmd 
+      #11) to skip if <CODE>VARIABLE</CODE> <CODE class=func>AND</CODE> <CODE>(1 
+      &lt;&lt; (BIT-1))</CODE> is zero. <CODE>BIT</CODE> should again be a value 
+      in the range 1..16, and the special value <CODE>0</CODE> tests if 
+      <CODE>VARIABLE</CODE> is <B>not equal</B> to 0.</P>
+      <P>If the skip distance <CODE class=func>ddd</CODE> is zero this command 
+      ends drawing the current model.</P>
+      <H3>21 (15h) = Process Vertex?</H3><PRE><SPAN class=func>ddd</SPAN>|15</PRE>
+      <P>This command takes the vertex in the upper 11 bits <CODE 
+      class=func>ddd</CODE> and... does something? I'm quite sure it <I>is</I> a 
+      vertex number, see these two snippets from the Osprey:</P><PRE>0615 ; Process vertex #48?
+006E 0030 ; Subobject(3:Generic Missile, Vertex(48), Orientation(00h))</PRE><PRE>0635 ; Process vertex #49?
+006E 0031 ; Subobject(3:Generic Missile, Vertex(49), Orientation(00h))</PRE>
+      <P>..where right after this command something is done using the same 
+      vertex number.</P>
+      <P>The highest bit may be set, and in that case the number is definitely 
+      <I>not</I> a vertex number... Also in the Osprey:</P><PRE>F015 ; Nop</PRE>
+      <P>...where, arguably, the comment "Nop" should have been "Nop????"</P>
+      <H3>22 (16h) = Curve</H3><PRE>0016 MATERIAL POINT1|POINT2 POINT3|POINT4 0000</PRE>
+      <P>I used to call this command "Bezier" but got mail telling me off! Well, 
+      "curve" is such a generic description, hope I don't tread on someone's 
+      toes with that.</P>
+      <P>Use this to draw a nice curvy curve between <CODE>POINT1</CODE> and 
+      <CODE>POINT4</CODE> using <CODE>POINT2</CODE> and <CODE>POINT3</CODE> as 
+      control points (the latter may use the same vertex twice).</P>
+      <P>See, for example, the suspension bridge in New San Francisco 
+      (Sol(0,0)III: Earth).</P>
+      <P align=center><IMG 
+      src="The Frontier Galaxy VII.files/model_curve.gif"></P><PRE>0016 0444 010A 0B00 0000 ; Curve(COLOR_GRAY, 1,10,11,0)
+0016 0444 111A 1B10 0000 ; Curve(COLOR_GRAY, 17,26,27,16)
+0016 0444 0E0C 0C00 0000 ; Curve(COLOR_GRAY, 14,12,12,0)
+0016 0444 0F0D 0D01 0000 ; Curve(COLOR_GRAY, 15,13,13,1)
+0016 0444 1E1C 1C10 0000 ; Curve(COLOR_GRAY, 30,28,28,16)
+0016 0444 1F1D 1D11 0000 ; Curve(COLOR_GRAY, 31,29,29,17)</PRE>
+      <P>The <CODE>0000</CODE> at the end is a parameter which is, from 
+      observation, <I>always 0000h</I>. Imagine that.</P>
+      <H3>23 (17h) = Not Used</H3><PRE>0017</PRE>
+      <P>Not used. If you encounter this as a command code there is something 
+      wrong with your program. Sorry.</P>
+      <H3>24 (18h) = Ball Array</H3><PRE>0018 MATERIAL RADIUS [VERTEX|VERTEX]+</PRE>
+      <P>Get you ball arrays here! It seems balls are <I>so</I> popular, 
+      everybody wants one. Preferably more than one! This command reads the 
+      bytes after <CODE>RADIUS</CODE> and interprets them as single vertex 
+      numbers to display a ball on until it reads the value <CODE>7Fh</CODE>. If 
+      there is an even number of balls in this array, it ends with the double 
+      code <CODE>7F7Fh</CODE>; for an odd number, the last word is 
+      <CODE>xx7Fh</CODE> -- where the high byte contains a valid vertex 
+      number.</P>
+      <P>The <CODE>RADIUS</CODE> can be a constant or a variable; being variable 
+      is quite useful to display growing or shrinking circles. Yes, we're 
+      talking Hyperspace cloud here!</P>
+      <P>But first, a simple example. This one is a complete 3D object! It's 
+      object #374, and depicts a group of 14 trees (that's what I think it is 
+      meant to be) inside the transparent biodomes.</P>
+      <P align=center><IMG 
+      src="The Frontier Galaxy VII.files/model_ballarray.gif"><BR><SMALL>The 
+      coordinates 11 and 15 appear because not every point has to be used; 
+      they<BR>are mirrors of #10 and #14 (which <I>are</I> used).</SMALL></P><PRE>0018 2080 C409 0001 0405 0809 0C0D 0607 0A02 030E 7F7F
+    ; BallArray(UNLIT | RGB(0,8,0), Radius(5000, ..)
+0000 ; End</PRE>
+      <P>The <CODE>...</CODE> at the end is because I don't think it is useful 
+      to list all vertices, you can quite easily read'em in the original 
+      code.</P>
+      <P>To show growing and shrinking balls a variable radius is needed, this 
+      rather large example from the Hyperspace warp (object #154) shows how:</P><PRE>C25D 0D80 ; LOCAL[2] = TIME &lt;&lt; 13
+C24D 05C2 ; LOCAL[2] = LOCAL[2] &gt;&gt; 5
+C14D 0284 ; LOCAL[1] = GLOBAL[4] &gt;&gt; 2
+C10D C2C1 ; LOCAL[1] = LOCAL[1] + LOCAL[2]
+0694 1081 ; if (GLOBAL[1] != 0) goto L64
+0018 246E 00C1 007F ; BallArray(UNLIT | RGB(4,6,14), Radius(LOCAL[1], ..)
+05CB 0926 ; if (DISTANCE &gt; 2342) goto L64
+C14D 01C1 ; LOCAL[1] = LOCAL[1] &gt;&gt; 1
+C24D 02C1 ; LOCAL[2] = LOCAL[1] &gt;&gt; 2
+C10D C2C1 ; LOCAL[1] = LOCAL[1] + LOCAL[2]
+0018 268E 00C1 007F ; BallArray(UNLIT | RGB(6,8,14), Radius(LOCAL[1], ..)
+044B 0752 ; if (DISTANCE &gt; 1874) goto L64
+C14D 01C1 ; LOCAL[1] = LOCAL[1] &gt;&gt; 1
+C24D 02C1 ; LOCAL[2] = LOCAL[1] &gt;&gt; 2
+C10D C2C1 ; LOCAL[1] = LOCAL[1] + LOCAL[2]
+0018 28AE 00C1 007F ; BallArray(UNLIT | RGB(8,10,14), Radius(LOCAL[1], ..)
+02CB 057E ; if (DISTANCE &gt; 1406) goto L64
+C14D 01C1 ; LOCAL[1] = LOCAL[1] &gt;&gt; 1
+C24D 02C1 ; LOCAL[2] = LOCAL[1] &gt;&gt; 2
+C10D C2C1 ; LOCAL[1] = LOCAL[1] + LOCAL[2]
+0018 2ACE 00C1 007F ; BallArray(UNLIT | RGB(10,12,14), Radius(LOCAL[1], ..)
+014B 0464 ; if (DISTANCE &gt; 1124) goto L64
+C14D 01C1 ; LOCAL[1] = LOCAL[1] &gt;&gt; 1
+C24D 02C1 ; LOCAL[2] = LOCAL[1] &gt;&gt; 2
+C10D C2C1 ; LOCAL[1] = LOCAL[1] + LOCAL[2]
+0018 2CEE 00C1 007F ; BallArray(UNLIT | RGB(12,14,14), Radius(LOCAL[1], ..)</PRE>
+      <P>Assuming my interpretations of the math commands are OK, you can see 
+      how (sort of) <CODE>LOCAL[1]</CODE> gets initialized with some value and 
+      then draws a series of blue-to-white balls on top of each other (all 
+      centred on vertex #0). After each one is drawn, the variable 
+      <CODE>LOCAL[1]</CODE> is decreased a bit, leading to ever decreasing 
+      radii.</P>
+      <P>This same model also draws red-to-yellow globs in quite the same way; 
+      one of the first commands in the code selects which part to use and 
+      whether to add sparkly blue lines or not.</P>
+      <H3>25 (19h) = View matrix?</H3><PRE><SPAN class=func>ddd</SPAN>19</PRE>
+      <P>This is another unknown. The 11 top bits <CODE class=func>ddd</CODE> 
+      may be <CODE class=func>001</CODE> (leading to a full command word <SPAN 
+      class=func>0039h</SPAN>), or its highest bit may be set (which is in full 
+      <SPAN class=func>8019h</SPAN>). The latter command resets the view 
+      transformation matrix, so any objects drawn afterwards always face the 
+      camera; the first command does ... something ... else ...</P>
+      <H3>26 (1Ah) = Set Color</H3><PRE>001A MATERIAL 00|NORMAL</PRE><PRE>001A MATERIAL1 VARIABLE|00 MATERIAL2 MATERIAL3 MATERIAL4
+    MATERIAL5 MATERIAL6 MATERIAL7 MATERIAL8</PRE>
+      <P>The <CODE>MATERIAL</CODE> parameter in the graphics commands may have a 
+      special bit <CODE>1000h</CODE> set (I named it the 
+      <CODE>LOCALCOLOUR</CODE> bit). This means its actual value is to be taken 
+      from an internal variable, and that is very useful! If you don't want an 
+      object to be the same color over and over again, you can set the 
+      <CODE>LOCALCOLOUR</CODE> bit in its color and define this with a variable 
+      <I>before</I> drawing.</P>
+      <P>There are two variants: the short one just sets the material to use, 
+      with an associated <CODE>NORMAL</CODE> to apply shading. The longer 
+      version, where <CODE>NORMAL</CODE> is zero, assumes <CODE>VARIABLE</CODE> 
+      <I>is</I> a variable code (either global or local; at least the 
+      <CODE>80h</CODE> bit should be set) and uses the last 3 bits of this 
+      <CODE>VARIABLE</CODE> to index one of the eight defined colors. It is 
+      possible the lower byte <CODE>00h</CODE> might also be a shading normal 
+      (00h is the code for <I>no</I> normal), but it is zero everywhere.</P>
+      <P>A simple example from the Cobra Mk III:</P><PRE>001A 0444 000C ; SetColor(Normal(12), COLOR_GRAY)
+177B 0654 0000 3000
+    ; ScaledSubobject (187:Nose wheel, Vertex(84),Orientation(06h),Scale(0x0000),LOCALCOLOUR | UNLIT)
+177B 0652 1000 3000
+    ; ScaledSubobject (187:Nose wheel, Vertex(82),Orientation(06h),Scale(0x1000),LOCALCOLOUR | UNLIT)
+177B 0653 1000 3000
+    ; ScaledSubobject (187:Nose wheel, Vertex(83),Orientation(06h),Scale(0x1000),LOCALCOLOUR | UNLIT)</PRE>
+      <P>(The command <CODE>ScaledSubobject</CODE> is explained right after 
+      this.) The Nose wheel is used for a few different ships, and apparently 
+      its closing hatch should have a color matching the ship's hull.</P>
+      <P>A rather funny example is the pilot head in the Eagle. Here you can see 
+      how <I>global</I> variable [2] is used to determine its color.</P><PRE>001A 2E00 8200 20E0 2EE0 200E 2EEE 2E80 2E0E 20EE ; SetColor(GLOBAL[2],
+    UNLIT | COLOR_RED,
+    UNLIT | COLOR_GREEN,
+    UNLIT | COLOR_YELLOW,
+    UNLIT | COLOR_BLUE,
+    UNLIT | RGB(14,14,14),
+    UNLIT | RGB(14,8,0),
+    UNLIT | RGB(14,0,14),
+    UNLIT | COLOR_CYAN)
+0001 3000 A014 0600 ; Ball(LOCALCOLOUR | UNLIT, Radius(10560), Vertex(6), Normal(NORMAL_NONE))</PRE>
+      <P>I <I>think</I> <CODE>GLOBAL[2]</CODE> refers to the internal numeric 
+      code for the unique ship identifier, so in a group of Eagles you can see a 
+      range of different colored helmets. You can see this in the Shipyard when 
+      more than a single Eagle is on offer.</P>
+      <P align=center><IMG 
+      src="The Frontier Galaxy VII.files/model_setcolor.gif"></P>
+      <P>In the image you can see two vertices 14 and 15. Between those the text 
+      ".IXI." is drawn -- it mystified me for a while, then I realized it is 
+      meant to look like a steering wheel!</P>
+      <H3>27 (1Bh) = Scaled Sub-object</H3><PRE><SPAN class=func>obj</SPAN>1B ORIENTATION|VERTEX SCALE MATERIAL ; Bit 7 of ORIENTATION clear</PRE><PRE><SPAN class=func>obj</SPAN>1B ORIENTATION|VERTEX SCALE MATERIAL VERTEX2|VERTEX1 VERTEX4|VERTEX3 ; Bit 7 of ORIENTATION set</PRE>
+      <P>Pretty much like the normal sub-object but with two added twists. This 
+      one defines an additional <CODE>SCALE</CODE> -- at least, that's what I 
+      think it does. It appears to take any number between <CODE>0000h</CODE> 
+      and <CODE>F000h</CODE>, where, oddly, the lower byte always appears to be 
+      <CODE>00h</CODE>.</P>
+      <P>Another addition is the <CODE>MATERIAL</CODE> parameter. I assume it is 
+      used when the sub-object uses the <CODE>LOCALCOLOUR</CODE> bit.</P>
+      <P>As in the normal subobject, the <CODE>ORIENTATION</CODE> can have bit 7 
+      (<CODE>80h</CODE>) set, indicating that a set of 4 pass-through vertices 
+      follow. See this snippet of the Krait Assault Craft:</P><PRE>167B 804A 4000 5009 7F7F 7F4C
+    ; ScaledSubobject (179:object_179, Vertex(74),Orientation(00h),Scale(0x4000),
+      LOCALCOLOUR | Texture_Metal_Black_0, 127,127,127,76)
+...
+167B 944B 4000 5009 7F7F 7F4D
+    ; ScaledSubobject (179:object_179, Vertex(75),Orientation(14h),Scale(0x4000),
+      LOCALCOLOUR | Texture_Metal_Black_0, 127,127,127,77)</PRE>
+      <P>There are a few weird vertex values <CODE>127</CODE> in this example 
+      but, again, these vertex numbers aren't used in the sub-object and so can 
+      be any value. Object 179 consists of a couple of cones and I can't seem to 
+      find out where they appear on the ship...</P>
+      <P>Another example: the laser turret on the Griffin Carrier:</P><PRE>1ABB 1048 F000 4026
+    ; ScaledSubobject (213:Turret, Vertex(72),Orientation(10h),Scale(0xF000),Texture_026h)</PRE>
+      <H3>28 (1Ch) = Rotate</H3><PRE><SPAN class=func>ddd</SPAN>1C VALUE</PRE>
+      <P>This is another command on which I am stymied. It seems <CODE 
+      class=func>ddd</CODE> is a certain value, and <CODE 
+      class=func>VALUE</CODE> may be a number or a variable.</P>
+      <P>I am 100% sure of the <I>function</I>, though. See this piece of the 
+      Interplanetary Shuttle.</P><PRE>191C 0000 ; Rotate -- default 0000
+833C FD44 ; Rotate -- default FD44
+000A 0000 0606 4610 3016 ; Text(COLOR_BLACK, Normal(6), Vertex(16), Scale(6), VECTOR_FONT, 3016h)
+191C 0040 ; Rotate -- default 0040
+833C FD44 ; Rotate -- default FD44
+000A 0000 0607 4612 3016 ; Text(COLOR_BLACK, Normal(7), Vertex(18), Scale(6), VECTOR_FONT, 3016h)</PRE>
+      <P>Recall that text code <CODE>3016h</CODE> draws the ship identifier. The 
+      texts on the sides of the shuttle run in opposite directions: the text on 
+      its right side goes towards the nose, the text on the left side towards 
+      the aft. They are both slanted a bit from upright position, so they are 
+      drawn parallel ("on") to the slanted top panels. If you look at the first 
+      <CODE>ROTATE</CODE> commands of the two pairs, you see that one has a 
+      parameter <CODE>0000h</CODE> and the other is <CODE>0040h</CODE>. It 
+      occurred to me this can also be <CODE>4000h</CODE> (that blasted byte 
+      order confusion again), which could be a 180° turn around the horizontal 
+      axis for the second text (and the first text would not rotate 
+      horizontally). If that rotation is done, the other one 
+      (<CODE>FD44h</CODE>) could mean the lengthwise tilt.</P>
+      <P>FFE uses matrices to perform its rotations and I really can't get my 
+      head around those! That might explain a bit why this command still doesn't 
+      make any sense to me.</P>
+      <P>The "might-be-variable" idea comes from observing scanners. They are 
+      usually plugged in as a sub-object, and right before they are, something 
+      like this appears (in the Cobra Mk III):</P><PRE>C35D 0980 ; LOCAL[3] = TIME &lt;&lt; 9
+183C 00C3 ; Rotate -- default 00C3
+004B 800E ; if !Visible(Normal(14)) goto L228
+18CE 0646 ; Subobject(198:Scanner antenna, Vertex(70), Orientation(06h))</PRE>
+      <P>Local variable 3 is coded as <CODE>C3h</CODE>, the number used in the 
+      <CODE>ROTATE</CODE> command.</P>
+      <P>Part of my confusion may arise from the orientation problems I've 
+      encountered, because this orientation/rotation (or mirroring) obviously 
+      needs to be concatenated with any previous number of <CODE>ROTATE</CODE> 
+      commands.</P>
+      <H3>29 (1Dh) = Math part 2</H3><PRE>DEST|(OPERAND|1Dh) SOURCE1|SOURCE2</PRE>
+      <P>This is the second part of the <CODE>MATH</CODE> command. See the full 
+      ramblings on that under the heading <B>13 (0Dh) and 29 (1Dh) = Math</B> 
+      above.</P>
+      <H3>30 (1Eh) = Unknown!</H3><PRE><SPAN class=func>ddd</SPAN>1E</PRE>
+      <P>Yet another unknown! The numeric parameter in the command itself is 
+      usually seen as <CODE>600h</CODE>, and once as <CODE>400h</CODE>.</P>
+      <P>Example: the green star map grid (object #166)</P><PRE>C01E ; Cmd 1Eh (parm. 0C01h)</PRE>
+      <P>The original code is a real mess there; for the Star Map Grid it 
+      appears to draw the stars (!), in other cases it does something with the 
+      aforementioned alternate rotation matrix.</P>
+      <H3>31 (1Fh) = Planet!?</H3><PRE>001F MATERIAL VERTEX2|VERTEX1 VERTEX4|VERTEX3 EXTRA1 EXTRA2 EXTRA3
+    [ADDITIONAL]* 0000</PRE>
+      <P>Rather a simple code but with very graphic consequences. 
+      <CODE>VERTEX1</CODE> might be the planet center, with 
+      <CODE>VERTEX2</CODE>, <CODE>VERTEX3</CODE> and <CODE>VERTEX4</CODE> as the 
+      three main radii. There are three of them so you can draw an ellipsoid 
+      star or asteroid.</P>
+      <P>The <CODE>MATERIAL</CODE> is sort-of default but after the command and 
+      vertices a number of additional color commands may follow. Somehow this 
+      command defines colored atmopheres and tesselated planet surfaces!</P>
+      <P><CODE>ADDITIONAL</CODE> consist of subsets, each 8 words long, which 
+      appear to end with the (always supplied) <CODE>0000h</CODE> code.</P>
+      <P>There may be zero additional subsets, in which case this code is just 6 
+      words long. All stars and a few planets consist of just this one command. 
+      A small example is Object #144 (Type'B'hot blue star):</P><PRE>001F 0DEF 0206 0004 0009 1999 0001 ; Cmd 1Fh(RGB(13,14,15), 6,2,4,0, 0x0009,0x1999,0x0001,
+    0000    ; 0x0000)
+0000 ; End</PRE>
+      <P>The <CODE>EXTRA1..3</CODE> numbers here <I>must</I> be connected 
+      somehow to the atmosphere colors...</P>
+      <P>A somewhat larger example (the "small barren sphere of rock"):</P><PRE>001F 0333 0206 0004 0002 03D7 05F4 ; Cmd 1Fh(RGB(3,3,3), 6,2,4,0, 0x0002,0x03D7,0x05F4,
+0807 000C 0040 00F4 FFB3 FFFF 00CE FFFF ; 7,8,12, 0x0040,0x00F4,0xFFB3,0xFFFF,0x00CE,0xFFFF,
+087D 000C 0040 00F4 FFB3 FFFF 00CE FFFF ; 125,8,12, 0x0040,0x00F4,0xFFB3,0xFFFF,0x00CE,0xFFFF,
+08E3 000C 0040 00F4 FFB3 FFFF 00CE FFFF ; 227,8,12, 0x0040,0x00F4,0xFFB3,0xFFFF,0x00CE,0xFFFF,
+092F 000C 0040 00F4 FFB3 FFFF 00CE FFFF ; 47,9,12, 0x0040,0x00F4,0xFFB3,0xFFFF,0x00CE,0xFFFF,
+09AA 000C 0040 00F4 FFB3 FFFF 00CE FFFF ; 170,9,12, 0x0040,0x00F4,0xFFB3,0xFFFF,0x00CE,0xFFFF,
+09BA 000C 0040 00F4 FFB3 FFFF 00CE FFFF ; 186,9,12, 0x0040,0x00F4,0xFFB3,0xFFFF,0x00CE,0xFFFF,
+09CC 000C 0040 00F4 FFB3 FFFF 00CE FFFF ; 204,9,12, 0x0040,0x00F4,0xFFB3,0xFFFF,0x00CE,0xFFFF,
+0A48 000C 0040 00F4 FFB3 FFFF 00CE FFFF ; 72,10,12, 0x0040,0x00F4,0xFFB3,0xFFFF,0x00CE,0xFFFF,
+0A4F 000C 0040 00F4 FFB3 FFFF 00CE FFFF ; 79,10,12, 0x0040,0x00F4,0xFFB3,0xFFFF,0x00CE,0xFFFF,
+0A79 000C 0040 00F4 FFB3 FFFF 00CE FFFF ; 121,10,12, 0x0040,0x00F4,0xFFB3,0xFFFF,0x00CE,0xFFFF,
+0ABD 000C 0040 00F4 FFB3 FFFF 00CE FFFF ; 189,10,12, 0x0040,0x00F4,0xFFB3,0xFFFF,0x00CE,0xFFFF,
+0B56 000C 0040 00F4 FFB3 FFFF 00CE FFFF ; 86,11,12 , 0x0040,0x00F4,0xFFB3,0xFFFF,0x00CE,0xFFFF,
+0C40 000C 0040 00F4 FFB3 FFFF 00CE FFFF ; 64,12,12, 0x0040,0x00F4,0xFFB3,0xFFFF,0x00CE,0xFFFF,
+0C7C 000C 0040 00F4 FFB3 FFFF 00CE FFFF ; 124,12,12, 0x0040,0x00F4,0xFFB3,0xFFFF,0x00CE,0xFFFF,
+0CAE 000C 0040 00F4 FFB3 FFFF 00CE FFFF ; 174,12,12, 0x0040,0x00F4,0xFFB3,0xFFFF,0x00CE,0xFFFF,
+0CD9 000C 0040 00F4 FFB3 FFFF 00CE FFFF ; 217,12,12, 0x0040,0x00F4,0xFFB3,0xFFFF,0x00CE,0xFFFF,
+0000			; 0x0000)</PRE>
+      <P>The translations in the comment to bytes and words is pure 
+      guesswork!</P>
+      <P>Just to show how difficult it is to make something out of this command, 
+      here is the code for the "World with indigenous life and oxygen 
+      atmosphere":</P><PRE>001F 0667 0206 0004 0000 0B85 0478 ; Cmd 1Fh(RGB(6,6,7), 6,2,4,0, 0x0000,0x0B85,0x0478,
+0807 000C 0040 00F4 FFB3 FFFF 00CE FFFF ; 7,8,12, 0x0040,0x00F4,0xFFB3,0xFFFF,0x00CE,0xFFFF,
+087D 000C 0040 00F4 FFB3 FFFF 00CE FFFF ; 125,8,12, 0x0040,0x00F4,0xFFB3,0xFFFF,0x00CE,0xFFFF,
+08E3 000C 0040 00F4 FFB3 FFFF 00CE FFFF ; 227,8,12, 0x0040,0x00F4,0xFFB3,0xFFFF,0x00CE,0xFFFF,
+092F 000C 0040 00F4 FFB3 FFFF 00CE FFFF ; 47,9,12, 0x0040,0x00F4,0xFFB3,0xFFFF,0x00CE,0xFFFF,
+09AA 000C 0040 00F4 FFB3 FFFF 00CE FFFF ; 170,9,12, 0x0040,0x00F4,0xFFB3,0xFFFF,0x00CE,0xFFFF,
+09BA 000C 0040 00F4 FFB3 FFFF 00CE FFFF ; 186,9,12, 0x0040,0x00F4,0xFFB3,0xFFFF,0x00CE,0xFFFF,
+09CC 000C 0040 00F4 FFB3 FFFF 00CE FFFF ; 204,9,12, 0x0040,0x00F4,0xFFB3,0xFFFF,0x00CE,0xFFFF,
+0A48 000C 0040 00F4 FFB3 FFFF 00CE FFFF ; 72,10,12, 0x0040,0x00F4,0xFFB3,0xFFFF,0x00CE,0xFFFF,
+0A4F 000C 0040 00F4 FFB3 FFFF 00CE FFFF ; 79,10,12, 0x0040,0x00F4,0xFFB3,0xFFFF,0x00CE,0xFFFF,
+0A79 000C 0040 00F4 FFB3 FFFF 00CE FFFF ; 121,10,12, 0x0040,0x00F4,0xFFB3,0xFFFF,0x00CE,0xFFFF,
+0ABD 000C 0040 00F4 FFB3 FFFF 00CE FFFF ; 189,10,12, 0x0040,0x00F4,0xFFB3,0xFFFF,0x00CE,0xFFFF,
+0B56 000C 0040 00F4 FFB3 FFFF 00CE FFFF ; 86,11,12, 0x0040,0x00F4,0xFFB3,0xFFFF,0x00CE,0xFFFF,
+0C40 000C 0040 00F4 FFB3 FFFF 00CE FFFF ; 64,12,12, 0x0040,0x00F4,0xFFB3,0xFFFF,0x00CE,0xFFFF,
+0C7C 000C 0040 00F4 FFB3 FFFF 00CE FFFF ; 124,12,12, 0x0040,0x00F4,0xFFB3,0xFFFF,0x00CE,0xFFFF,
+0CAE 000C 0040 00F4 FFB3 FFFF 00CE FFFF ; 174,12,12, 0x0040,0x00F4,0xFFB3,0xFFFF,0x00CE,0xFFFF,
+0CD9 000C 0040 00F4 FFB3 FFFF 00CE FFFF ; 217,12,12, 0x0040,0x00F4,0xFFB3,0xFFFF,0x00CE,0xFFFF,
+0000            ; 0x0000)</PRE>
+      <P>It looks startingly the same...</P>
+      <P>&nbsp;</P>
+      <P>&nbsp;</P>
+      <P>Next time I'll explain the <CODE>MATERIAL</CODE> parameter, and, since 
+      this ties in to the bitmap graphics in the game, I might as well tell you 
+      about those as well.</P>
+      <P>Now I'm gonna have a nice long lie-down with a wet towel on my 
+      head...</P>
+      <TABLE class=contents width="95%">
+        <TBODY>
+        <TR>
+          <TD class=contents><A 
+            href="http://www.jongware.com/galaxy6.html">&lt;&lt; Previous</A> :: 
+            <A href="http://www.jongware.com/galaxy8.html">Next 
+        &gt;&gt;</A></TD></TR></TBODY></TABLE>
+      <P><SMALL>Based on original data and algorithms from <B>Frontier:Elite 
+      2</B> and <B>Frontier:First Encounters</B> by David Braben (<A 
+      href="http://www.frontier.co.uk/">Frontier Developments</A>)</SMALL></P>
+      <P><SMALL>Original copyright holders:<BR>Elite 4: The Next Encounter © 
+      David Braben 2011?<BR>First Encounters © David Braben 1995<BR>Frontier © 
+      David Braben 1993<BR>Elite © David Braben and Ian Bell 
+  1984</SMALL></P></TD></TR></TBODY></TABLE>
+<P>&nbsp;</P>
+<TABLE class=black width="100%" border=0>
+  <TBODY>
+  <TR vAlign=bottom>
+    <TD align=right width="20%"><IMG alt=[Jongware] 
+      src="The Frontier Galaxy VII.files/jongware-small.gif"></TD>
+    <TD>
+      <P>After penning this story down I think I should have titled it "Frontier 
+      Objects Explaining". If you're as confused as I am let met know at <A 
+      class=internal href="http://www.jongware.com/contact.html">jongware</A>. 
+      </P></TD></TR></TBODY></TABLE></BODY></HTML>

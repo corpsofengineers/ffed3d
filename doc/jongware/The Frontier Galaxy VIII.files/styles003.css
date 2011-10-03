@@ -1,0 +1,114 @@
+BODY {
+	FONT-SIZE: 80%; COLOR: #000000; LINE-HEIGHT: 140%; FONT-FAMILY: "Verdana","Trebuchet MS"; TEXT-ALIGN: justify
+}
+H1 {
+	FONT-SIZE: 110%; MARGIN-BOTTOM: 0.6em; COLOR: #004d80
+}
+H2 {
+	FONT-SIZE: 90%; MARGIN-BOTTOM: 0.75em; COLOR: #004d80
+}
+H3 {
+	FONT-SIZE: 85%; MARGIN-BOTTOM: 0em; PADDING-BOTTOM: 0em; COLOR: #004d80
+}
+P {
+	PADDING-RIGHT: 2em; PADDING-LEFT: 0px; PADDING-BOTTOM: 0px; MARGIN: 1px; PADDING-TOP: 0px
+}
+UL {
+	MARGIN-TOP: 0.25em; MARGIN-BOTTOM: 0.25em; MARGIN-LEFT: 1em
+}
+LI {
+	PADDING-RIGHT: 0px; PADDING-LEFT: 0px; PADDING-BOTTOM: 0.25em; MARGIN: 1px; PADDING-TOP: 0px; FONT-FAMILY: "Verdana","Trebuchet MS"
+}
+SMALL {
+	FONT-SIZE: 85%; LINE-HEIGHT: 133%
+}
+BLOCKQUOTE {
+	PADDING-RIGHT: 0.5em; MARGIN-TOP: 0.2em; PADDING-LEFT: 1em; FONT-SIZE: 85%; MARGIN-BOTTOM: 0.2em; PADDING-BOTTOM: 0.5em; MARGIN-LEFT: 2em; BORDER-LEFT: #666666 3px solid; PADDING-TOP: 0.5em; BACKGROUND-COLOR: #eeeeee
+}
+CODE {
+	FONT-SIZE: 105%; COLOR: #004d80; FONT-FAMILY: "Lucida Sans Console","Lucida Sans Typewriter","Courier New","Courier"
+}
+HR {
+	COLOR: #004d80
+}
+TABLE {
+	PADDING-RIGHT: 0px; PADDING-LEFT: 0px; PADDING-BOTTOM: 0px; MARGIN: 0px; PADDING-TOP: 0px
+}
+TR {
+	PADDING-RIGHT: 0px; PADDING-LEFT: 0px; PADDING-BOTTOM: 0px; MARGIN: 0px; PADDING-TOP: 0px
+}
+TD {
+	BORDER-RIGHT: 0px solid; PADDING-RIGHT: 0px; BORDER-TOP: 0px solid; PADDING-LEFT: 0px; PADDING-BOTTOM: 0px; MARGIN: 0px; BORDER-LEFT: 0px solid; PADDING-TOP: 0px; BORDER-BOTTOM: 0px solid
+}
+TD {
+	PADDING-RIGHT: 1em
+}
+A.internal {
+	FONT-WEIGHT: bold; COLOR: #336699
+}
+.done {
+	COLOR: #666666
+}
+.updated {
+	FONT-SIZE: 80%; COLOR: #444444
+}
+.new {
+	FONT-SIZE: 110%; COLOR: #ff0000; BACKGROUND-COLOR: #ffcc00
+}
+.fixed {
+	COLOR: #ffffff; BACKGROUND-COLOR: #000000
+}
+.sidebar {
+	FONT-WEIGHT: bold; FONT-SIZE: 80%; COLOR: white; TEXT-ALIGN: left
+}
+.sidebaritem {
+	PADDING-RIGHT: 1em; PADDING-LEFT: 1em; PADDING-BOTTOM: 0.25em; PADDING-TOP: 0.25em; BACKGROUND-COLOR: #000000
+}
+.sidebaritem A {
+	FONT-WEIGHT: normal; COLOR: #ddddff
+}
+.sidebaritem_back {
+	PADDING-RIGHT: 1em; PADDING-LEFT: 1em; PADDING-BOTTOM: 0.5em; COLOR: #ffffff; PADDING-TOP: 0.5em; BACKGROUND-COLOR: #336699
+}
+.sidebaritem_back A {
+	COLOR: #ffffff
+}
+.text {
+	PADDING-LEFT: 2em
+}
+TABLE.black {
+	PADDING-RIGHT: 0em; PADDING-LEFT: 0em; BACKGROUND: black; PADDING-BOTTOM: 0em; MARGIN: 0em; COLOR: #aaddff; PADDING-TOP: 0em
+}
+TABLE.black A {
+	COLOR: #77bbdd
+}
+TABLE.contents {
+	BORDER-RIGHT: #88bbee thin solid; BORDER-TOP: #88bbee thin solid; MARGIN-TOP: 2em; MARGIN-BOTTOM: 2em; BORDER-LEFT: #88bbee thin solid; BORDER-BOTTOM: #88bbee thin solid; BACKGROUND-COLOR: #bbddff; TEXT-ALIGN: left
+}
+TD.contents {
+	PADDING-RIGHT: 0.5em; PADDING-LEFT: 0.5em; PADDING-BOTTOM: 0.5em; PADDING-TOP: 0.5em
+}
+PRE {
+	BORDER-RIGHT: #000000 1px solid; PADDING-RIGHT: 0.25em; BORDER-TOP: #000000 1px solid; MARGIN-TOP: 0.75em; PADDING-LEFT: 0.25em; MARGIN-BOTTOM: 0.75em; PADDING-BOTTOM: 0.25em; BORDER-LEFT: #000000 1px solid; COLOR: #000000; PADDING-TOP: 0.25em; BORDER-BOTTOM: #000000 1px solid; FONT-FAMILY: "Lucida Sans Console","Lucida Sans Typewriter","Courier New","Courier"; BACKGROUND-COLOR: #eeeeee
+}
+.cmd {
+	COLOR: #0000cc
+}
+.func {
+	COLOR: #008800
+}
+.var {
+	COLOR: #880088
+}
+.cmt {
+	COLOR: #666666
+}
+CODE.func {
+	COLOR: #008800
+}
+CODE.var {
+	COLOR: #660066
+}
+.hang {
+	MARGIN-LEFT: 2em; TEXT-INDENT: -2em
+}

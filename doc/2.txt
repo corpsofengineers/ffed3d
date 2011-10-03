@@ -1,0 +1,41 @@
+void func_001874 (void arg_0x0c, void arg_0x08) 
+{ 
+  if (*data_009200[*arg_0x0c.vertex02][5] != drawmdl_t.counter) 
+  { 
+  local1 = func_001470(*arg_0x0c.vertex02, *arg_0x08); // esi 
+  } 
+  else 
+  { 
+  local1 = &data_009200[*arg_0x0c.vertex02]; // esi 
+  } 
+  if (*data_009200[*arg_0x0c.vertex01][5] == 0) 
+  { 
+  local2 = func_001470(*arg_0x0c.vertex01, *arg_0x08); // [ebp+0x04] 
+  } 
+  else 
+  { 
+  local2 = &data_009200[*arg_0x0c.vertex01]; // [ebp+0x04] 
+  } 
+  if (*data_009200[*arg_0x0c.vertex04][5] == 0) 
+  { 
+  local3 = func_001470(*arg_0x0c.vertex04, *arg_0x08); // [ebp+0x08] 
+  } 
+  else 
+  { 
+  local3 = &data_009200[*arg_0x0c.vertex04]; // [ebp+0x08] 
+  } 
+  if (*data_009200[*arg_0x0c.vertex03][5] == 0) 
+  { 
+  local4 = func_001470(*arg_0x0c.vertex03, *arg_0x08); // eax 
+  } 
+  else 
+  { 
+  local4 = &data_009200[*arg_0x0c.vertex03]; // eax 
+  } 
+  local5=*local2[6]-*local4[6]; local6=*local2[7]-*local4[7]; local7=*local2[8]-*local4[8]; 
+  local6=*local3[6]-*local4[6]; local3=*local2[7]-*local4[7]; local8=*local3[8]-*local4[8]; 
+  local9=*local1[6]-*local4[6]; local10=*local1[7]-*local4[7]; local11=*local1[8]-*local4[8]; 
+  func_1867(...); 
+  return; 
+} 
+

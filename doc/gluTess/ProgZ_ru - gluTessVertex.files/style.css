@@ -1,0 +1,102 @@
+A.main {
+	FONT-SIZE: 10pt; COLOR: #003399; FONT-FAMILY: verdana, tahoma, 'times new roman'; TEXT-DECORATION: none
+}
+A.main:hover {
+	FONT-SIZE: 10pt; COLOR: #3366cc; FONT-FAMILY: verdana, tahoma, 'times new roman'; TEXT-DECORATION: underline
+}
+A.main-small {
+	FONT-SIZE: 8pt; COLOR: #003399; FONT-FAMILY: verdana, tahoma, 'times new roman'; TEXT-DECORATION: none
+}
+A.main-small:hover {
+	FONT-SIZE: 8pt; COLOR: #3366cc; FONT-FAMILY: verdana, tahoma, 'times new roman'; TEXT-DECORATION: underline
+}
+A.menu {
+	FONT-SIZE: 8pt; COLOR: white; FONT-FAMILY: tahoma, verdana, 'times new roman'; TEXT-DECORATION: none
+}
+A.menu:hover {
+	FONT-SIZE: 8pt; COLOR: white; FONT-FAMILY: tahoma, verdana, 'times new roman'; TEXT-DECORATION: underline
+}
+A.pages {
+	FONT-SIZE: 8pt; COLOR: #3c3c3c; FONT-FAMILY: verdana, tahoma, 'times new roman'; TEXT-DECORATION: none
+}
+A.pages:hover {
+	FONT-SIZE: 8pt; COLOR: #3c3c3c; FONT-FAMILY: verdana, tahoma, 'times new roman'; TEXT-DECORATION: underline
+}
+.text {
+	PADDING-RIGHT: 10px; PADDING-LEFT: 10px; FONT-SIZE: 10pt; COLOR: black; FONT-FAMILY: verdana, tahoma, 'times new roman'; TEXT-ALIGN: justify
+}
+.issue {
+	PADDING-LEFT: 10px; FONT-SIZE: 8pt; BACKGROUND: #6699cc; PADDING-BOTTOM: 3px; COLOR: white; PADDING-TOP: 2px; BORDER-BOTTOM: #f3f3f3 1px solid; FONT-FAMILY: tahoma, verdana, 'times new roman'
+}
+.caption {
+	PADDING-LEFT: 10px; FONT-SIZE: 8pt; BACKGROUND: #003366; PADDING-BOTTOM: 3px; COLOR: white; PADDING-TOP: 2px; BORDER-BOTTOM: #f3f3f3 1px solid; FONT-FAMILY: tahoma, verdana, 'times new roman'
+}
+.black {
+	FONT-SIZE: 10pt; COLOR: black; FONT-FAMILY: verdana, tahoma, 'times new roman'
+}
+.black-small {
+	FONT-SIZE: 8pt; COLOR: black; FONT-FAMILY: verdana, tahoma, 'times new roman'
+}
+.code {
+	PADDING-RIGHT: 20px; BACKGROUND-POSITION: 0% 0%; PADDING-LEFT: 20px; FONT-SIZE: 10pt; COLOR: black; BACKGROUND-REPEAT: repeat; FONT-FAMILY: 'courier new'; BACKGROUND-COLOR: #f0f8ff
+}
+.warning {
+	PADDING-RIGHT: 20px; PADDING-LEFT: 20px; FONT-SIZE: 10pt; BACKGROUND: lemonchiffon; COLOR: black; FONT-FAMILY: 'courier new'
+}
+.normal {
+	BORDER-RIGHT: black 1px solid; PADDING-RIGHT: 5px; BORDER-TOP: black 1px solid; PADDING-LEFT: 5px; FONT-SIZE: 8pt; BORDER-LEFT: black 1px solid; COLOR: black; BORDER-BOTTOM: black 1px solid; FONT-FAMILY: Verdana, Tahoma, 'Times New Roman'
+}
+LI {
+	FONT-SIZE: 10pt; COLOR: black; FONT-FAMILY: verdana, tahoma, 'times new roman'
+}
+H1 {
+	FONT-SIZE: 12pt; COLOR: black; FONT-FAMILY: verdana, tahoma, 'times new roman'; TEXT-ALIGN: center
+}
+H2 {
+	FONT-SIZE: 12pt; COLOR: black; FONT-FAMILY: verdana, tahoma, 'times new roman'; TEXT-ALIGN: left
+}
+TEXTAREA {
+	BORDER-RIGHT: black 1px solid; BORDER-TOP: black 1px solid; FONT-SIZE: 8pt; BORDER-LEFT: black 1px solid; BORDER-BOTTOM: black 1px solid; FONT-FAMILY: verdana, tahoma, 'times new roman'
+}
+INPUT {
+	BORDER-RIGHT: black 1px solid; BORDER-TOP: black 1px solid; FONT-SIZE: 8pt; BORDER-LEFT: black 1px solid; BORDER-BOTTOM: black 1px solid; FONT-FAMILY: verdana, tahoma, 'times new roman'
+}
+.gen {
+	FONT-SIZE: 12px
+}
+.genmed {
+	FONT-SIZE: 11px
+}
+.gensmall {
+	FONT-SIZE: 10px
+}
+.gen {
+	COLOR: #000000
+}
+.genmed {
+	COLOR: #000000
+}
+.gensmall {
+	COLOR: #000000
+}
+A.gen {
+	COLOR: #006699; TEXT-DECORATION: none
+}
+A.genmed {
+	COLOR: #006699; TEXT-DECORATION: none
+}
+A.gensmall {
+	COLOR: #006699; TEXT-DECORATION: none
+}
+A.gen:hover {
+	COLOR: #dd6900; TEXT-DECORATION: underline
+}
+A.genmed:hover {
+	COLOR: #dd6900; TEXT-DECORATION: underline
+}
+A.gensmall:hover {
+	COLOR: #dd6900; TEXT-DECORATION: underline
+}
+.code {
+	BORDER-RIGHT: #d1d7dc 1px solid; BORDER-TOP: #d1d7dc 1px solid; FONT-SIZE: 11px; BORDER-LEFT: #d1d7dc 1px solid; COLOR: #000000; BORDER-BOTTOM: #d1d7dc 1px solid; FONT-FAMILY: Courier, 'Courier New', sans-serif; BACKGROUND-COLOR: #fafafa
+}

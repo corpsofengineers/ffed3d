@@ -1,0 +1,442 @@
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+From:    Theunis de Jong <t.jong33@chello.nl>
+To:      dreamzzz@pisem.net <dreamzzz@pisem.net>
+Date:    Thursday, May 18, 2006, 4:30:01 AM
+Subject: Model variables
+Files:   <none>
+--====----====----====----====----====----====----====----====----====----===--
+Hi DreamZzz!
+
+I saw on Elite Kanal you're having some troubles with the interpretation of
+the internal model structure. Did you patch JJFFE to access those values? In
+that case some offsets of the structures may come in handy :) All names and
+data types here are mine. So there *may* be some erorrs in them; and a lot
+of unknowns... *sigh*
+
+A single 3D model (just for reference; same as on my web page):
+00000000 Model_t         struc ; (sizeof=0X44)
+00000000 Mesh_ptr        dd ?                    ; offset
+00000004 Vertices_ptr    dd ?                    ; offset
+00000008 NumVertices     dd ?
+0000000C Normals_ptr     dd ?                    ; offset
+00000010 NumNormals      dd ?
+00000014 Scale           dd ?
+00000018 Scale_b         dd ?                    ; ?? added to Scale for
+planets?
+0000001C Radius          dd ?
+00000020 Primitives      dd ?
+00000024 DefaultColor    rgb3 ?
+00000027 padding         db ?
+00000028 unknown_1       dd ?
+0000002C unknown_2       dd ?
+00000030 unknown_3       dd ?
+00000034 Collision_ptr   dd ?                    ; offset to ?? words??
+00000038 Shipdef_ptr     dd ?                    ; offset
+0000003C LinefeedCharacter dd ?
+00000040 Character[1]    dd ?                    ; offset
+00000044 Model_t         ends
+
+The input in the game itself is a Model Instance; this is *a single ship*,
+or any other 3D object in the game. If you see 3 Vipers coming at you,
+that's THREE different model instances, each with their own position,
+velocity, and unique id.
+00000000 ModelInstance_t struc ; (sizeof=0X152)
+00000000 Matrix_00       dd ?
+00000004 Matrix_01       dd ?
+00000008 Matrix_02       dd ?
+0000000C Matrix_10       dd ?
+00000010 Matrix_11       dd ?
+00000014 Matrix_12       dd ?
+00000018 Matrix_20       dd ?
+0000001C Matrix_21       dd ?
+00000020 Matrix_22       dd ?
+00000024 uchar_24        db ?                    ; set to 3Ch?
+00000025 uchar_25        db ?
+00000026 xpos_div_4000h  dd ?
+0000002A ulong_2A        dd ?                    ; set to 0 or -1?
+0000002E ypos_div_4000h  dd ?
+00000032 ulong_32        dd ?
+00000036 zpos_div_4000h  dd ?
+0000003A ulong_3A        dd ?
+0000003E Point64_3E      Point3d_64_t ?          ; object position?
+00000056 parent_index    db ?                    ; Parent object of current
+00000057 uchar_57        db ?                    ; 1 if ON a planet? (eg.,
+city, ship?)
+00000058 uchar_58        db ?
+00000059                 db ? ; undefined
+0000005A field_5A        db ?                    ; --another matrix?
+0000005B                 db ? ; undefined
+0000005C                 db ? ; undefined
+0000005D                 db ? ; undefined
+0000005E                 db ? ; undefined
+0000005F                 db ? ; undefined
+00000060                 db ? ; undefined
+00000061                 db ? ; undefined
+00000062                 db ? ; undefined
+00000063                 db ? ; undefined
+00000064                 db ? ; undefined
+00000065                 db ? ; undefined
+00000066                 db ? ; undefined
+00000067                 db ? ; undefined
+00000068                 db ? ; undefined
+00000069                 db ? ; undefined
+0000006A                 db ? ; undefined
+0000006B                 db ? ; undefined
+0000006C field_6C        dd ?                    ; used in vertex calcs?
+00000070                 db ? ; undefined
+00000071                 db ? ; undefined
+00000072                 db ? ; undefined
+00000073                 db ? ; undefined
+00000074                 db ? ; undefined
+00000075                 db ? ; undefined
+00000076                 db ? ; undefined
+00000077                 db ? ; undefined
+00000078                 db ? ; undefined
+00000079                 db ? ; undefined
+0000007A                 db ? ; undefined
+0000007B                 db ? ; undefined
+0000007C                 db ? ; undefined
+0000007D                 db ? ; undefined
+0000007E model_scale     dd ?
+00000082 model           dw ?
+00000084 ambient_color_r db ?                    ; UNSURE! OVERLAPS OTHER
+STUFF
+00000085                 db ? ; undefined
+00000086 index_number    db ?                    ; of THIS model instance in
+list
+00000087 uchar_87        db ?                    ; if this is NOT 0Bh, no
+aggressive response?
+00000087                                         ; for planets: const 1
+00000088 uchar_88        db ?                    ; distance?? from current
+target? [see explosion, mining machine]
+00000089                 db ? ; undefined
+0000008A uchar_8A        db ?
+0000008B uchar_8B        db ?
+0000008C point3d__8C     Point3d_t ?             ; ??
+00000098 screenpos_x     dw ?
+0000009A screenpos_y     dw ?
+0000009C global_var0_TIME dw ?                   ; FIRST GLOBAL VAR
+0000009C                                         ; starTime >> 10
+0000009E HyperCloudIsArrival dw ?                ; VAR1:Starmap
+Display:10=Trade;80=Text
+0000009E                                         ; 0 < <0x20 is cargo type
+0000009E                                         ; & 1: landing gear down
+000000A0 unique_Id       dd ?
+000000A4 num_stars_in_sector dw ?                ; GLOBAL[4]
+000000A4                                         ; may also be dword:forced
+scale?
+000000A4                                         ; may also be:laser color
+selector
+000000A6 TypeOfStar      db ?                    ; for star sector model
+000000A7 NumMultipleStar db ?                    ; for star sector model
+000000A8 local_Startime  dd ?
+000000AC local_Stardate  dd ?
+000000B0 ScaledWord_B0   dw ?                    ; planet_t.orbitalradius
+000000B2 ushort_B2       dw ?                    ; angle?
+000000B4 ushort_B4       dw ?                    ; rotation value x shr 16?
+000000B6 ushort_B6       dw ?                    ; rotation value y shr 16?
+000000B6                                         ; current top thrust?
+000000B8 ushort_B8       dw ?                    ; rotation value z shr 16?
+000000B8                                         ; current side thrust?
+000000BA Current_Main_Thrust dw ?
+000000BC Thrust_BC       dw ?                    ; = minus rear thrust from
+model
+000000BE Thrust_BE       dw ?                    ; = rear thrust from model;
+000000BE                                         ; planet: dword = orbit
+angle << 10h
+000000C0 Thrust_C0       dw ?                    ; = minus rear thrust from
+model
+000000C2 Thrust_C2       dw ?                    ; = rear thrust from model
+000000C4 Max_Main_Thrust dw ?
+000000C6 Thrust_C6       dw ?                    ; = rear thrust from model
+000000C6                                         ; planet_t.longitude
+000000C8 BitwiseEquip_0  db ?                    ; planet_t.rotspeed
+000000C8                                         ; 04=Camera
+000000C8                                         ; 20=Navigation Computer
+000000C8                                         ; 40=Combat Computer
+000000C9 BitwiseEquip_1  db ?                    ; Also Traffic Control Busy
+flag #1;FFh=Busy with Vipers
+000000C9                                         ; 02=Missile Viewer
+000000C9                                         ; 08=Chaff dispenser
+000000CA BitwiseEquip_2  db ?                    ; 02=Cargo Bay Life Support
+000000CA                                         ; 04=Scanner (draws the
+stalks)
+000000CA                                         ; 08=(!? ECM? See
+Con_UpdateVariousButtons)
+000000CA                                         ; 10=Fuel Scoop ??
+000000CA                                         ; 20=Cargo Scoop ??
+000000CA                                         ; 40=Radar mapper
+000000CA                                         ; 80=Naval ECM
+000000CA                                         ; Also Traffic Control Busy
+with model #
+000000CB BitwiseEquip_3  db ?                    ; 01:Hyp.Analyser
+000000CB                                         ; 04:Energy Bomb
+000000CB                                         ; 40:Cargo scoop?
+000000CB                                         ; planet_t.field_3f
+000000CC negative_equipment_bits dw ?            ; [!!??] gets un-set when
+you get a camera
+000000CC                                         ; planet_t.field42 (local
+rotation?)
+000000CE TurretRot_1     dw ?                    ; ?? cant be rite. For
+Starports: WORD num_landingpads
+000000D0 current_hyperdrive db ?                 ; for starports: 1st of
+landing pads in use
+000000D1 num_gunmountings db ?                   ; from model
+000000D2 FrontGun        db ?
+000000D3 RearGun         db ?
+000000D4 TopTurretGun    db ?                    ; in primitives: Ball
+Radius
+000000D5 BottomTurretGun db ?
+000000D6 missile_0       db ?
+000000D7 missile_1       db ?
+000000D8 missile_2       db ?                    ; Also Traffic Control
+ready time?
+000000D9 missile_3       db ?
+000000DA missile_4       db ?
+000000DB missile_5       db ?
+000000DC missile_6       db ?                    ; word:number of Vipers in
+starport
+000000DD missile_7       db ?
+000000DE missile_8       db ?                    ; Starport:dw 0 ->Launched
+Vipers
+000000DF missile_9       db ?
+000000E0 ushort_E0       dw ?                    ; ship:hull mass?? x 64?
+000000E0                                         ; planet_t.temperature
+000000E2 ushort_E2       dw ?                    ; number of shield? x 64?
+000000E4 mass_x4         dw ?                    ; from model, times 4
+000000E6 orgModelShip    dw ?                    ; for hyperspace warp
+000000E8 ushort_E8       dw ?
+000000EA ushort_EA       dw ?                    ; fuel in tank?
+000000EC ushort_EC       dw ?                    ; short x?
+000000EE ushort_EE       dw ?                    ; short y?
+000000F0 vertex_level    dw ?                    ; Level counter for this
+model
+000000F2 HyperCloudSource db ?
+000000F3                 db ? ; undefined
+000000F4 local_red       db ?
+000000F5 local_green     db ?
+000000F6 ushort_F6       dw ?
+000000F8 ushort_F8       dw ?
+000000FA ulong_FA        dd ?                    ; random id?
+000000FE CurrentDestination_index db ?
+000000FF flag_FF         db ?                    ; Routine at 4DECC0 to call
+000000FF                                         ; 4 if attacking this?
+00000100 currentTargetIndex_100 db ?             ; another index number?
+00000101 uchar_101       db ?                    ; 0, 1, 2 for more powerful
+reverse thrusts?
+00000102 ushort_102      dw ?
+00000104 ushort_104      dw ?
+00000106 ushort_106      dw ?
+00000108 ushort_vx       dw ?
+0000010A ushort_vy       dw ?
+0000010C ushort_vz       dw ?
+0000010E ushort_10E      dw ?                    ; vector scale?
+00000110 ushort_110      dw ?
+00000112 ushort_112      dw ?
+00000114 ushort_114      dw ?
+00000116 cargo_free      dw ?
+00000118 db_118          db ?                    ; 1 if not aggressive? [on
+'haha' answer]
+00000118                                         ; FB=Agressive (may have
+bonus)
+00000118                                         ; FF=This is the player?
+00000119 db_119          db ?                    ; other ship's fuel amount?
+0000011A DestroyBonus    dd ?
+0000011E ulong_11E       dd ?                    ; Amount of fuel in tank?
+00000122 field_122       db 2 dup(?)
+00000124 name            db 20 dup(?)            ; 20 bytes
+00000138 int64_138       dq ?
+00000140 int64lo_140     dd ?
+00000144 int64hi_144     dd ?
+00000148 org_model_scale dd ?                    ; Original model scale?
+0000014C flags_14C       db ?                    ; 10h -> can dock
+0000014C                                         ; 20h -> is orbiter
+0000014C                                         ; 40h -> has external pads
+0000014C                                         ; & 7: Star Ambient color
+number
+0000014D uchar_14D       db ?
+0000014E uchar_14E       db ?                    ; 6 for cargo pod
+0000014F uchar_14F       db ?                    ; == 2 for ECM/Naval ECM
+0000014F                                         ; == 7 for Energy Bomb
+00000150 uchar_150       db ?
+00000151 flags_151       db ?                    ; which guns are firing??
+00000151                                         ; 20h:ECM/Naval ECM
+00000151                                         ; 40h:Energy Bomb
+00000152 ModelInstance_t ends
+
+I apologize for the question marks and unnamed fields ;-) The comments are
+guesses, based on the position where the fields are used in the code, some
+with values they are set to.
+The first 9 longs are the rotation matrix. And do you see the GLOBAL values
+in this? They are filled when the model is created, and updated when
+necessary (e.g., the TIME). Add the global variable number to
+global_var0_TIME (in WORDS) to see what value is used where in the models.
+The Point3d_t at offset 0000008C is an x,y,z value (it may be actual model
+coordinates) -- there is a copy of this with all values divided by 0x4000
+(maybe for interplanetary travel??). The Point64_3E at offset 0000003E are
+quadwords x,y,z and may be a (very) high resolution position.
+This structure is used for each separate model in the 'current' system:
+ships, debris, asteroids, stars, planets, moons and cities. It gets created
+when you enter a system. The list in memory might also contain objects in
+*other* systems. I believe the MB4 was an omission in the original game; but
+if you take a contract on someone his ship gets placed into another
+starsystem, and is ready for you when you get there.
+The gametime/date members aren't always straight copies of the *real*
+values; for instance, for a hyperspace warp, it's the arrival date and time.
+The name field should hold the actual name of the object (after expanding
+variables in the text strings); this is where the text command 3016h looks
+for it.
+
+The game moves ships around using this structure for every object. For
+instance, the flag_FF field seems to hold an offset into a list of routines
+which decides what to do next (for the player, input and movement; for
+enemies, when to target and fire lasers, missiles; etc.).
+
+As soon as something must be drawn on screen a lot of this data is copied to
+yet another structure: the DrawModel. This contains everything you actually
+need to draw it on screen. Again, a lot of unknowns...
+
+00000000 DrawMdl_t       struc ; (sizeof=0X15C)
+00000000 lpModel_t       dd ?                    ; Pointer to actual 3D
+Model_t used
+00000004 Point3d_Position Point3d_t ?            ; actual center position
+00000010                 db ? ; undefined
+00000011                 db ? ; undefined
+00000012                 db ? ; undefined
+00000013                 db ? ; undefined
+00000014 Matrix_14       Matrix_t ?
+00000038 Point3d_38      Point3d_t ?             ; might be Lighting vector!
+00000044 Scale_44        dd ?
+00000048 Vector          Vector3D_t ?
+00000054 localvar_0      dd ?
+00000058 localvar_1      dd ?
+0000005C localvar_2      dd ?
+00000060 localvar_3      dd ?
+00000064 localvar_4      dd ?
+00000068 localvar_5      dd ?
+0000006C localvar_6      dd ?
+00000070 lpExtraVertex_Center dd ?
+00000074 lpExtraVertex_0 dd ?                    ; ..for subobjects
+00000078 lpExtraVertex_1 dd ?                    ; ..for subobjects
+0000007C lpExtraVertex_2 dd ?                    ; ..for subobjects
+00000080 lpExtraVertex_3 dd ?                    ; ..for subobjects
+00000084 rgb3array_84    rgb3 8 dup(?)
+0000009C Matrix_9C_Alt   Matrix_t ?
+000000C0 TextPoint       Point3d_t ?
+000000CC packedcolor     dd ?                    ; 0000:0R:GB (pos in color
+cube)
+000000D0                 db ? ; undefined
+000000D1                 db ? ; undefined
+000000D2                 db ? ; undefined
+000000D3                 db ? ; undefined
+000000D4 field_D4        dd ?                    ; Last actual (shifted)
+radius for single ball
+000000D8                 db ? ; undefined
+000000D9                 db ? ; undefined
+000000DA                 db ? ; undefined
+000000DB                 db ? ; undefined
+000000DC                 db ? ; undefined
+000000DD                 db ? ; undefined
+000000DE                 db ? ; undefined
+000000DF                 db ? ; undefined
+000000E0                 db ? ; undefined
+000000E1                 db ? ; undefined
+000000E2                 db ? ; undefined
+000000E3                 db ? ; undefined
+000000E4                 db ? ; undefined
+000000E5                 db ? ; undefined
+000000E6                 db ? ; undefined
+000000E7                 db ? ; undefined
+000000E8                 db ? ; undefined
+000000E9                 db ? ; undefined
+000000EA                 db ? ; undefined
+000000EB                 db ? ; undefined
+000000EC                 db ? ; undefined
+000000ED                 db ? ; undefined
+000000EE                 db ? ; undefined
+000000EF                 db ? ; undefined
+000000F0 counter         dd ?                    ; holds current vertexcalc
+level
+000000F4 LocalColor_rgb  rgb3 ?
+000000F7                 db ? ; undefined
+000000F8 ForceMirror     dd ?
+000000FC ForceMirror_Alt dd ?
+00000100                 db ? ; undefined
+00000101                 db ? ; undefined
+00000102                 db ? ; undefined
+00000103                 db ? ; undefined
+00000104 field_104       dd ?
+00000108 screencoord_108 ScreenCoord_t ?
+0000010C field_10C       dd ?
+00000110 screencoord_110 ScreenCoord_t ?
+00000114 lpVertexCache   dd ?                    ; <-
+00000114                                         ;
+00000118 field_118       dd ?                    ; current num of calc.
+normals?
+0000011C tempVector      Vector3D_t ?            ; Rotated normal value??
+00000128 field_128       dd ?                    ; -1 if end drawing?
+0000012C field_12C       dd ?
+00000130 alt_Scale       dd ?                    ; init to 0, for planets to
+Scale2
+00000134 LightPoint_134  Point3d_t ?             ; light source position
+00000140                 db ? ; undefined
+00000141                 db ? ; undefined
+00000142                 db ? ; undefined
+00000143                 db ? ; undefined
+00000144                 db ? ; undefined
+00000145                 db ? ; undefined
+00000146                 db ? ; undefined
+00000147                 db ? ; undefined
+00000148 ActualScale     dd ?                    ; ..from Model_t
+0000014C lpModelInstance_14C dd ?
+00000150 ptr_ModelVertices dd ?
+00000154 ptr_ModelNormals dd ?                   ; ... BYTE PTR
+00000158 field_158       db ?
+00000159 field_159       db ?
+0000015A field_15A       db ?
+0000015B field_15B       db ?
+0000015C DrawMdl_t       ends
+
+Here you see another of my types: the vector. I guess it should be
+normalized to length 128, just as the normals in the models are. The
+screencoord_t contains short values x and y. The lpVertexCache should point
+to an empty vertex array for the current model, where to store *actual*
+relative x,y,z (*after* doing the variable/interpolating stuff), *absolute*
+x,y,z (after doing the transformations) and screen x,y (after transforming
+to the screen). Note how "shortcut" pointers are defined to point to the
+original ModelInstance, the original Model_t and the Model_t Vertices and
+Normals. Here you also find the LOCAL variables (for *this* model) and its
+current local colour. Matrix_9C_Alt is the 'alternate' matrix, used in some
+rotation commands. The ForceMirror and Alt_ForceMirror are used to track if
+text should be mirrored; the TextPos point is the 'current' cursor pos while
+drawing a text string.
+The rgb color type seems to hold temporary color values (for shading??).
+The lpExtraVertex pointers should point into this models' parent vertex
+cache, this is where they get their actual values from. I didn't examine the
+Normals any further, they seem to have a cache of their own, with associated
+shade values.
+
+The PlayerVariables struct is a real mess! I won't include it here, because
+at present it has  > 500 members, and that's even not enough; the code
+refers to offset playervars+5000h and beyond... I think it's quite absurd
+Braben coded this as a structure -- there is only *one* PlayerVaraibles
+variable in the entire game (so much for multiplayer mods). Anyway, it holds
+things like your current ship (as a pointer to a ModelInstance), your cash,
+cargo, status, position, your contracts and MB4s, your ranks, the name of
+the current system, a whole lot of newspaper crap, and more.
+
+For my Mesh Viewer I created sort of my own DrawModel structure; it should
+contain everything you need to show a single model. I guess if I wrap it up
+into ModelInstances I end up with a working game :-) But seriously, I think
+accurate parsing of the DrawModel data is enough to make a REAL hi-rez FFE.
+
+Phew! What a long story. If anything is unclear -- well, that is, apart from
+the many question marks! -- just ask.
+
+Success :)
+Theunis de Jong
+aka [Jongware]
+
+
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
