@@ -1,0 +1,770 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3c.org/TR/1999/REC-html401-19991224/loose.dtd">
+<!-- saved from url=(0036)http://www.jongware.com/galaxy8.html -->
+<HTML><HEAD><TITLE>The Frontier Galaxy VIII</TITLE>
+<META http-equiv=Content-Type content="text/html; charset=windows-1251">
+<META content="Theunis de Jong" name=Author>
+<META content="FFE StarSys Home" name=Description>
+<META content="MSHTML 6.00.2900.2180" name=GENERATOR>
+<META 
+content="Frontier, First Encounters, FE2, FFE, JJFFE, galaxy, source code, jongware" 
+name=keywords><LINK href="http://www.jongware.com/favicon.ico" 
+rel="shortcut icon"><LINK href="The Frontier Galaxy VIII.files/styles003.css" 
+type=text/css rel=stylesheet></HEAD>
+<BODY text=#000000 vLink=#00334d aLink=#00334d link=#00334d bgColor=#ffffff>
+<TABLE class=black width="100%" border=0>
+  <TBODY>
+  <TR>
+    <TD align=middle width="100%"><IMG alt=[Jongware] 
+      src="The Frontier Galaxy VIII.files/jongware.gif"></TD></TR>
+  <TR>
+    <TD align=right><SMALL>Most recent update (All By Hand(TM)): 16-Apr-2006 
+      01:49</SMALL></TD></TR></TBODY></TABLE>
+<TABLE width="100%" border=0>
+  <TBODY>
+  <TR vAlign=top>
+    <TD class=sidebar width="20%">
+      <TABLE class=sidebaritem width="100%" border=0><!--tr><td class="sidebaritem_back"><a class="internal" href="index.html">Back home</a></td></tr-->
+        <TBODY>
+        <TR>
+          <TD class=sidebaritem colSpan=2><A class=internal 
+            href="http://www.jongware.com/index.html">FFE Starsys page</A></TD></TR>
+        <TR>
+          <TD>&nbsp;</TD></TR>
+        <TR>
+          <TD class=sidebaritem colSpan=2><B><FONT color=white>The Frontier 
+            Galaxy</FONT></B></TD></TR>
+        <TR>
+          <TD>&nbsp;</TD>
+          <TD class=sidebaritem><A 
+            href="http://www.jongware.com/galaxy1.html">My God- It's full of 
+            stars!</A></TD></TR>
+        <TR>
+          <TD>&nbsp;</TD>
+          <TD class=sidebaritem><A 
+            href="http://www.jongware.com/galaxy2.html">Distant suns</A></TD></TR>
+        <TR>
+          <TD>&nbsp;</TD>
+          <TD class=sidebaritem><A 
+            href="http://www.jongware.com/galaxy3.html">They Call Me The 
+            Wanderer</A></TD></TR>
+        <TR>
+          <TD>&nbsp;</TD>
+          <TD class=sidebaritem><A 
+            href="http://www.jongware.com/galaxy4.html">Getting to the Floating 
+            Point</A></TD></TR>
+        <TR>
+          <TD>&nbsp;</TD>
+          <TD class=sidebaritem><A 
+            href="http://www.jongware.com/galaxy5.html">A Planet By Any Other 
+            Name</A></TD></TR>
+        <TR>
+          <TD>&nbsp;</TD>
+          <TD class=sidebaritem><A 
+            href="http://www.jongware.com/galaxy6.html">Random Synaptic 
+            Firings</A></TD></TR>
+        <TR>
+          <TD>&nbsp;</TD>
+          <TD class=sidebaritem><A 
+            href="http://www.jongware.com/galaxy7.html">Frontier 
+        Objects</A></TD></TR>
+        <TR>
+          <TD>&nbsp;</TD>
+          <TD class=sidebaritem>The Flat Facts</TD></TR>
+        <TR>
+          <TD>&nbsp;</TD></TR>
+        <TR>
+          <TD class=sidebaritem colSpan=2><B><FONT 
+          color=white>Other</FONT></B></TD></TR>
+        <TR>
+          <TD>&nbsp;</TD>
+          <TD class=sidebaritem><A title="Who is this guy anyway?" 
+            href="http://www.jongware.com/jongware.html">A Timeline of 
+            Jongware</A><BR><SPAN class=updated>Updated: 
+14-May-2005</SPAN></TD></TR>
+        <TR>
+          <TD>&nbsp;</TD>
+          <TD class=sidebaritem><A title="Most recent code project" 
+            href="http://www.jongware.com/truelove.html">A True Love 
+            story</A><BR><SPAN class=updated>Updated: 14-May-2005</SPAN></TD></TR>
+        <TR>
+          <TD>&nbsp;</TD></TR>
+        <TR>
+          <TD class=sidebaritem colSpan=2><A class=internal 
+            title="Kilroy was here" 
+            href="http://www.jongware.com/GuestBookG">Guestbook!</A></TD></TR></TBODY></TABLE></TD>
+    <TD class=text>
+      <P>&nbsp;</P>
+      <P align=right><I>Oh yeah I used to know Quentin<BR>He's a real- he's a 
+      real jerk</I><BR>Mr Oizo, <I>Flat Beat</I></P>
+      <P>&nbsp;</P>
+      <H1>The Frontier Galaxy VII: The Flat Facts</H1>
+      <P>To see the difference between even the most advanced flat shading and 
+      the simplest texture mapping, just look at the computer images in the 1984 
+      movie "The Last Starfighter". The CGI were produced on a Cray X-MP 
+      supercomputer, and it reportedly took about 4 minutes to render each 
+      frame. Nice, huh? Now look at Frontier. Fewer triangles, no advanced 
+      shading (just flat, using a 4-4-4 bit RGB palette) but they are textured. 
+      Better? (Aww, come on. Say "Better!")</P>
+      <P>&nbsp;</P>
+      <P>The whole difference is that the world you see around you <I>is not 
+      flat</I>. It takes a large number of triangles before you can see anything 
+      like grains in a non-textured image, and you can get a same effect with 
+      just a single textured rectangle. Despite Frontier being a true 3D game, 
+      it uses flat images a lot. For example, in modern games the console is 
+      rendered in 3D because you can use all the different screen resolutions 
+      you want, and because, well, with modern hardware it is just 
+      <I>slightly</I> slower than blitting an image to the screen (and an 
+      additional trick to speed it up is to render the console once into a 
+      buffer and then render <I>that</I> one). For Frontier the console is just 
+      a bitmap somewhere in the main executable program; on-off buttons are 
+      separate bitmaps, so is the font, and so are the textures on the 3D 
+      models.</P>
+      <H2>The Image List</H2>
+      <P>In FE2 the graphics were scattered all around the program, and no doubt 
+      the programmers learned from that the hard way. In FFE there is a single 
+      list of pointers to all the bitmaps you'd ever want (strictly speaking, 
+      not <I>every</I> bitmap -- but the main lot is; also, probably not 
+      <I>all</I> the bitmaps you'd ever want, but just those from the game).</P>
+      <P>There are a couple of essential parameters for bitmaps: width and 
+      height spring first to mind. Another thing is a bitmap hotspot coordinate: 
+      the bitmap coordinate which is taken to be (0,0) when blitted to the 
+      screen. Take, for example, the aiming cross; it is useful if you want to 
+      point it to, say, the center of the screen, and you don't have to subtract 
+      half its width and half its height of the screen coordinates. Just 
+      subtract the values in the hotspot, and presto, you have the correct 
+      screen position.</P>
+      <BLOCKQUOTE><U>That is a lie</U>. The aiming cross has in fact a hotspot 
+        of (0,0), and, come to think of it, so have all the other bitmaps. Even 
+        worse is that the only piece of blitting code which actually <I>uses</I> 
+        the hotspot is the routine which blits the mouse pointer -- that's how I 
+        know what it is supposed to be. And the mouse pointer <I>also</I> has a 
+        (0,0) hotspot.<BR>But, hey, I'm trying to tell you how the game works, 
+        not what the programmers were thinking of.</BLOCKQUOTE>
+      <P>It is quite useful to know whether a bitmap is masked is not -- if it 
+      uses transparent pixels instead of being a dull and boring square. One 
+      well known trick is to create a separate mask of the same size, in which 
+      the transparent pixels are black and opaque ones are white (or even shades 
+      of gray to perform alpha tricks). Another possibility is to compress the 
+      bitmap, where a special code is used for a "run" of transparent pixels 
+      (and the compression itself would also be quite useful). FFE uses a third 
+      common method: pixels with a certain color value are never drawn on the 
+      screen, and, no doubt because of the easy test, this usually is the value 
+      "0". It would be a real bummer if all images were always tested for 
+      transparent pixels; not only is it a waste of time if you can tell 
+      beforehand whether to test or not, but it would eat up a whole color of 
+      the precious limited number; the wise thing to do is to store a flag in 
+      the bitmap header for transparency.</P>
+      <P>&nbsp;</P>
+      <P>Putting the useful and otherwise bits in the right order, we get this 
+      structure definition:</P><PRE>typedef struct {
+    unsigned char  Transparent;
+    unsigned char  height;
+    unsigned short width;
+    unsigned short hot_x;
+    unsigned short hot_y;
+} bitimage_t;</PRE>
+      <P><CODE>Transparent</CODE> is a single bit; <CODE>height</CODE> is an 
+      unsigned char and thus limits the actual bitmap height to &lt;= 255 pixels 
+      (I imagine the programmers didn't look to the future then!), but, 
+      fortunately, <CODE>width</CODE> is a whole short so the images can be as 
+      wide as 65535 pixels.</P>
+      <P>The final shorts are <CODE>hot_x</CODE> and <CODE>hot_y</CODE>, and if 
+      you want to <I>make</I> them useful you'd have to patch the mouse 
+      pointer.</P>
+      <P>Each separate image in the image list points to a structure like this; 
+      right after the structure the actual image bytes follow, at least width &#215; 
+      height, and followed by padding zeros where necessary to force the next 
+      structure to a 4-byte boundary (the compiler does that).</P>
+      <P>&nbsp;</P>
+      <P>The images are all palette-indexed, so another useful thing would be 
+      the actual color palette. Frontier does some amazing tricks with the 
+      limited number of colors, and rather a large part of the code is devoted 
+      to shifting just the palette around, using all kinds of in-use and update 
+      flags. It appears the first 128 colors of the palette are fixed to the 
+      colors used in the UI; the top half is used for 3D modelling, and can be 
+      changed when necessary for every single frame.</P>
+      <BLOCKQUOTE>If you must know. The internal palette for the 3D models is 
+        16x16x16 <I>values</I>; only four bits per color channel, where the 
+        actual VGA palette supports 6 bits and true color supports 8. The 
+        program maintains an array of 4096 bytes to translate between a "real" 
+        RGB value and the palette index used for that color; a large number of 
+        routines and flags select the "optimal" 128 <I>actual</I> colors out of 
+        those. It appears the 128 fixed colors also have their place in this 
+        array (though they probably have a flag saying <I>don't change 
+      me</I>).</BLOCKQUOTE>
+      <P>&nbsp;</P>
+      <P>The bottom of the 128 color palette looks like this -- you'll need it 
+      if you want to display the graphics yourself:</P>
+      <P align=center><IMG 
+      src="The Frontier Galaxy VIII.files/bitmap_palette.gif"><BR><SMALL>Although 
+      the image contains the corrects RGB values, the palette order in the GIF 
+      is<BR>messed up. The order as shown in the image is correct. I'll try to 
+      make a better one...</SMALL></P>
+      <P>&nbsp;</P>
+      <P>To peep into the colorful guts of FFE I wrote a small(ish) program, the 
+      <A class=internal 
+      href="http://www.jongware.com/binaries/frontierimages.zip">Frontier Image 
+      Viewer</A>. It's for Windows only, but if you're lucky to use that (... 
+      not even a joke intended...) you can see just about all images in the file 
+      <B>firstenc.dat</B> (the one supplied with your original FFE; it should be 
+      2,101,248 bytes large). An additional Texture toggle switches to showing 
+      the texture bitmaps in the appropriate colors. Don't do that yet -- the 
+      story on the textures comes right after this.</P>
+      <P>&nbsp;</P>
+      <P>If you look at the different images using the Image Viewer, you'll see 
+      they fall broadly into two categories. The "properly" colored images are 
+      those used in the UI, the dull grey ones are used for textures.</P>
+      <P>Among the UI images you can find the journal headings, the different 
+      stars and planets from the System info screen, and an entire console in 
+      its "off" state (# 43). On top of this console the various buttons and 
+      indicators are drawn in either "off" or "on" state (they start at image 
+      #102), as well as the center scanner (images 254 to 261) and the different 
+      missile types (#276 and onwards). There is a special structure in the 
+      game, defining which bitmaps are on which x and y coordinates; this 
+      structure also defines the width and height of the "clickable" region for 
+      that button and which key press to send to the game. The structure gets 
+      updated every time the console needs to be redefined for a different 
+      function; fairly regular stuff all.</P>
+      <H2>The Textures List</H2>
+      <P>The dull grey images are used for 3D texture mapping. They appear dull 
+      grey because they only use the first 7 colors in the palette, and they get 
+      their (initial!) color from yet another structure:</P><PRE>typedef struct {
+    int image;
+    int number_of_colors;
+    unsigned char rgb[7][3];
+    unsigned char padding;
+} texture_t;</PRE>
+      <P class=hang><CODE>image</CODE> is the image number in the huge image 
+      list. There is a single texture (#21) where the image value is out of 
+      range: 0x303F; when looking at the texturing code I found that the 
+      <CODE>image</CODE> number gets masked with <CODE>0xfff</CODE> to get rid 
+      of the extra bits, but I couldn't find where and why they might be used. 
+      This value might as well be a remnant of some earlier version of the 
+      code.</P>
+      <P class=hang><CODE>number_of_colors</CODE> appears to indicate how many 
+      valid colors there are in the next item, <CODE>rgb</CODE>, but it actually 
+      is the value <CODE>7</CODE> in every texture definition (well, apart from 
+      texture #0).</P>
+      <P class=hang><CODE>rgb</CODE> is a simple array, mapping RGB values in 
+      the range 0..8 to each pixel in the original texture. Why this isn't in 
+      the full available range of 0..15, as I stated above? These are the 
+      <I>initial</I> colors of the texture, before applying any lighting 
+      effects. Lighting is done by adding a constant RGB value to these ones; 
+      this constant color is taken from the color of the nearest star. There are 
+      7 <CODE>rgb</CODE> values because the textures only use pixel numbers 0 to 
+      7 (in textures with transparency the color for number 0 is not used).</P>
+      <P class=hang>The <CODE>padding</CODE> byte aligns the structure to 
+      4-byte-values in memory.</P>
+      <P>The extra lighting for every type of star -- the ambient color -- is 
+      taken from this array:</P><PRE>unsigned char Ambient[7][8][3] = {
+    0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0, 0,0,0,  // none
+    7,7,7, 7,7,7, 7,7,7, 6,6,6, 5,5,5, 4,4,4, 3,3,3, 2,2,2,  // default
+    7,6,3, 7,5,2, 7,4,2, 6,3,1, 5,2,0, 4,1,0, 3,0,0, 2,0,0,  // Red
+    7,7,5, 7,6,4, 7,5,2, 6,4,0, 5,3,0, 4,2,0, 3,2,0, 2,1,0,  // Orange
+    7,7,7, 7,7,7, 6,6,6, 5,5,5, 4,4,4, 3,3,3, 2,2,2, 1,1,1,  // White
+    7,7,7, 7,7,7, 6,7,7, 6,6,7, 5,5,7, 4,4,7, 3,3,6, 2,2,4,  // Cyan
+    0,6,7, 0,5,7, 0,4,7, 0,3,7, 0,2,6, 0,1,5, 0,0,4, 0,0,2   // Blue
+};</PRE>
+      <P>.. I'm not too sure if the <CODE>none</CODE> color is used, it would 
+      render everything very dark. The <CODE>default</CODE> color is used to 
+      display ships in the shipyard and status screens. The definition of each 
+      star type holds the number to choose from for the rest.</P>
+      <P>Each color set has 8 brightness levels; they are used for flat shading. 
+      Coloring is simple: the values here are added to the current color and 
+      clipped when they are over 15, so the entire line for each texture pixel 
+      reads like</P><PRE>actual_red = max (Ambient[CurrentAmbient][CurrentShade][0]
+                   + texture[CurrentTexture].rgb[texture_pixel][0], 15)</PRE>
+      <P>... for red, and the same for green and blue. Then this RGB color has 
+      to be looked up in the current color array but I'll spare you that 
+one.</P>
+      <BLOCKQUOTE><I>Looking up</I> the color index to use is the easy part. 
+        It is the index on <CODE>red * 256 + green * 16 + blue</CODE> in the 
+        4096 byte array. But ask yourself, how did that color index get 
+      there?</BLOCKQUOTE>
+      <P>&nbsp;</P>
+      <P>The texture list consists of 147 <CODE>texture_t</CODE> items. Number 0 
+      is not shown in the Image Viewer because, for reasons unknown, its values 
+      are all zeros. Whereever a 3D model command uses a texture in its 
+      <CODE>MATERIAL</CODE> parameter, the texture to use is the number in 
+      <I>this</I> list.</P>
+      <BLOCKQUOTE>If you want to experiment with the textures, first make sure 
+        you know how to read arbitrary images from the image list. The list of 
+        pointers to the images start in <CODE>firstenc.dat</CODE> at offset 
+        0x19A9EC, the start of the first image is at offset 0x19AF5C (right 
+        after the image list -- it'll take some calculations to get the proper 
+        offset per image, but nothing too difficult). Next, download the <A 
+        class=internal href="http://www.jongware.com/texturelist.txt">texture 
+        list</A> and plug in your personal graphics routines. If that works you 
+        can try for yourself what happens when you add the different ambient 
+        colors to the textures. See the images below for a few 
+      examples.</BLOCKQUOTE>
+      <P>&nbsp;</P>
+      <P>If you run the Image Viewer you can see that there are a few 
+      duplicates; for example, textures 1 and 2 appear to be the same. That is 
+      not an error in the program! The structures are defined <I>exactly</I> the 
+      same, but texture #1 is used in the 3D models, and #2 is not...</P>
+      <P>There are a few same textures with different <CODE>rgb</CODE> color 
+      sets; this example shows the camouflage pattern and its variations:</P>
+      <P align=center><IMG 
+      src="The Frontier Galaxy VIII.files/bitmaps_camouflage.gif"></P>
+      <P>.. where the <I>image</I> is the same (#50) but the <CODE>rgb</CODE> 
+      color array differs.</P>
+      <P>The same four textures under (top) the brightest "Red Star" light and 
+      (bottom) a medium "Cyan Star" light look something like this:</P>
+      <P align=center><IMG 
+      src="The Frontier Galaxy VIII.files/bitmaps_camou_color.gif"></P>
+      <P>The colors look quite different than in the game, these images aren't 
+      remapped to 6 levels of RGB and so use the full range possible.</P>
+      <P>An example of textures with transparency is the background galaxy. The 
+      3D model is sort of wrap-around poster, divided into squares, and uses 
+      these textures:</P>
+      <P align=center><IMG 
+      src="The Frontier Galaxy VIII.files/bitmaps_galaxy.gif"></P>
+      <P>The entire Times font consists of textures with transparency. The 3D 
+      model for each character is a simple rectangle with the appropriate 
+      texture mapped onto it. Some characters look strangely stretched in the 
+      Image Viewer, but that's just the texture itself; the width of the 
+      <I>destination</I> rectangle is adjusted so the character looks normal 
+      again.</P>
+      <P>The white line visible at the bottom in the images for characters "Z" 
+      and "/" does not appear on the textured characters -- it may well be an 
+      artefact of the texture code itself, causing the bottom-most line never to 
+      be used.</P>
+      <P>&nbsp;</P>
+      <P>The texturing code itself is pretty straightforward. It examines 
+      whether the texture image is 64x64 or 128x128, and whether it contains 
+      transparent pixels or not. Based on that, one of four optimized routines 
+      is selected and fed with the source and destination coordinates; for a 
+      64x64 pattern, the source coordinates are always (0,0), (63,0), (0,63) and 
+      (63,63) and for a 128x128 pattern always (0,0), (127,0), (0,127) and 
+      (127,127). It follows from this the texturizer can't draw any random part 
+      of a texture, the entire pattern is always used (and, it seems, apart from 
+      the bottom line).</P>
+      <BLOCKQUOTE>Do four different routines look like hyper-optimizing code 
+        to you? Not to me. Transparent texturing deserves a routine for itself, 
+        but there is not a large difference between using fixed sizes (64 and 
+        128) and 'any' size. But what <I>really</I> drags the whole thing down 
+        for me is the restriction on the input coordinates. There is no actual 
+        reason to always use the same input coordinates for every texture map 
+        operation. The code, as it is now, is able to handle other input values! 
+        I confirmed this by changing the data in JJFFE on lines <PRE>DATA_007791:
+	dw 0x00,0x00, 0x3f,0x00 ; same as yours but rewritten as dw's
+	dw 0x00,0x3f, 0x3f,0x3f ; coz that's what they are</PRE>to other 
+        values; the game still runs fine, but with clipped textures! For 
+        example, this change: <PRE>DATA_007791:
+	dw 0x20,0x00, 0x3f,0x00 ; left in pair is x,right is y
+	dw 0x20,0x3f, 0x3f,0x3f</PRE>blits only the right half of the textures, 
+        as can be seen in the intro text. </BLOCKQUOTE>
+      <H2>The Special case of Planets</H2>
+      <P>Two images in the image list have an unexpected value in their 
+      <CODE>bitimage_t</CODE> definition: the height of images 94 and 95 is 
+      zero, though the structure is followed by valid image data; the image 
+      viewer displays them as 64 &#215; 512 pixels. Image 94 is referenced in texture 
+      number #63, image 95 is seemingly unused. And that texture number #63 
+      isn't used in any of the 3D models (that is, where the commands that I 
+      know use a texture). I guess they are part of the planet tesselation code 
+      -- but the entire planet thingy is so far out of my grasp they could just 
+      hide <I>anything</I> in there.</P>
+      <P align=center><IMG 
+      src="The Frontier Galaxy VIII.files/bitmaps_94.gif"></P>
+      <P align=center><IMG 
+      src="The Frontier Galaxy VIII.files/bitmaps_95.gif"><BR><SMALL>Top is #94, 
+      bottom is #95; they are shown rotated sideways.</SMALL></P>
+      <P>There is a second weird thing about these two. As explained above, 
+      textures use only 7 colors, which are defined in the 
+      <CODE>texture_t</CODE> structure. These two images use no less than 32 
+      different values (a bit less than 32; but my point is, more than 7). As I 
+      can't find anything useful on how the display of planets work, I don't 
+      know for certain how colors are applied to these two textures. It might be 
+      possible that a few different values in the textures are assigned the same 
+      colors (thus flattening the image), or a selection is made (for example, 
+      only original texture pixels 0 to 7 are used and the rest is discarded). 
+      I'll have to compare these strips to actual screen shots of planets before 
+      I can tell what happens here.</P>
+      <P>There is a tantalising section in the data of the game where a triangle 
+      order is defined which <I>smells</I> like tesselation -- 0,2,5, then 
+      0,1,2, then 2,3,5, then 3,4,1 and so on. This pattern repeats itself for 
+      smaller and smaller sets of triangles -- exactly what one would expect for 
+      subdivison of a sphere.</P>
+      <P>There is also a large section with a number of RGB triplets which look 
+      promising. They aren't used in the 'regular' models (I figgered that much 
+      out) but I'll have to rewire one of my programs to plug them into these 
+      two textures; it might be the planet colors!</P>
+      <H2>Back to the Model Materials</H2>
+      <P>At this point you know everything about the textures, except for one. 
+      Where are they used in the 3D models? The answer: just about 
+      everywhere!</P>
+      <P>Fortunately, since you now also know all of the color model in the 
+      game, this is a brief section!</P>
+      <P>The <CODE>MATERIAL</CODE> word in the commands <B>line</B>, 
+      <B>triangle</B> and <B>square</B> and their double counterparts, 
+      <B>polygon</B>, <B>pine</B>, <B>text</B>, <B>cone</B>, <B>curve</B>, 
+      <B>ball array</B> and, to a lesser (greater?) extent, <B>subobject</B>, 
+      all draw primitives; the command <B>setcolor</B> selects the next material 
+      to use in a primitive. In each of these commands you can either select a 
+      solid color or a texture, indicating whether to apply lighting or not, or 
+      indicate whether its color should be taken from an internal variable. This 
+      is all coded into one 16-bit <CODE>MATERIAL</CODE> word:</P>
+      <P>&nbsp;</P>
+      <TABLE borderColor=#000000 border=1>
+        <TBODY>
+        <TR>
+          <TH width="5%">15</TH>
+          <TH width="5%">14</TH>
+          <TH width="5%">13</TH>
+          <TH width="5%">12</TH>
+          <TH width="5%">11</TH>
+          <TH width="5%">10</TH>
+          <TH width="5%">9</TH>
+          <TH width="5%">8</TH>
+          <TH width="5%">7</TH>
+          <TH width="5%">6</TH>
+          <TH width="5%">5</TH>
+          <TH width="5%">4</TH>
+          <TH width="5%">3</TH>
+          <TH width="5%">2</TH>
+          <TH width="5%">1</TH>
+          <TH width="5%">0</TH></TR>
+        <TR>
+          <TH>0Fh</TH>
+          <TH>0Eh</TH>
+          <TH>0Dh</TH>
+          <TH>0Ch</TH>
+          <TH>0Bh</TH>
+          <TH>0Ah</TH>
+          <TH>9</TH>
+          <TH>8</TH>
+          <TH>7</TH>
+          <TH>6</TH>
+          <TH>5</TH>
+          <TH>4</TH>
+          <TH>3</TH>
+          <TH>2</TH>
+          <TH>1</TH>
+          <TH>0</TH></TR>
+        <TR>
+          <TD>n.u.</TD>
+          <TD>Tex</TD>
+          <TD>Light</TD>
+          <TD>Loc</TD>
+          <TD align=middle colSpan=12>--- Texture number ---</TD></TR>
+        <TR>
+          <TD>n.u.</TD>
+          <TD>0</TD>
+          <TD>Light</TD>
+          <TD>Loc</TD>
+          <TD align=middle bgColor=#ffdddd colSpan=4>--Red--</TD>
+          <TD align=middle bgColor=#ddffdd colSpan=4>--Green--</TD>
+          <TD align=middle bgColor=#ddddff 
+      colSpan=4>--Blue--</TD></TR></TBODY></TABLE>
+      <P>&nbsp;</P>
+      <P class=hang><CODE>n.u.</CODE> -- This bit is not used in the models. 
+      Anywhere. I don't even know if it tested in the code for something, and 
+      since I'm not missing anything in the colors, I'm not inclined to find out 
+      either.</P>
+      <P class=hang><CODE>Tex</CODE> -- The <CODE>TEXTURE</CODE> bit. If this is 
+      set the remaining 12 bytes indicate which texture number to use. That 
+      means the game supports <I>in principle</I> up to 4095 different 
+      textures!</P>
+      <P class=hang><CODE>Light</CODE> -- The <CODE>UNLIT</CODE> bit. If 
+      <B>set</B> then <I>shading should not be applied</I>. It is usually set 
+      for balls to depict lights (they shouldn't be darker in the shadows, get 
+      it?), but it is also set for the characters of the fonts, for jet flames 
+      and in some models for special effects.</P>
+      <P class=hang><CODE>Loc</CODE> -- The <CODE>LOCALCOLOR</CODE> bit. If this 
+      bit is set the material as defined previous with a <B>SetColor</B> command 
+      should be used. There may be additional data in this word! I don't know if 
+      this data is to be combined, or just discarded. The 
+      <CODE>LOCALCOLOR</CODE> bit is <B>set</B> for each character in the vector 
+      font; apparently, that way it uses the color set in the <B>Text</B> 
+      command itself.</P>
+      <P>&nbsp;</P>
+      <P>If the <CODE>TEXTURE</CODE> bit is not set the remaining 12 bits define 
+      an RGB color, where each channel can be 0..15. If there is an overflow in 
+      these values, because of the brightest shading or a texture color, the 
+      value is just clipped to its maximum of 15.</P>
+      <P>There are a few borderline cases. Textures are only valid for the 
+      primitives <B>triangle</B> and <B>square</B>, but I seem to recall there 
+      are several lines, polygons, and/or balls with a valid texture in their 
+      definition. I'm not sure what should happen in that case; it might be as 
+      easy as using color #0 in the texture definition.</P>
+      <P>The other borderline case are the jet flames; they are <I>clearly</I> 
+      textured but also <I>clearly</I> get their color in their own drawing 
+      command (usually the <B>pine</B> primitive). I still don't know what 
+      <I>really</I> happens when a pine shape is drawn, I can't imagine the code 
+      seeing the difference between a jet flame and a tree... The first is 
+      usually <CODE>UNLIT</CODE> but shurly <I>that</I> is not the magic 
+      difference?</P>
+      <H2>Fun with JJFFE: The Jjagged Edge Cobra</H2>
+      <P>The JJFFE source code is freely available, and if you have the correct 
+      compiler setup you can change the actual code of the game at will. 
+      Granted, you'd have to be proficient in C and even rate Elite in assembler 
+      to make changes to the executable part. Fortunately, the package also 
+      includes <I>all data</I> written out in easy-to-adjust ASCII texts; John 
+      Jordan made absolutely sure to get all data labels right so the game won't 
+      complain a bit if we, shall we say, surreptitiously sneak some structures 
+      in, compile, and see what we get...</P>
+      <P>As mentioned before, there are a few duplicate textures with exactly 
+      the same parameters. An example is texture #2 (a green camou pattern); 
+      every occurrence, for example, on the Falcon Attack Fighter, uses texture 
+      #1. That means this is not used. That means we surely can find a use for 
+      it. That means <I>hacking</I>!</P>
+      <P>The list of <CODE>texture_t</CODE> texture definitions in the JJFFE 
+      sources can be found in the file <CODE>ffedat.asm</CODE> under label 
+      <CODE>DATA_007814</CODE>. You can clearly see the first, zero-filled, 
+      member of the list. JJ inserted -- nicely done! -- blank lines between 
+      each structure item, so we can move down to the <I>third</I> (that is 
+      <CODE>texture_t</CODE> number 2) and see what we got. It looks at the 
+      moment like this:</P><PRE>    db 0x32, 0x0, 0x0, 0x0, 0x7, 0x0, 0x0, 0x0
+    db 0x0, 0x4, 0x0, 0x0, 0x6, 0x0, 0x0, 0x5, 0x0, 0x0, 0x3, 0x0
+    db 0x0, 0x2, 0x0, 0x0, 0x1, 0x0, 0x0, 0x1, 0x0, 0x0</PRE>
+      <P>... all written out in <I>bytes</I> coz it don't matter to the compiler 
+      (or the game) if the data is written out in bytes, words, or ASCII strings 
+      with escape codes. Remember that the first two items in the 
+      <CODE>texture_t</CODE> structure refer to <I>dwords</I>, the first 8 bytes 
+      all belong to the first dwords '0x32' (image number 50) and '7' (number of 
+      colors). Change the first number to 64 (or <CODE>0x40</CODE> if you want 
+      to keep it in hex) -- this is a marble texture. Move to the next line.</P>
+      <P>The next two lines define 22 bytes, of which the first 21 define 7 RGB 
+      color values (3 bytes each); the last one is padding. (Do you spot an 
+      error in my original comment on the "padding byte"?) Let's change the 
+      colors to something more interesting. Change these two lines to:</P><PRE>    db 0x0, 0x0, 0x0, 0x1, 0x0, 0x0, 0x5, 0x3, 0x0, 0x6, 0x4, 0x0
+    db 0x7, 0x5, 0x0, 0x7, 0x6, 0x0, 0x7, 0x7, 0x0, 0x0</PRE>
+      <P>... defining the RGB triplets as 000, 100, 530, 640, 750, 760, and 770. 
+      When you recompile, the colors of this texture are redefined.</P>
+      <P>Wait a minute! You can redefine all you want, but this particular 
+      texture is still not used anywhere!</P>
+      <P>Let's find the Cobra Mk I definition. With the ShowMesh program you can 
+      find the model number: model #36. The model list can be found in the file 
+      <CODE>ffebmp.asm</CODE> and starts at <CODE>DATA_004681</CODE> (JJ 
+      inserted a comment "Ship object table" in the version I have before me). 
+      If you scroll down the list to number 36 (again, the first item is #0) I 
+      see a comment "Cobra Mk 3"; that is model #38, the Cobra Mk 1 is two 
+      positions above that, with the value <CODE>DATA_002686</CODE>. This is the 
+      pointer to the actual data.</P>
+      <P>Search for the data label itself (there should be a line "DATA_002686:" 
+      somewhere above this list); on this position, which is a 
+      <CODE>Model_t</CODE> structure, you'll see two new data pointers, some 
+      bytes, another data pointer, and then some more bytes (and more data 
+      pointers). Recall from the previous article that the <I>first</I> data 
+      pointer points to the 3D mesh: the drawing commands. In my version, this 
+      pointer has the value <CODE>DATA_002681</CODE>. Search for <I>this</I> 
+      data label (again followed by a colon). You will find some 65 lines of 
+      <CODE>db</CODE>'s -- bytes (where the actual values probably should be 
+      <I>words</I>).
+      <P>
+      <P>Now you'll have to use the output of ShowMesh to see what you must look 
+      for. In the output you can see this model uses the <B>SetColor</B> 
+      command:</P><PRE>L94:  001A 400F 8200 4011 4009 400D 4001 4003 4013 4023 ; SetColor(GLOBAL[2],
+        Texture_015_Metal_Red_0,
+        Texture_017_Metal_Blue_0,
+        Texture_009_Metal_Black_0,
+        Texture_013_Metal_Green_0,
+        Texture_001_Camouflage_Green_0,
+        Texture_003_Camouflage_Gray_0,
+        Texture_019_Metal_Cyan_0,
+        Texture_035_Camouflage_Orange)</PRE>
+      <P>In the previous article I speculated somewhere global variable [2] 
+      might be the ship's internal ID; here it should select the main texture 
+      for the ship.</P>
+      <P>I am not too happy about this: to use the result of this 
+      <B>SetColor</B>, some of the triangles and/or squares defined afterwards 
+      should have their <CODE>LOCALCOLOUR</CODE> bit set. Since this is 
+      <U>not</U> the case the Cobra always appears the same: with gray 
+      camouflage. I seem to recall in FE2 the Cobra <I>did</I> appear with 
+      different textures and colors; if that is the case this code is just 
+      copied badly (and broken)...</P>
+      <P>Anyway. You can see a couple of lines below this command a useless (?) 
+      <CODE>FFE6</CODE> code, and right after that the following lines:</P><PRE>      0004 4003 050A 0B04 0002 ; Square(Texture_003_Camouflage_Gray_0, 10,11,5,4, Normal(2))
+      0007 20EE 0C0E 1002 ; Triangle(UNLIT | COLOR_CYAN, 12,14,16, Normal(2));
+        ; Triangle(UNLIT | COLOR_CYAN, 13,15,17, Normal(3))
+      0003 4003 0001 0204 ; Triangle(Texture_003_Camouflage_Gray_0, 0,1,2, Normal(4))
+      0003 4003 0405 0206 ; Triangle(Texture_003_Camouflage_Gray_0, 4,5,2, Normal(6))
+      0008 4004 0602 0400 0008 ; Square(Texture_004_Camouflage_Gray_1, 6,2,4,0, Normal(8));
+        ; Square(Texture_004_Camouflage_Gray_1, 7,3,5,1, Normal(9))
+      0007 4003 0406 080A ; Triangle(Texture_003_Camouflage_Gray_0, 4,6,8, Normal(10));
+        ; Triangle(Texture_003_Camouflage_Gray_0, 5,7,9, Normal(11))
+      024B 0186 ; if (DISTANCE &gt; 390) goto L190
+      191C 0000 ; Rotate -- default 0000
+      833C 0554 ; Rotate -- default 0554
+      000A 0888 060A 4646 3016
+        ; Text(COLOR_WHITE, Normal(10), Vertex(70), Scale(6), VECTOR_FONT, 3016h)
+      191C 0040 ; Rotate -- default 0040
+      833C 0554 ; Rotate -- default 0554
+      000A 0888 060B 4648 3016
+        ; Text(COLOR_WHITE, Normal(11), Vertex(72), Scale(6), VECTOR_FONT, 3016h)
+
+L190: 0007 4004 0408 0A0C ; Triangle(Texture_004_Camouflage_Gray_1, 4,8,10, Normal(12));
+        ; Triangle(Texture_004_Camouflage_Gray_1, 5,9,11, Normal(13))
+      0004 4003 010A 0B00 000E ; Square(Texture_003_Camouflage_Gray_0, 10,11,1,0, Normal(14))
+      0007 4004 0006 0A10 ; Triangle(Texture_004_Camouflage_Gray_1, 0,6,10, Normal(16));
+        ; Triangle(Texture_004_Camouflage_Gray_1, 1,7,11, Normal(17))
+      0007 4003 0608 0A12 ; Triangle(Texture_003_Camouflage_Gray_0, 6,8,10, Normal(18));
+        ; Triangle(Texture_003_Camouflage_Gray_0, 7,9,11, Normal(19))</PRE>
+      <P>These lines define the <I>entire body</I> of the Cobra!</P>
+      <P>You can see the two textures used: #3 (Camouflage Gray) and #4 (also 
+      Camouflage Gray). This is a bit tragic, since they appear exactly the same 
+      -- AFAIK! What I want to do now, is replace every occurrence of the 
+      texture with the new one I re-defined before. Since it is texture #2, and 
+      we still want the <CODE>TEXTURE</CODE> bit set, the <CODE>MATERIAL</CODE> 
+      word should be <CODE>4002h</CODE>. We should substitute every occurrence 
+      of <CODE>4003h</CODE> and <CODE>4004h</CODE> with this one. Let's go back 
+      to <CODE>ffebmp.asm</CODE>, shall we.</P>
+      <P>The data in <CODE>ffebmp.dat</CODE> is written out byte-wise, and, 
+      while it is quite possible to replace every two <CODE>db</CODE>'s with a 
+      single <CODE>dw</CODE> (and reverse the two bytes!), I'm just gonna bung 
+      the new values in the hard way. You'll have to examine the exact bytes as 
+      they appear in the ShowMesh listing to be able to find the correct ones in 
+      the assembler listing. Don't worry too much about that -- you'll see soon 
+      enough if you changed the wrong ones! Save a copy of the file if you are 
+      uncertain about this...</P>
+      <P>In my copy the byte set <CODE>FFE6h</CODE> can be found twice; the 
+      second one is followed by the two bytes <CODE>04 00</CODE>, or 
+      <CODE>0004</CODE> in word form -- defining the first rectangle of the 
+      body. It looks like this -- I've underlined the <CODE>MATERIAL</CODE> 
+      codes to change for you!</P><PRE>db 0x6e, 0x18, 0x1a, 0x6, 0x15, 0xf0, <B>0xe6, 0xff</B> ; &lt;- useful after all!
+db 0x4, 0x0, <U>0x3, 0x40</U>, 0xa, 0x5, 0x4, 0xb
+db 0x2, 0x0, 0x7, 0x0, 0xee, 0x20, 0xe, 0xc
+db 0x2, 0x10, 0x3, 0x0, <U>0x3, 0x40</U>, 0x1, 0x0
+db 0x4, 0x2, 0x3, 0x0, <U>0x3, 0x40</U>, 0x5, 0x4
+db 0x6, 0x2, 0x8, 0x0, <U>0x4, 0x40</U>, 0x2, 0x6
+db 0x0, 0x4, 0x8, 0x0, 0x7, 0x0, <U>0x3, 0x40</U>
+db 0x6, 0x4, 0xa, 0x8, 0x4b, 0x2, 0x86, 0x1
+db 0x1c, 0x19, 0x0, 0x0, 0x3c, 0x83, 0x54, 0x5
+db 0xa, 0x0, 0x88, 0x8, 0xa, 0x6, 0x46, 0x46
+db 0x16, 0x30, 0x1c, 0x19, 0x40, 0x0, 0x3c, 0x83
+db 0x54, 0x5, 0xa, 0x0, 0x88, 0x8, 0xb, 0x6
+db 0x48, 0x46, 0x16, 0x30, 0x7, 0x0, <U>0x4, 0x40</U>
+db 0x8, 0x4, 0xc, 0xa, 0x4, 0x0, <U>0x3, 0x40</U>
+db 0xa, 0x1, 0x0, 0xb, 0xe, 0x0, 0x7, 0x0
+db <U>0x4, 0x40</U>, 0x6, 0x0, 0x10, 0xa, 0x7, 0x0
+db <U>0x3, 0x40</U>, 0x8, 0x6, 0x12, 0xa, 0xd3, 0x0</PRE>
+      <P>Change the underlined bytes to the word <CODE>4002h</CODE> (you only 
+      have to change the first value 3 or 4 to a 2), and you're done!</P>
+      <P>Hit compile. My compiler does <B>not</B> automatically rebuild the 
+      assembler sources! Imagine this: I wrote all this <I>before</I> actually 
+      testing and thought for a moment it didn't work!</P>
+      <P>... and buy yourself a gold marbled Jjagged Edge Cobra!</P>
+      <P>&nbsp;</P>
+      <P align=center><IMG 
+      src="The Frontier Galaxy VIII.files/bitmap_jjagged.gif"><BR><SMALL>high-rez 
+      screenshot, with thanks to Anton Lindstrom!</SMALL></P>
+      <P>&nbsp;</P>
+      <P>As stated above the <B>SetColor</B> doesn't work properly for the 
+      Cobra's. In principle, you could restore multi-color Cobra's by changing 
+      the <CODE>MATERIAL</CODE> words for the same drawing commands to 
+      <CODE>1000h</CODE>. I tried it but failed miserably... the Cobra's just 
+      turned out even gray. I've tried a few permutations of the material 
+      setting, and it appears I can change it in whatever I want if I just don't 
+      use the <CODE>LOCALCOLOR</CODE> bit. Very weird, it appears to work just 
+      fine for the missiles.</P>
+      <P>&nbsp;</P>
+      <P>So I tried another of my ideas: adding a new high-resolution image and 
+      applying it to a new texture. <I>That</I> worked out fine!</P>
+      <P>&nbsp;</P>
+      <P align=center><IMG 
+      src="The Frontier Galaxy VIII.files/jjagged.gif"><BR><SMALL>The official 
+      Jjagged Bbanner Tour Cobra</SMALL></P>
+      <P>&nbsp;</P>
+      <P>First create an appropriate image. Remember, only values 0 to 7 should 
+      be used, and it should be in one of the supported sizes 64x64 or 128x128. 
+      You'll need it as an ASCII file, so try this:</P>
+      <UL>
+        <LI>Draw a Jjagged Bbanner texture in grayscale, 128 x 128 pixels, and 
+        save it in raw form (no headers or what). 
+        <LI>Convert this image to a hex ASCII file (there are tools just to do 
+        that -- of course I rolled my own) 
+        <LI>In this ASCII file, throw away the second half of each hex digit and 
+        replace each remaining number 0..F to the range 0..7. Add a 
+        <CODE>db</CODE> definition before each line. 
+        <LI>Save this file somewhere. </LI></UL>
+      <P>Then you have to patch in this new image into 
+      <CODE>ffebmp.asm</CODE>.</P>
+      <UL>
+        <LI>Add an additional image pointer to the Image List at the end. The 
+        list starts at <CODE>DATA_008240</CODE>; insert a new line <CODE>dd 
+        DATA_JJAGGED</CODE> on the line before the end marker <CODE>db 0x0, 0x0, 
+        0x0, 0x0</CODE>. 
+        <LI>Add the following lines somewhere between existing data (right 
+        before the first image after the list is fine): <PRE>DATA_JJAGGED:
+    db 0x0, 0x80, 0x80, 0x0, 0x0, 0x0, 0x0, 0x0</PRE>The <CODE>0x80, 
+        0x80</CODE> is its size (128x128). 
+        <LI>Below this line, insert <I>the entire file</I> you created above. 
+        </LI></UL>
+      <P>If you recompile now, you'll have 348 images instead of 347; the 
+      program will never know you added it because it does no range checking. 
+      You still can't see it because it isn't used anywhere.</P>
+      <P>In the file <CODE>ffebmp.asm</CODE> do the following:</P>
+      <UL>
+        <LI>Find the start of the texture definitions at 
+        <CODE>DATA_007814</CODE> and move to the end of the list, just above the 
+        next label <CODE>DATA_007815</CODE>. 
+        <LI>Add a new texture on the line <I>before</I> this new label. Insert 
+        these lines (the comments aren't necessary): <PRE>; extra texture: #148
+    dd 347        ; THIS is the new image number
+    dd 7          ; Number of colors
+    db 7, 7, 7    ; rgb
+    db 6, 6, 6
+    db 5, 5, 5
+    db 4, 4, 4
+    db 3, 3, 3
+    db 1, 1, 1
+    db 0, 0, 0
+    db 0        ; padding</PRE></LI></UL>
+      <P>You can safely recompile now (it should do so without any errors) but, 
+      although the texture is defined, it still isn't used anywhere.</P>
+      <P>Go back to the file <CODE>ffebmp.asm</CODE> and change the textures the 
+      same way as done above. Instead of using <CODE>4002h</CODE>, we want to 
+      use the <I>additional</I> texture, whose number is 148 or in hex 
+      <CODE>0x94</CODE>. With the bit set for a <CODE>TEXTURE</CODE> the new 
+      material code is <CODE>0x4094</CODE>.</P>
+      <P>Whereever you changed <CODE>0x4003</CODE> (in its form <CODE>0x3, 
+      0x40</CODE>) before, change it to <CODE>0x4094</CODE> (again, in byte form 
+      <CODE>0x94, 0x40</CODE>).</P>
+      <P>Recompile and find yourself a modified Cobra Mk I.</P>
+      <P>&nbsp;</P>
+      <P>A much simpler enhancement (although it requires some work) is to get 
+      rid of all 64x64 textures and replace them with 128x128 ones. To do so, 
+      copy the original texture from the Image Viewer into your favourite 
+      editor, enlarge it and replace the original image with the new one. You 
+      must take care to leave the <I>seven color indexes</I> of the original 
+      image unchanged. And do not forget to change the size in the data file! 
+      The top line of each image originally reads</P><PRE>db 0x0, 0x40, 0x40, 0x0, 0x0, 0x0, 0x0, 0x0</PRE>
+      <P>and you must change the <CODE>0x40</CODE>'s to <CODE>0x80</CODE> (I 
+      forgot while testing -- you'll soon notice if you did).</P>
+      <P>This is less work because the game engine will notice the new image 
+      size and automatically uses the larger texture routine -- no other patches 
+      required.</P>
+      <P>And it is not necessary to change <I>all</I> textures -- just the ones 
+      which get "ugly" when viewed close up. Besides, because you don't need to 
+      patch <I>anything</I> else, you can test each new texture immediately!</P>
+      <P>&nbsp;</P>
+      <P align=center><IMG 
+      src="The Frontier Galaxy VIII.files/hires_cobra.gif"><BR><SMALL>Another 
+      Cobra, this one is with the camouflage<BR>pattern enlarged to 128x128 
+      pixels.</SMALL></P>
+      <P>&nbsp;</P>
+      <P>&nbsp;</P>
+      <TABLE class=contents width="95%">
+        <TBODY>
+        <TR>
+          <TD class=contents><A 
+            href="http://www.jongware.com/galaxy7.html">&lt;&lt; Previous</A> <!--:: <a href="galaxy9.html">Next &gt;&gt;</a--></TD></TR></TBODY></TABLE>
+      <P><SMALL>Based on original data and algorithms from <B>Frontier:Elite 
+      2</B> and <B>Frontier:First Encounters</B> by David Braben (<A 
+      href="http://www.frontier.co.uk/">Frontier Developments</A>)</SMALL></P>
+      <P><SMALL>Original copyright holders:<BR>Elite 4: The Next Encounter © 
+      David Braben 2011?<BR>First Encounters © David Braben 1995<BR>Frontier © 
+      David Braben 1993<BR>Elite © David Braben and Ian Bell 
+  1984</SMALL></P></TD></TR></TBODY></TABLE>
+<P>&nbsp;</P>
+<TABLE class=black width="100%" border=0>
+  <TBODY>
+  <TR vAlign=bottom>
+    <TD align=right width="20%"><IMG alt=[Jongware] 
+      src="The Frontier Galaxy VIII.files/jongware-small.gif"></TD>
+    <TD>
+      <P>All the images you'd ever want... yeah, right! At least you got a nice 
+      Cobra -- send your thanks to <A class=internal 
+      href="http://www.jongware.com/contact.html">jongware</A>. 
+  </P></TD></TR></TBODY></TABLE></BODY></HTML>

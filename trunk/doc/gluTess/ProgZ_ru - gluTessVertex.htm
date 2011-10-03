@@ -1,0 +1,1474 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<!-- saved from url=(0040)http://www.progz.ru/articles.php?view=51 -->
+<HTML><HEAD><TITLE>ProgZ.ru - Портал для программистов</TITLE>
+<META http-equiv=content-type content="text/html; charset=windows-1251"><LINK 
+href="ProgZ_ru - gluTessVertex.files/style.css" type=text/css rel=stylesheet>
+<META content="MSHTML 6.00.2900.2180" name=GENERATOR></HEAD>
+<BODY>
+<TABLE width="100%" align=center>
+  <TBODY>
+  <TR>
+    <TD align=left width=220><IMG title="Портал для программистов ProgZ.ru" 
+      height=40 alt="Портал для программистов ProgZ.ru" 
+      src="ProgZ_ru - gluTessVertex.files/logo.gif" width=220 border=0>
+      <DIV align=center><B><A class=main 
+      href="http://www.ipipe.ru/">хостинг</A></B></DIV><BR></TD>
+    <TD align=middle></TD></TR></TBODY></TABLE>
+<TABLE height=600 cellSpacing=0 cellPadding=0 width="100%" align=center 
+valign="top">
+  <TBODY>
+  <TR>
+    <TD vAlign=top align=left width=180 bgColor=#f3f3f3>
+      <TABLE cellSpacing=0 cellPadding=0 width=180 align=center>
+        <TBODY>
+        <TR>
+          <TD class=caption><A class=menu 
+            href="http://www.progz.ru/index.php">ProgZ.ru</A></TD></TR>
+        <TR>
+          <TD class=caption><A class=menu 
+            href="http://www.progz.ru/news.php">Новости</A></TD></TR>
+        <TR>
+          <TD class=caption><A class=menu 
+            href="http://www.progz.ru/articles.php">Статьи</A></TD></TR>
+        <TR>
+          <TD class=issue>»&nbsp;<A class=menu 
+            href="http://www.progz.ru/articles.php?issue=2">Система<A></A></TD></TR>
+        <TR>
+          <TD class=issue>»&nbsp;<A class=menu 
+            href="http://www.progz.ru/articles.php?issue=5">OpenGL<A></A></TD></TR>
+        <TR>
+          <TD class=issue>»&nbsp;<A class=menu 
+            href="http://www.progz.ru/articles.php?issue=7">Мысли 
+        вслух<A></A></TD></TR>
+        <TR>
+          <TD class=issue>»&nbsp;<A class=menu 
+            href="http://www.progz.ru/articles.php?issue=8">Теория 
+            программирования<A></A></TD></TR>
+        <TR>
+          <TD class=issue>»&nbsp;<A class=menu 
+            href="http://www.progz.ru/articles.php?issue=9">DLL<A></A></TD></TR>
+        <TR>
+          <TD class=issue>»&nbsp;<A class=menu 
+            href="http://www.progz.ru/articles.php?issue=10">Языки 
+            программирования<A></A></TD></TR>
+        <TR>
+          <TD class=issue>»&nbsp;<A class=menu 
+            href="http://www.progz.ru/articles.php?issue=11">Eclipse<A></A></TD></TR>
+        <TR>
+          <TD class=issue>»&nbsp;<A class=menu 
+            href="http://www.progz.ru/articles.php?issue=12">Shaders<A></A></TD></TR>
+        <TR>
+          <TD class=caption><A class=menu 
+            href="http://www.progz.ru/docs.php">Документация</A></TD></TR>
+        <TR>
+          <TD class=issue>»&nbsp;<A class=menu 
+            href="http://www.progz.ru/docs.php?issue=1">Протоколы<A></A></TD></TR>
+        <TR>
+          <TD class=caption><A class=menu 
+            href="http://www.progz.ru/faq.php">FAQ</A></TD></TR>
+        <TR>
+          <TD class=caption><A class=menu 
+            href="http://www.progz.ru/sources.php">Исходники</A></TD></TR>
+        <TR>
+          <TD class=issue>»&nbsp;<A class=menu 
+            href="http://www.progz.ru/sources.php?issue=1">Visual 
+        C++<A></A></TD></TR>
+        <TR>
+          <TD class=issue>»&nbsp;<A class=menu 
+            href="http://www.progz.ru/sources.php?issue=2">Delphi<A></A></TD></TR>
+        <TR>
+          <TD class=issue>»&nbsp;<A class=menu 
+            href="http://www.progz.ru/sources.php?issue=3">JavaScript<A></A></TD></TR>
+        <TR>
+          <TD class=issue>»&nbsp;<A class=menu 
+            href="http://www.progz.ru/sources.php?issue=4">C++ 
+        Builder<A></A></TD></TR>
+        <TR>
+          <TD class=issue>»&nbsp;<A class=menu 
+            href="http://www.progz.ru/sources.php?issue=5">OpenGL<A></A></TD></TR>
+        <TR>
+          <TD class=issue>»&nbsp;<A class=menu 
+            href="http://www.progz.ru/sources.php?issue=6">PHP<A></A></TD></TR>
+        <TR>
+          <TD class=caption><A class=menu 
+            href="http://www.progz.ru/books.php">Книги</A></TD></TR>
+        <TR>
+          <TD class=issue>»&nbsp;<A class=menu 
+            href="http://www.progz.ru/books.php?issue=1">Веб-дизайн<A></A></TD></TR>
+        <TR>
+          <TD class=issue>»&nbsp;<A class=menu 
+            href="http://www.progz.ru/books.php?issue=2">Искусство 
+            программирования<A></A></TD></TR>
+        <TR>
+          <TD class=issue>»&nbsp;<A class=menu 
+            href="http://www.progz.ru/books.php?issue=3">Матчасть<A></A></TD></TR>
+        <TR>
+          <TD class=caption><A class=menu 
+            href="http://www.progz.ru/links.php">Ссылки</A></TD></TR>
+        <TR>
+          <TD class=issue>»&nbsp;<A class=menu 
+            href="http://www.progz.ru/links.php?issue=1">Сайты<A></A></TD></TR>
+        <TR>
+          <TD class=caption><A class=menu 
+            href="http://www.progz.ru/post.php"><STRONG>Послать 
+            материал</STRONG></A></TD></TR>
+        <TR>
+          <TD class=caption><A class=menu 
+            href="http://www.progz.ru/forum"><STRONG>Форум</STRONG></A></TD></TR>
+        <TR>
+          <TD vAlign=top align=left width=180 bgColor=#f3f3f3>&nbsp;</TD></TR>
+        <TR>
+          <TD class=caption>Партнеры</TD></TR>
+        <TR>
+          <TD class=issue align=middle><A href="http://www.rushelp.com/" 
+            target=_blank><IMG height=31 
+            alt="RusHelp.com - вся компьютерная документация на русском!" 
+            src="ProgZ_ru - gluTessVertex.files/knopka.gif" width=88 
+            border=0></A></TD></TR>
+        <TR>
+          <TD class=issue align=middle><A href="http://pascal.dax.ru/" 
+            target=_blank><IMG height=31 alt="Все о программировании на Паскале" 
+            src="ProgZ_ru - gluTessVertex.files/banner.gif" width=88 
+            border=0></A></TD></TR>
+        <TR>
+          <TD class=issue align=middle><A 
+            title="WinCity.Ru - город компьютерной документации. Документация на самые различные темы, Каталог программ, Электронные руководства и многое другое Вы найдете на WinCity.Ru" 
+            href="http://www.wincity.ru/" target=_blank><IMG height=31 
+            src="ProgZ_ru - gluTessVertex.files/88_31_1.gif" width=88 
+            border=0></A></TD></TR>
+        <TR>
+          <TD class=issue align=middle><A href="http://www.getinfo.ru/" 
+            target=_blank><IMG height=31 
+            alt="GetInfo.Ru - Компьютерная библиотека" 
+            src="ProgZ_ru - gluTessVertex.files/getinfo88x31.gif" width=88 
+            border=0></A></TD></TR>
+        <TR>
+          <TD class=issue align=middle><A href="http://allcheats.ru/" 
+            target=_blank><IMG height=30 alt=AllCheats 
+            src="G:\e\jjffe_dream\doc\ProgZ_ru - gluTessVertex.files\banner(1).gif" 
+            width=88 border=0></A></TD></TR>
+        <TR>
+          <TD class=issue align=middle><A href="http://www.ishodniki.ru/" 
+            target=_blank>Ishodniki.Ru - портал программиста!</A></TD></TR>
+        <TR>
+          <TD vAlign=top align=left width=180 bgColor=#f3f3f3>&nbsp;</TD></TR>
+        <TR>
+          <TD class=caption>Счетчики</TD></TR>
+        <TR>
+          <TD class=issue align=middle><!--Rating@Mail.ru COUNTER-->
+            <SCRIPT language=JavaScript type=text/javascript><!--
+d=document;var a='';a+=';r='+escape(d.referrer)
+js=10//--></SCRIPT>
+
+            <SCRIPT language=JavaScript1.1 type=text/javascript><!--
+a+=';j='+navigator.javaEnabled()
+js=11//--></SCRIPT>
+
+            <SCRIPT language=JavaScript1.2 type=text/javascript><!--
+s=screen;a+=';s='+s.width+'*'+s.height
+a+=';d='+(s.colorDepth?s.colorDepth:s.pixelDepth)
+js=12//--></SCRIPT>
+
+            <SCRIPT language=JavaScript1.3 
+            type=text/javascript><!--
+js=13//--></SCRIPT>
+
+            <SCRIPT language=JavaScript type=text/javascript><!--
+d.write('<a href="http://top.mail.ru/jump?from=335931"'+
+' target=_top><img src="http://top.list.ru/counter'+
+'?id=335931;t=49;js='+js+a+';rand='+Math.random()+
+'" alt="Рейтинг@Mail.ru"'+' border=0 height=31 width=88><\/a>')
+if(11<js)d.write('<'+'!-- ')//--></SCRIPT>
+            <NOSCRIPT><A href="http://top.mail.ru/jump?from=335931" 
+            target=_top><IMG height=31 alt=Рейтинг@Mail.ru 
+            src="ProgZ_ru - gluTessVertex.files/counter.gif" width=88 
+            border=0></A></NOSCRIPT>
+            <SCRIPT language=JavaScript type=text/javascript><!--
+if(11<js)d.write('--'+'>')//--></SCRIPT>
+<!--/COUNTER--></TD></TR>
+        <TR>
+          <TD class=issue align=middle><!-- HotLog -->
+            <SCRIPT language=javascript>
+hotlog_js="1.0";
+hotlog_r=""+Math.random()+"&s=41445&im=134&r="+escape(document.referrer)+"&pg="+
+escape(window.location.href);
+document.cookie="hotlog=1; path=/"; hotlog_r+="&c="+(document.cookie?"Y":"N");
+</SCRIPT>
+
+            <SCRIPT language=javascript1.1>
+hotlog_js="1.1";hotlog_r+="&j="+(navigator.javaEnabled()?"Y":"N")</SCRIPT>
+
+            <SCRIPT language=javascript1.2>
+hotlog_js="1.2";
+hotlog_r+="&wh="+screen.width+'x'+screen.height+"&px="+
+(((navigator.appName.substring(0,3)=="Mic"))?
+screen.colorDepth:screen.pixelDepth)</SCRIPT>
+
+            <SCRIPT language=javascript1.3>hotlog_js="1.3"</SCRIPT>
+
+            <SCRIPT language=javascript>hotlog_r+="&js="+hotlog_js;
+document.write("<a href='http://www3.hotlog.ru/cgi-bin/hotlog/site_stat/?id=41445' target='_top'><img "+
+" src='http://hit3.hotlog.ru/cgi-bin/hotlog/count?"+
+hotlog_r+"&' border=0 width=88 height=31 alt=HotLog></a>")</SCRIPT>
+            <NOSCRIPT><A 
+            href="http://www3.hotlog.ru/cgi-bin/hotlog/site_stat/?id=41445" 
+            target=_top><IMG height=31 alt=HotLog 
+            src="ProgZ_ru - gluTessVertex.files/img.gif" width=88 
+            border=0></A></NOSCRIPT> <!-- /HotLog --></TD></TR>
+        <TR>
+          <TD class=issue align=middle><A 
+            href="http://www.yandex.ru/cy?base=0&amp;host=progz.ru"><IMG 
+            height=31 alt="Яндекс цитирования" 
+            src="ProgZ_ru - gluTessVertex.files/cycounter.gif" width=88 
+            border=0></A></TD></TR>
+        <TR>
+          <TD vAlign=top align=left width=180 
+        bgColor=#f3f3f3>&nbsp;</TD></TR></TBODY></TABLE></TD>
+    <TD width=1>&nbsp;<BR></TD>
+    <TD vAlign=top align=left width="100%" bgColor=#ffffff>
+      <TABLE cellSpacing=0 cellPadding=0 width="100%">
+        <TBODY>
+        <TR>
+          <TD class=caption><A class=menu 
+            href="http://www.progz.ru/articles.php">Статьи</A> » <A class=menu 
+            href="http://www.progz.ru/articles.php?issue=5">OpenGL</A> » Глава 
+            11. Тесселяция и квадрические поверхности</TD></TR>
+        <TR>
+          <TD>&nbsp;<BR></TD></TR>
+        <TR>
+          <TD class=text>
+            <H1>Глава 11. Тесселяция и квадрические поверхности</H1></TD></TR>
+        <TR>
+          <TD align=middle><SPAN class=black-small>Автор: </SPAN><A 
+            class=main-small href="mailto:ahinar@list.ru">Максим 
+        Каверин</A></TD></TR>
+        <TR>
+          <TD class=text align=left>
+            <LI><A class=main-small 
+            href="http://www.progz.ru/print.php?articles=51" 
+            target=_blank>Версия для печати</A>
+            <P></P></LI></TD></TR>
+        <TR>
+          <TD class=text>
+            <P class=text>Библиотека OpenGL (GL) разработана для низкоуровневых 
+            операций, одновременно являющихся конвейерными и имеющими доступ к 
+            аппаратному ускорению. Библиотека утилит OpenGL (GLU) дополняет 
+            OpenGL, предоставляя высокоуровневые операции. Некоторые из операций 
+            GLU (такие как мипмаппинг функцией <B>gluBuild*DMipmaps()</B>, 
+            масштабирование изображений функцией <B>gluScaleImage()</B>, 
+            операции матричных преобразований функциями <B>gluOrtho2D()</B>, 
+            <B>gluPerspective()</B>, <B>gluLookAt()</B>, <B>gluProject()</B>, 
+            <B>gluUnProject()</B> и <B>gluUnProject4()</B>) рассматриваются в 
+            других главах. Некоторые будут рассмотрены далее.</P>
+            <P class=text>Для оптимизации быстродействия, ядро OpenGL 
+            визуализирует только выпуклые полигоны, однако GLU содержит функции 
+            для тесселяции (разбиения) вогнутых полигонов на выпуклые, которые 
+            могут обрабатываться OpenGL. Там, где OpenGL оперирует простыми 
+            примитивами, такими как точки, линии и закрашенные полигоны, GLU 
+            может создавать объекты более высокого уровня, такие, как 
+            поверхности сфер, цилиндры или конусы.</P>
+            <H2>11.1&nbsp;Тесселяция полигонов</H2>
+            <P class=text>OpenGL может непосредственно отображать только простые 
+            выпуклые полигоны. Полигон является простым, если его ребра 
+            пересекаются только в вершинах, если в каждой точке находится только 
+            одна вершина, и в каждой вершине соединяются только два ребра. Если 
+            вашему приложению требуется отображение вогнутых полигонов, 
+            полигонов с дырами или полигонов с пересекающимися ребрами, такие 
+            полигоны должны быть предварительно разделены на простые выпуклые 
+            полигоны до того, как их можно будет отобразить. Такое разбиение 
+            называется <I>тесселяцией</I>, и GLU предоставляет ряд функций для 
+            осуществления тесселяции. Эти функции принимают информацию о 
+            контурах, описывающих трудный для отображения полигон, в качестве 
+            аргумента и возвращают комбинацию треугольников, фигур из 
+            треугольников, треугольных вееров или линий.</P>
+            <P class=text>На рисунке 11-1 показаны контуры нескольких полигонов, 
+            нуждающихся в тесселяции: слева – направо показаны вогнутый полигон, 
+            полигон с дырой и полигон с пересекающимися ребрами.</P>
+            <P class=text>Рисунок 11-1. Контуры, нуждающиеся в тесселяции
+            <P></P>
+            <P align=center><IMG height=190 
+            src="ProgZ_ru - gluTessVertex.files/11-1.jpg" width=620 
+border=0></P>
+            <P class=text>Если вы считаете, что полигон нуждается в тесселяции, 
+            выполните следующие шаги:</P>
+            <OL>
+              <LI>
+              <P class=text>Создайте новый объект тесселяции с помощью функции 
+              <B>gluNewTess()</B>. </P>
+              <LI>
+              <P class=text>Несколько раз используйте <B>gluTessCallback()</B> 
+              для регистрации функций обратного вызова, производящих операции во 
+              время тесселяции. Самый сложный случай при работе с 
+              возвратно-вызываемыми функция возникает, когда алгоритм тесселяции 
+              обнаруживает пересечение и должен вызвать функцию, 
+              зарегистрированную для события GLU_TESS_COMBINE. </P>
+              <LI>
+              <P class=text>Задайте свойства тесселяции с помощью функции 
+              <B>gluTessProperty()</B>. Наиболее важным свойством является 
+              правило оборота, определяющее какие регионы должны быть закрашены, 
+              а какие – остаться незакрашенными. </P>
+              <LI>
+              <P class=text>Создайте и визуализируйте тесселированные полигоны, 
+              задав контуры одного или более закрытых полигонов. Если данные 
+              объекта являются статическими, инкапсулируйте тесселированные 
+              полигоны в списке отображения. (Если вам не нужно пересчитывать 
+              тесселяцию снова и снова, использование списков отображения более 
+              эффективно.) </P>
+              <LI>
+              <P class=text>Если вам требуется тесселировать что-либо еще, вы 
+              можете использовать существующий объект тесселяции. Если вы 
+              закончили с тесселяцией, вы можете удалить объект функцией 
+              <B>gluDeleteTess()</B>. </P></LI></OL>
+            <P class=warning>Замечание: Тесселяция, описанная здесь, появилась в 
+            GLU версии 1.2. Если у вас более старая версия GLU, вы должны 
+            использовать функции, описанные в разделе «Описание ошибок GLU». 
+            Чтобы запросить версию используемой GLU, используйте функцию 
+            <B>gluGetString(GLU_VERSION)</B>, которая возвращает строку с 
+            номером версии GLU. Если в вашей GLU нет функции 
+            <B>gluGetString()</B>, значит это GLU версии 1.0 – в этой версии 
+            такая функция отсутствует.</P>
+            <H2>11.1.1 Создание объекта тесселяции</H2>
+            <P class=text>Во время описания и тесселяции сложного полигона с ним 
+            ассоциируются некоторые данные, например, вершины, ребра и функции 
+            обратного вызова. Для выполнения тесселяции, ваша программа сначала 
+            должна создать объект тесселяции с помощью функции 
+            <B>gluNewTess()</B>.</P>
+            <TABLE class=code width="90%" align=center>
+              <TBODY>
+              <TR>
+                <TD>GLUtesselator* <B>gluNewTess</B> 
+            (void);</TD></TR></TBODY></TABLE>
+            <P class=text>Создает новый объект тесселяции и возвращает указатель 
+            на него. Если создать объект не удается, возвращается нулевой 
+            указатель.</P>
+            <P class=text>Для всех тесселяций может использоваться один и тот же 
+            объект. Сам объект необходим исключительно потому, что функциям 
+            библиотеки могут потребоваться собственные тесселяции, и они должны 
+            иметь возможность выполнять их, не вмешиваясь в какие-либо 
+            тесселяции, выполняемые вашей программой. Несколько объектов полезно 
+            иметь также и в случае, если вы используете разные наборы возвратно 
+            вызываемых функций для разных тесселяций. Однако типичная программа 
+            создает только один объект и использует его для всех тесселяций. 
+            Освобождать объект, в общем-то, не имеет смысла, так как он требует 
+            очень небольшого объема памяти. С другой стороны, аккуратность еще 
+            никому не вредила.</P>
+            <H2>11.1.2 Возвратно-вызываемые функции тесселяции</H2>
+            <P class=text>После того, как вы создали объект тесселяции, вы 
+            должны предоставить серию возвратно-вызываемых функций, которые 
+            будут вызываться в определенные моменты во время тесселяции. После 
+            определения этих функций, вы задаете контуры одного или нескольких 
+            полигонов с использованием функций GLU. После передачи описания 
+            контуров, механизм тесселяции вызывает ваши функции по 
+            необходимости.</P>
+            <P class=text>Любые опущенные возвратно-вызываемые функции просто не 
+            вызываются в процессе тесселяции, и любая информация, которую они 
+            могут возвращать в вашу программу будет потеряна. Все возвратные 
+            функции задаются с помощью <B>gluTessCallback()</B>.</P>
+            <TABLE class=code id=table1 width="90%" align=center>
+              <TBODY>
+              <TR>
+                <TD>void <B>gluTessCallback</B> (GLUtesselator 
+                  *<I>tessobj</I>, GLenum <I>type</I>, void 
+              (*<I>fn</I>)());</TD></TR></TBODY></TABLE>
+            <P class=text>Ассоциирует возвратно-вызываемую функцию <I>fn</I> с 
+            объектом тесселяции <I>tessobj</I>. Тип возвратной функции 
+            определяется аргументом <I>type</I>, который может быть равен 
+            GLU_TESS_BEGIN, GLU_TESS_BEGIN_DATA, GLU_TESS_EDGE_FLAG, 
+            GLU_TESS_EDGE_FLAG_DATA, GLU_TESS_VERTEX, GLU_TESS_VERTEX_DATA, 
+            GLU_TESS_END, GLU_TESS_END_DATA, GLU_TESS_COMBINE, 
+            GLU_TESS_COMBINE_DATA, GLU_TESS_ERROR или GLU_TESS_ERROR_DATA. 12 
+            возможных возвратно-вызываемых функций имеют следующие 
+прототипы:</P>
+            <TABLE class=normal align=center>
+              <TBODY>
+              <TR>
+                <TD>GLU_TESS_BEGIN</TD>
+                <TD>void <B>begin</B> (GLenum <I>type</I>);</TD></TR>
+              <TR>
+                <TD>GLU_TESS_BEGIN_DATA</TD>
+                <TD>void <B>begin</B> (GLenum <I>type</I>, void* 
+                  <I>user_data</I>);</TD></TR>
+              <TR>
+                <TD>GLU_TESS_EDGE_FLAG</TD>
+                <TD>void <B>edgeFlag</B> (GLboolean <I>flag</I>);</TD></TR>
+              <TR>
+                <TD>GLU_TESS_EDGE_FLAG_DATA</TD>
+                <TD>void <B>edgeFlag</B> (GLboolean <I>flag</I>, void* 
+                  <I>user_data</I>);</TD></TR>
+              <TR>
+                <TD>GLU_TESS_VERTEX</TD>
+                <TD>void <B>vertex</B> (void* <I>vertex_data</I>);</TD></TR>
+              <TR>
+                <TD>GLU_TESS_VERTEX_DATA</TD>
+                <TD>void <B>vertex</B> (void* <I>vertex_data</I>, void* 
+                  <I>user_data</I>);</TD></TR>
+              <TR>
+                <TD>GLU_TESS_END</TD>
+                <TD>void <B>end</B> (void);</TD></TR>
+              <TR>
+                <TD>GLU_TESS_END_DATA</TD>
+                <TD>void <B>end</B> (void* <I>user_data</I>);</TD></TR>
+              <TR>
+                <TD>GLU_TESS_COMBINE</TD>
+                <TD>void <B>combine</B> (GLdouble <I>coords[3]</I>, void* 
+                  <I>vertex_data[4]</I>, GLfloat <I>weight[4]</I>,&nbsp;void** 
+                  <I>outData</I>);</TD></TR>
+              <TR>
+                <TD>GLU_TESS_COMBINE_DATA</TD>
+                <TD>void <B>combine</B> (GLdouble <I>coords[3]</I>, void* 
+                  <I>vertex_data[4]</I>, GLfloat <I>weight[4]</I>, void** 
+                  <I>outData</I>, void* <I>user_data</I>);</TD></TR>
+              <TR>
+                <TD>GLU_TESS_ERROR</TD>
+                <TD>void <B>error</B> (GLenum <I>errno</I>);</TD></TR>
+              <TR>
+                <TD>GLU_TESS_ERROR_DATA</TD>
+                <TD>void <B>error</B> (GLenum <I>errno</I>, void* 
+                  <I>user_data</I>);</TD></TR></TBODY></TABLE>
+            <P class=text>&nbsp;Чтобы изменить возвратно-вызываемую функцию, 
+            просто вызовите <B>gluTessCallback()</B> с адресом новой функции. 
+            Чтобы устранить возвратную функцию без замещения ее новой, передайте 
+            <B>gluTessCallback()</B> нулевой указатель для соответствующего типа 
+            функции.</P>
+            <P class=text>В течение тесселяции, возвратные функции вызываются в 
+            манере, похожей на ту, в которой вы используете команды OpenGL 
+            <B>glBegin</B><B>()</B>, <B>glEdgeFlag*()</B>, <B>glVertex*()</B> и 
+            <B>glEnd()</B>. Функция комбинирования (combine) используется для 
+            создания новых вершин в точках пересечения ребер. Функция ошибок 
+            (error) вызывается в процессе тесселяции только тогда, когда что-то 
+            идет не так, как должно.</P>
+            <P class=text>Для каждого созданного объекта тесселяции функция 
+            GLU_TESS_BEGIN вызывается с одним из 4 возможных параметров: 
+            GL_TRIANGLE_FAN, GL_TRIANGLE_STRIP, GL_TRIANGLES или GL_LINE_LOOP. 
+            Когда тесселятор декомпозирует (разбивает) полигоны, алгоритм 
+            тесселяции решает, какой тип треугольного примитива более эффективен 
+            для использования. (Если активизировано свойство 
+            GLU_TESS_BOUNDARY_ONLY, для визуализации используется 
+            GL_LINE_LOOP.)</P>
+            <P class=text>Поскольку флаг ребра не имеет смысла в случаях 
+            GL_TRIANGLE_FAN или GL_TRIANGLE_STRIP, то, если существует заданная 
+            возвратная функция GLU_TESS_EDGE_FLAG, активизирующая флаги ребра, 
+            функция GLU_TESS_BEGIN вызывается только с аргументом GL_TRIANGLES. 
+            Функция GLU_TESS_EDGE_FLAG работает абсолютно аналогично вызову 
+            команды OpenGL <B>glEdgeFlag*()</B>.</P>
+            <P class=text>После вызова функции, ассоциированной с GLU_TESS_BEGIN 
+            и до вызова функции, ассоциированной с GLU_TESS_END, вызывается 
+            некоторая комбинация функций GLU_TESS_VERTEX и GLU_TESS_EDGE_FLAG 
+            (обычно из-за обращений к функции <B>gluTessVertex()</B>). 
+            Ассоциированные флаги ребра и вершины интерпретируются точно таким 
+            же образом, как если бы они задавались между командами OpenGL 
+            <B>glBegin</B><B>()</B> и <B>glEnd()</B>.</P>
+            <P class=text>Если что-то идет не так, возвратной функции ошибки 
+            передается номер ошибки GLU. Символьная строка, описывающая ошибку, 
+            извлекается с использованием функции <B>gluErrorString()</B>.</P>
+            <P class=text>Пример 11-1 демонстрирует часть кода файла tess.cpp, в 
+            котором создается объект тесселяции и регистрируется несколько 
+            функций обратного вызова.</P>
+            <P class=text>Пример 11-1. Регистрация возвратных функций 
+            тесселяции: файл tess.cpp</P>
+            <TABLE class=code id=table2 width="90%" align=center>
+              <TBODY>
+              <TR>
+                <TD><PRE>#ifndef CALLBACK
+#define CALLBACK
+#endif
+
+/* часть функции init() */
+tobj=gluNewTess();
+gluTessCallback(tobj,GLU_TESS_VERTEX,glVertex3dv);
+gluTessCallback(tobj,GLU_TESS_BEGIN,beginCallback);
+gluTessCallback(tobj,GLU_TESS_END,endCallback);
+gluTessCallback(tobj,GLU_TESS_ERROR,errorCallback);
+
+/* возвратно вызываемые функции, зарегистрированные с помощью gluTessCallback() */
+void CALLBACK beginCallback(GLenum which)
+{
+      glBegin(which);
+}
+
+void CALLBACK endCallback(void)
+{
+      glEnd();
+}
+
+void CALLBACK errorCallback(GLenum errorCode)
+{
+      const GLubyte *estring;
+
+      estring=gluErrorString(errorCode);
+      fprintf(stderr, "Tesselation error: %s\n",estring);
+      exit(0);
+}</PRE></TD></TR></TBODY></TABLE>
+            <P class=warning>Замечание: Приведение типов возвратно вызываемых 
+            функций довольно сложно, особенно, если вы хотите создать код, 
+            который будет одинаково работать на платформах Microsoft Windows 
+            (95/98/NT) и UNIX. Чтобы верно работать на платформах Microsoft 
+            Windows, программам, использующим возвратно-вызываемые функции, 
+            таким как tess.cpp требуется наличие символа CALLBACK в объявлении 
+            функции. Трюк с использованием пустого определения для CALLBACK (как 
+            показано ниже) позволяет коду запускаться как на Microsoft Windows, 
+            так и в UNIX.</P>
+            <TABLE class=code id=table3 width="90%" align=center>
+              <TBODY>
+              <TR>
+                <TD><PRE>#ifndef CALLBACK
+#define CALLBACK
+#endif
+
+void CALLBACK callbackFunction(..)
+{
+}</PRE></TD></TR></TBODY></TABLE>
+            <P class=text>В примере 11-1, зарегистрированная функция для 
+            GLU_TESS_VERTEX, представляет собой просто команду 
+            <B>glVertex3dv()</B>, в которую передаются только координаты каждой 
+            вершины. Однако, если вы желаете задавать больше информации в каждой 
+            вершине, например, цветовые величины, вектор нормали или координаты 
+            текстуры, вам следует создать более сложную функцию обратного 
+            вызова. Пример 11-2 демонстрирует начало другого тесселируемого 
+            объекта далее в программе tess.cpp. Зарегистрированная функция 
+            <B>vertexCallback()</B> ожидает параметра, являющегося указателем на 
+            6 чисел с плавающей точкой двойной точности: координаты <I>x</I>, 
+            <I>y</I> и <I>z</I>, а также значения цветовых компонент красного, 
+            зеленого и синего для каждой вершины.</P>
+            <P class=text>Пример 11-2. Возвратно-вызываемые функции 
+            GLU_TESS_VERTEX и GLU_TESS_COMBINE</P>
+            <TABLE class=code id=table4 width="90%" align=center>
+              <TBODY>
+              <TR>
+                <TD><PRE>/* другая часть функции init() */
+gluTessCallback(tobj,GLU_TESS_VERTEX,vertexCallback);
+gluTessCallback(tobj,GLU_TESS_BEGIN,beginCallback);
+gluTessCallback(tobj,GLU_TESS_END,endCallback);
+gluTessCallback(tobj,GLU_TESS_ERROR,errorCallback);
+gluTessCallback(tobj,GLU_TESS_COMBINE,combineCallback);
+
+/* новые возвратно-вызываемые функции */
+void CALLBACK vertexCallback(GLvoid* vertex)
+{
+      const GLdouble* pointer;
+
+      pointer=(GLdouble*)vertex;
+      glColor3dv(pointer+3);
+      glVertex3dv(vertex);
+}
+
+void CALLBACK combineCallback(GLdouble coords[3], 
+                              GLdouble* vertex_data[4],
+                              GLfloat weight[4], GLdouble** dataOut)
+{
+      GLdouble *vertex;
+      int i;
+
+      vertex=(GLdouble*) malloc(6*sizeof(GLdouble));
+      vertex[0]=coords[0];
+      vertex[1]=coords[1];
+      vertex[2]=coords[2];
+      for(i=3;i&lt;6;i++)
+            vertex[i]=weight[0]*vertex_data[0][i]+
+                      weight[1]*vertex_data[1][i]+
+                      weight[2]*vertex_data[2][i]+
+                      weight[3]*vertex_data[3][i];
+      *dataOut=vertex;
+}</PRE></TD></TR></TBODY></TABLE>
+            <P class=text>Пример 11-2 также демонстрирует использование функции 
+            GLU_TESS_CALLBACK. Каждый раз, когда алгоритм тесселяции, 
+            анализирующий входящий контур, обнаруживает пересечение и решает, 
+            что должна быть создана новая вершина, вызывается функция обратного 
+            вызова зарегистрированная для GLU_TESS_COMBINE. Эта функция также 
+            вызывается в случае, если алгоритм решает объединить две вершины, 
+            которые очень близки друг к другу. Новая вершина является линейной 
+            комбинацией до четырех существующих вершин, на которые в примере 
+            11-2 ссылаются как на <I>vertex_data[0..3]</I>. Коэффициенты 
+            линейной комбинации передаются в <I>weight[0..3]</I> (чья сумма 
+            составляет <I>1.0</I>). Аргумент <I>coords</I> задает положение 
+            новой вершины.</P>
+            <P class=text>Зарегистрированная функция обратного вызова должна 
+            зарезервировать память для новой вершины, произвести взвешенную 
+            интерполяцию данных с использованием <I>vertex_data</I> и 
+            <I>weight</I> и возвратить указатель на новую вершину в аргументе 
+            <I>data_out</I>. <B>combineCallback()</B> в примере 11-2 
+            интерполирует цветовую величину. Функция резервирует массив из 6-ти 
+            элементов, помещает <I>x</I>, <I>y</I> и <I>z</I> в первые три 
+            элемента, а взвешенное среднее цветовых величин RGB в следующие три 
+            элемента.</P>
+            <H2>11.1.2.1 Данные, определенные пользователем</H2>
+            <P class=text>Может быть зарегистрировано шесть типов 
+            возвратно-вызываемых функций. Поскольку существует два варианта 
+            каждой возвратной функции, существует всего 12 функций. Для каждой 
+            функции существует один вариант с данными, определенными 
+            пользователем, и один вариант без них. Данные, определенные 
+            пользователем передаются приложением в функцию 
+            <B>gluTessBeginPolygon()</B>,&nbsp; а затем без изменений передаются 
+            всем возвратным функциям *DATA. С функцией GLU_TESS_BEGIN_DATA 
+            данные, определенные пользователем могут использоваться в качестве 
+            данных для одного полигона. Если для определенного типа 
+            возвратно-вызываемой функции вы зададите оба варианта, будет 
+            использоваться вариант с аргументом <I>user_data</I>. Таким образом, 
+            несмотря на то, что существует 12 возвратных функций, в каждый 
+            момент времени активными могут быть только 6.</P>
+            <P class=text>Например, в примере 11-2 используется плавная 
+            закраска, и <B>vertexCallback()</B> задает RGB цвет для каждой 
+            вершины. Если вы хотите использовать плавную заливку и освещение, 
+            функция обратного вызова должна задавать вектор нормали для каждой 
+            вершины. Однако, если вы хотите использовать освещение и плоскую 
+            закраску, вы можете задать только одни вектор нормали для каждого 
+            полигона, а не для каждой вершины. В таком случае вы можете 
+            использовать функцию GLU_TESS_BEGIN_DATA и передать координаты 
+            вершины и нормаль к поверхности в аргументе <I>user_data</I>.</P>
+            <H2>11.1.3&nbsp;Свойства тесселяции</H2>
+            <P class=text>Перед тесселяцией и визуализацией вы можете 
+            использовать функцию <B>gluTessProperty()</B> для настройки 
+            некоторых свойств, влияющих на алгоритм тесселяции. Наиболее важное 
+            и сложное из этих свойств – правило оборота, определяющее, что 
+            считается «внутренним», а что «внешним».</P>
+            <TABLE class=code id=table5 width="90%" align=center>
+              <TBODY>
+              <TR>
+                <TD>void <B>gluTessProperty</B> (GLUtesselator* 
+                  <I>tessobj</I>, GLenum <I>property</I>, GLdouble 
+                <I>value</I>);</TD></TR></TBODY></TABLE>
+            <P class=text>Значение свойства property объекта тесселяции 
+            <I>tessobj </I>устанавливается в значение value. Аргумент 
+            <I>property </I>может принимать значения GLU_TESS_BOUNDARY_ONLY, 
+            GLU_TESS_TOLERANCE или GLU_TESS_WINDING_RULE. Если <I>property 
+            </I>равно GLU_TESS_BOUNDARY_ONLY, <I>value </I>может принимать 
+            значения GL_TRUE или GL_FALSE. Если оно равно GL_TRUE полигоны не 
+            тесселируются на закрашенные полигоны – рисуются только замкнутые 
+            ломаные, показывающие границу контуров, разделяющих интерьер и 
+            экстерьер полигона. Значение по умолчанию – GL_FALSE. (Смотрите 
+            описание <B>gluTessNormal()</B> для понимания того, как управлять 
+            направлением перекрытия контуров.) Если <I>property</I> равно 
+            GLU_TESS_TOLERANCE, <I>value</I> представляет собой дистанцию, 
+            используемую при вычислении того, являются ли две вершины близкими в 
+            достаточной степени, чтобы их можно было объединить с помощью 
+            возвратной функции GLU_TESS_COMBINE. Величина толерантности 
+            умножается на максимальную разницу в координатах входящих вершин для 
+            определения максимальной дистанции, на которую может сместиться 
+            какой-либо фрагмент вследствие одной операции совмещения. Совмещение 
+            может не поддерживаться вашей реализацией OpenGL, а величина 
+            толерантности (терпимости) имеет только рекомендательный характер. 
+            Величина толерантности имеет нулевое значение по умолчанию. Свойство 
+            GLU_TESS_WINDING_RULE определяет, какие части полигона находятся 
+            внутри, а какие снаружи и не должны быть закрашены. <I>value</I> 
+            может принимать значения GLU_TESS_WINDING_ODD (значение по 
+            умолчанию), GLU_TESS_WINDING_NONZERO, GLU_TESS_WINDING_POSITIVE, 
+            GLU_TESS_WINDING_NEGATIVE или GLU_TESS_WINDING_ABS_GEQ_TWO.</P>
+            <H2>11.1.3.1 Число оборотов и правило оборота</H2>
+            <P class=text>Для отдельного контура, число оборотов точки 
+            представляет собой знаковое целое число полных оборотов, которые мы 
+            совершаем вокруг этой точки, проходя вдоль контура (обороты против 
+            часовой стрелки добавляют 1 к этому числу, а обороты по часовой 
+            стрелке вычитают 1) . Когда существует несколько контуров, 
+            индивидуальные числа оборотов суммируются. Данная процедура 
+            ассоциирует знаковое число со знаком с каждой точкой плоскости. 
+            Отметьте, что число оборотов является одним и тем же для всех точек 
+            одной ограниченной области.</P>
+            <P class=text>На рисунке 11-2 показано три набора контуров и числа 
+            оборотов для точек внутри контуров. В наборе слева все три контура 
+            идут против часовой стрелки, так что каждый контур добавляет единицу 
+            к числам оборотов точек, находящихся внутри него. В наборе 
+            посередине два внутренних контура имеют направление по часовой 
+            стрелке, так что число оборотов уменьшается и в итоге становится 
+            меньше 0.</P>
+            <P class=text>Рисунок 11-2. Числа оборотов для простых контуров
+            <P align=center><IMG height=193 
+            src="ProgZ_ru - gluTessVertex.files/11-2.jpg" width=620 
+border=0></P>
+            <P class=text>Правило оборота классифицирует регион, как внутренний, 
+            если его число оборотов принадлежит к определенной категории (odd – 
+            нечетное, nonzero – ненулевое, positive – положительное, negative – 
+            отрицательное или abs – «абсолютная величина больше или равная 2»). 
+            Правила&nbsp; GLU_TESS_WINDING_ODD и GLU_TESS_WINDING_NONZERO часто 
+            используются для определения интерьера. Правила позитивное, 
+            негативное и «абсолютная величина» имеют ограниченное применение при 
+            выполнении операций над CSG (computational solid geometry – плоская 
+            вычисляемая геометрия).</P>
+            <P class=text>Рисунок 11-3 демонстрирует влияние различных правил 
+            оборота на визуализацию контуров. Темные области на рисунке являются 
+            внутренними.</P>
+            <P class=text>Рисунок 11-3. Как правила оборота определяют интерьер
+            <P class=text style="TEXT-ALIGN: center"><IMG height=872 
+            src="ProgZ_ru - gluTessVertex.files/11-3.jpg" width=620 
+border=0></P>
+            <H2>11.1.3.2 Использование правил оборота с CSG</H2>
+            <P class=text>Правила оборота GLU_TESS_WINDING_ODD и 
+            GLU_TESS_WINDING_NONZERO являются наиболее часто используемыми. Они 
+            работают в большинстве типичных случаев заливки.</P>
+            <P class=text>Правила оборота были разработаны и для операций с CSG 
+            и позволяют легко находить объединение, разницу или пересечение 
+            (Булевские операции) нескольких контуров.</P>
+            <P class=text>Вначале предположим, что каждый контур определен таким 
+            образом, что число оборотов для каждого внешнего региона равно 0, а 
+            для каждого внутреннего – 1. (То есть ни один из контуров не 
+            пересекает сам себя.) Далее считаем, что контуры, проходящие против 
+            часовой стрелки, обозначают границы полигонов, а контуры, идущие по 
+            часовой стрелке, – дыры. Контуры могут быть вложенными, но 
+            внутренний контур должен иметь направление противоположное 
+            направлению содержащего его контура.</P>
+            <P class=text>Если изначальные полигоны не удовлетворяют данным 
+            условиям, их можно привести к ним, выполним предварительную 
+            тесселяцию с активизированным параметром GLU_TESS_BOUNDARY_ONLY. Эта 
+            тесселяция возвратит список полигонов, удовлетворяющих описанным 
+            ограничениям. Если создать два объекта тесселяции, то возвратные 
+            функции первого из них могут направлять информацию непосредственно 
+            на вход второго.</P>
+            <P class=text>При наличии двух или более полигонов в описанной 
+            форме, операции CSG могут быть реализованы следующим образом:</P>
+            <UL>
+              <LI>
+              <P class=text>UNION (объединение) – чтобы вычислить объединение 
+              нескольких контуров, нарисуйте все входящие контуры в виде одного 
+              полигона. Число оборотов каждой результирующей области – это сумма 
+              чисел оборотов входящих полигонов, которые ее покрывают. 
+              Объединение может быть получено с помощью правил 
+              GLU_TESS_WINDING_NONZERO или GLU_TESS_WINDING_POSITIVE. Заметьте, 
+              что в случае ненулевого правила, мы получим тот же результат, даже 
+              если обратим направление всех контуров. </P>
+              <LI>
+              <P class=text>INTERSECTION (пересечение) – его можно получить 
+              только для двух контуров за один раз. Нарисуйте один полигон с 
+              использованием двух контуров. Результат получается с помощью 
+              правила GLU_TESS_WINDING_ABS_GEQ_TWO. </P>
+              <LI>
+              <P class=text>DIFFERENCE (разница) – предположим, что вы хотите 
+              вычислить A diff (B union C union D). Нарисуйте единственный 
+              полигон, состоящий из неизмененного контура A, за которым следуют 
+              контуры B, C и D с обратным порядком вершин. Для получения 
+              результата используйте правило GL_TESS_WINDING_POSITIVE. (Если B, 
+              C и D являются результатом операции GLU_TESS_BOUNDARY_ONLY, то 
+              можно не изменять порядок вершин, а воспользоваться функцией 
+              <B>gluTessNormal()</B> для изменения знака поставляемой нормали.) 
+              </P></LI></UL>
+            <H2>11.1.3.3 Другие функции для работы со свойствами тесселяции</H2>
+            <P class=text>Существует две функции, работающие совместно с 
+            <B>gluTessProperty()</B>. <B>gluTessGetProperty()</B> позволяет 
+            получать текущие значения свойств тесселяции. Если тесселятор 
+            используется для генерирования проволочных каркасов, а не 
+            закрашенных полигонов, функция <B>gluTessNormal()</B> позволяет 
+            определить направление оборота для тесселируемых полигонов.</P>
+            <TABLE class=code id=table6 width="90%" align=center>
+              <TBODY>
+              <TR>
+                <TD>void <B>gluTessGetProperty</B> (GLUtesselator* 
+                  <I>tessobj</I>, GLenum <I>property</I>, GLdouble* 
+                  <I>value</I>);</TD></TR></TBODY></TABLE>
+            <P class=text>Возвращает текущее значение свойства <I>property 
+            </I>объекта тесселяции <I>tessobj </I>в переменной <I>value</I>. 
+            Возможные значения для аргументов <I>property </I>и <I>value </I>те 
+            же самые, что и в функции <B>gluTessGetProperty()</B>.</P>
+            <TABLE class=code id=table7 width="90%" align=center>
+              <TBODY>
+              <TR>
+                <TD>void <B>gluTessNormal</B> (GLUtesselator* <I>tessobj</I>, 
+                  GLdouble <I>x</I>, GLdouble <I>y</I>, GLdouble 
+              <I>z</I>);</TD></TR></TBODY></TABLE>
+            <P class=text>Задает вектор нормали для объекта тесселяции 
+            <I>tessobj</I>. Вектор нормали задает направление оборота для 
+            генерируемых полигонов. Перед тесселяцией все входные данные 
+            проецируются на плоскость перпендикулярную вектору нормали. После 
+            все результирующие треугольники ориентируются против часовой стрелки 
+            с учетом нормали. (Направление по часовой стрелке может быть 
+            получено путем изменения знака задаваемой нормали.) Вектор нормали 
+            по умолчанию – (<I>0</I>, <I>0</I>, <I>0</I>).</P>
+            <P class=text>Если у вас есть данные о положении и ориентации 
+            входных данных, использование <B>gluTessNormal()</B> может увеличить 
+            скорость тесселяции. Например, если вы знаете, что все полигоны 
+            лежат в плоскости <I>xy</I>, вызовите 
+            <B>gluTessNormal(</B><I>tessobj</I>,<I>0</I>,<I>0</I>,<I>1</I><B>)</B>.</P>
+            <P class=text>Вектор нормали по умолчанию (<I>0</I>, <I>0</I>, 
+            <I>0</I>), и его влияние не всегда очевидны. В подобном случае 
+            ожидается, что все входные данные лежат примерно в одной плоскости и 
+            плоскость охватывает все вершины независимо от того, как они на 
+            самом деле соединены. Знак нормали выбирается таким образом, чтобы 
+            сумма всех знаковых областей всех входных контуров была 
+            неотрицательной (там, где контур против часовой стрелки окружает 
+            положительную область). Заметьте, что если входные данные не лежат 
+            примерно в одной плоскости, проецирование перпендикулярно 
+            вычисленной нормали может существенно изменить геометрию.</P>
+            <H2>11.1.4 Определение полигона</H2>
+            <P class=text>После того, как установлены все свойства тесселяции и 
+            зарегистрированы все функции обратного вызова, наступает время 
+            описывать вершины, составляющие входящие контуры, и тесселировать 
+            полигоны.</P>
+            <TABLE class=code id=table8 width="90%" align=center>
+              <TBODY>
+              <TR>
+                <TD>void <B>gluTessBeginPolygon </B>(GLUtesselator* 
+                  <I>tessobj</I>, void* <I>user_data</I>);<BR>void 
+                  <B>gluTessEndPolygon </B>(GLUtesselator* 
+              <I>tessobj</I>);</TD></TR></TBODY></TABLE>
+            <P class=text>Открывают и завершают спецификацию полигона, который 
+            нужно тесселировать и ассоциируют с ним объект тесселяции 
+            <I>tessobj</I>. <I>user_data</I> указывает на данные определяемые 
+            пользователем, которые передаются всем связанным возвратным функциям 
+            GLU_TESS_*_DATA.</P>
+            <P class=text>Вызовы <B>gluTessBeginPolygon()</B> и 
+            <B>gluTessEndPolygon()</B> обрамляют определение одного или более 
+            контуров. Когда вызывается <B>gluTessEndPolygon()</B>, выполняется 
+            алгоритм тесселяции, генерируются и визуализируются тесселированные 
+            полигоны. В течение этого алгоритма используются связанные функции 
+            обратного вызова и установленные свойства тесселяции.</P>
+            <TABLE class=code id=table9 width="90%" align=center>
+              <TBODY>
+              <TR>
+                <TD>void <B>gluTessBeginContour </B>(GLUtesselator* 
+                  <I>tessobj</I>);<BR>void <B>gluTessEndContour 
+                  </B>(GLUtesselator* <I>tessobj</I>);</TD></TR></TBODY></TABLE>
+            <P class=text>Открывают и завершают спецификацию замкнутого контура, 
+            являющегося частью полигона. Замкнутый контур определяется нулем или 
+            более обращениями к функции <B>gluTessVertex()</B>, задающей 
+            вершину. Последняя вершина каждого контура автоматически соединяется 
+            с первой.</P>
+            <P class=text>На практике для осмысленного контура требуется как 
+            минимум 3 вершины.</P>
+            <TABLE class=code id=table10 width="90%" align=center>
+              <TBODY>
+              <TR>
+                <TD>void <B>gluTessVertex</B> (GLUtesselator* <I>tessobj</I>, 
+                  GLdouble <I>coords[3]</I>, void* 
+              <I>vertex_data</I>);</TD></TR></TBODY></TABLE>
+            <P class=text>Задает одну вершину в текущем контуре для объекта 
+            тесселяции <I>tessobj</I>. <I>coords</I> содержит трехмерные 
+            координаты вершины, а <I>vertex_data</I> – это указатель, отсылаемые 
+            функции обратного вызова GLU_TESS_VERTEX или GLU_TESS_VERTEX_DATA. 
+            Обычно, <I>vertex_data</I> содержит координаты вершины, нормали к 
+            поверхности, координаты текстуры, информацию о цвете или что-либо 
+            другое, нужное приложению.</P>
+            <P class=text>В программе tess.cpp, часть которой приводится в 
+            примере 11-3, определяются два полигона. Первый полигон состоит из 
+            прямоугольного контура с треугольной дырой внутри, а второй 
+            представляет собой плавно закрашенную самопересекающуюся 
+            пятиконечную звезду. Для большей эффективности оба полигона 
+            сохраняются в списке отображения. Первый полигон состоит из двух 
+            контуров, причем внешний ориентирован против часовой стрелки, а 
+            внутренний («дыра») – по часовой стрелке. Для второго полигона 
+            массив <I>star</I> содержит и координаты вершин и информацию о 
+            цвете, и функция обратного вызова <B>vertexCallback()</B> использует 
+            и то, и другое. Результат работы программы tess.cpp изображен на 
+            рисунке 11-4.</P>
+            <P class=text>Рисунок 11-4. Результат работы тесселятора
+            <P align=center><IMG height=241 
+            src="ProgZ_ru - gluTessVertex.files/11-4.jpg" width=543 
+border=0></P>
+            <P class=text>Важно, чтобы каждая вершина находилась в своей области 
+            памяти, так как вершинные данные не копируются функцией 
+            <B>gluTessVertex()</B> – сохраняется только указатель 
+            (<I>vertex_data</I>). Программа, которая использует одну и ту же 
+            память для нескольких вершин, может не получить ожидаемого 
+            результата.</P>
+            <P class=text>Замечание: Может показаться, что в функции 
+            <B>gluTessVertex()</B> бессмысленно задавать координаты вершин 
+            дважды – в аргументах <I>coords</I> и <I>vertex_data</I>. Однако 
+            иногда это необходимо – <I>coords</I> ссылается только на координаты 
+            вершины, а <I>vertex_data</I> также хранит координаты, но может 
+            содержать и другую информацию для каждой вершины.</P>
+            <P class=text>Пример 11-3. Определение полигона: файл tess.cpp</P>
+            <TABLE class=code id=table11 width="90%" align=center>
+              <TBODY>
+              <TR>
+                <TD><PRE>GLdouble rect[4][3]= { 50.0, 50.0, 0.0,
+                       200.0,50.0,0.0,
+                       200.0,200.0,0.0,
+                       50.0,200.0,0.0 };
+GLdouble tri[3][3]={ 75.0,75.0,0.0,
+                     125.0,175.0,0.0,
+                     175.0,75.0,0.0 };
+GLdouble star[5][6]={ 250.0,50.0,0.0,1.0,0.0,1.0,
+                      325.0,200.0,0.0,1.0,1.0,0.0,
+                      400.0,50.0,0.0,0.0,1.0,1.0,
+                      250.0,150.0,0.0,1.0,0.0,0.0,
+                      400.0,150.0,0.0,0.0,1.0,0.0 };
+
+startList=glGenLists(2);
+tobj=gluNewTess();
+gluTessCallback(tobj,GLU_TESS_VERTEX,glVertex3dv);
+gluTessCallback(tobj,GLU_TESS_BEGIN,beginCallback);
+gluTessCallback(tobj,GLU_TESS_END,endCallback);
+gluTessCallback(tobj,GLU_TESS_ERROR,errorCallback);
+
+glNewList(startList,GL_COMPILE);
+      glShadeModel(GL_FLAT);
+      gluTessBeginPolygon(tobj,NULL);
+            gluTessBeginContour(tobj);
+                  gluTessVertex(tobj,rect[0],rect[0]);
+                  gluTessVertex(tobj,rect[1],rect[1]);
+                  gluTessVertex(tobj,rect[2],rect[2]);
+                  gluTessVertex(tobj,rect[3],rect[3]);
+            gluTessEndContour(tobj);
+            gluTessBeginContour(tobj);
+                  gluTessVertex(tobj,tri[0],tri[0]);
+                  gluTessVertex(tobj,tri[1],tri[1]);
+                  gluTessVertex(tobj,tri[2],tri[2]);
+            gluTessEndContour(tobj);
+      gluTessEndPolygon(tobj);
+glEndList();
+
+gluTessCallback(tobj,GLU_TESS_VERTEX,vertexCallback);
+gluTessCallback(tobj,GLU_TESS_BEGIN,beginCallback);
+gluTessCallback(tobj,GLU_TESS_END,endCallback);
+gluTessCallback(tobj,GLU_TESS_ERROR,errorCallback);
+gluTessCallback(tobj,GLU_TESS_COMBINE,combineCallback);
+
+glNewList(startList+1,GL_COMPILE);
+      glShadeModel(GL_SMOOTH);
+      gluTessProperty(tobj,GLU_TESS_WINDING_RULE, GLU_TESS_WINDING_POSITIVE);
+      gluTessBeginPolygon(tobj,NULL);
+            gluTessBeginContour(tobj);
+                  gluTessVertex(tobj,star[0],star[0]);
+                  gluTessVertex(tobj,star[1],star[1]);
+                  gluTessVertex(tobj,star[2],star[2]);
+                  gluTessVertex(tobj,star[3],star[3]);
+                  gluTessVertex(tobj,star[4],star[4]);
+            gluTessEndContour(tobj);
+      gluTessEndPolygon(tobj);
+glEndList();</PRE></TD></TR></TBODY></TABLE>
+            <H2>11.1.5 Удаление объекта тесселяции</H2>
+            <P class=text>Если вы более не нуждаетесь в объекте тесселяции, вы 
+            можете удалить его и освободить всю связанную с ним память с помощью 
+            функции <B>gluDeleteTess()</B>.</P>
+            <TABLE class=code id=table12 width="90%" align=center>
+              <TBODY>
+              <TR>
+                <TD>void <B>gluDeleteTess</B> (GLUtesselator* 
+                <I>tessobj</I>);</TD></TR></TBODY></TABLE>
+            <P class=text>Удаляет указанный объект тесселяции <I>tessobj</I> и 
+            освобождает всю связанную с ним память.</P>
+            <H3>11.1.6 Советы по увеличению быстродействия тесселяции</H3>
+            <P class=text>Для наилучшего быстродействия соблюдайте следующие 
+            правила.</P>
+            <OL>
+              <LI>
+              <P class=text>Кэшируйте результаты тесселяции в списке отображения 
+              или другой пользовательской структуре. Чтобы получить пост – 
+              тесселяционные координаты вершин, тесселируйте полигон, находясь в 
+              режиме отклика. </P>
+              <LI>
+              <P class=text>Используйте <B>gluTessNormal()</B>, чтобы задавать 
+              нормаль полигона. </P>
+              <LI>
+              <P class=text>Используйте для нескольких полигонов один и тот же 
+              объект тесселяции, а не создавайте каждый раз новый. (В 
+              многопоточном многопроцессорном окружении вы можете получить 
+              большее быстродействие за счет использования нескольких 
+              тесселяторов.) </P></LI></OL>
+            <H2>11.1.7 Описание ошибок GLU</H2>
+            <P class=text>GLU предоставляет функцию для получения описательной 
+            строки кода ошибки. Эта функция не ограничена использованием только 
+            с тесселяторами, она также используется при работе с NURBS и 
+            квадрическими объектами, а также для описания ошибок GL.</P>
+            <H2>11.1.8 Обратная совместимость</H2>
+            <P class=text>Если вы используете GLU версий 1.0 или 1.1, в вашем 
+            распоряжении намного менее мощный тесселятор. Тесселятор версий 
+            1.0/1.1 обрабатывает только простые невыпуклые полигоны или простые 
+            полигоны с дырами. Он не может правильно тесселировать 
+            пересекающиеся контуры (в нем отсутствует возвратная функция 
+            COMBINE) или обрабатывать по-полигонные данные. Тесселятор версий 
+            1.0/1.1 все еще работает в GLU версий 1.2/1.3, но его использование 
+            не рекомендуется.</P>
+            <P class=text>В тесселяторе версии 1.0/1.1 есть несколько похожих 
+            черт с новым тесселятором. Функции <B>gluNewTess()</B> и 
+            <B>gluDeleteTess()</B> используются в обоих тесселятора. Главной 
+            функцией, задающей вершины, также является <B>gluTessVertex()</B>. 
+            Механизм возвратно-вызываемых функций также контролируется функцией 
+            <B>gluTessCallback()</B>, однако старый тесселятор работает только с 
+            5 типами возвратных функций – подмножеством текущих 12.</P>
+            <P class=text>Вот прототипы функций для тесселятора версии 
+            1.0/1.1:</P>
+            <TABLE class=code id=table13 width="90%" align=center>
+              <TBODY>
+              <TR>
+                <TD>void <B>gluBeginPolygon</B> (GLUtriangulatorObj* 
+                  <I>tessobj</I>);<BR>void <B>gluNextContour</B> 
+                  (GLUtriangulatorObj* <I>tessobj</I>, GLenum 
+                  <I>type</I>);<BR>void <B>gluEndPolygon</B> 
+                  (GLUtriangulatorObj* <I>tessobj</I>);</TD></TR></TBODY></TABLE>
+            <P class=text>Самый внешний контур должен быть задан первым, и эта 
+            процедура не требует предварительного вызова 
+            <B>gluNextContour()</B>. Для полигонов без дыр задается только один 
+            контур, а функция <B>gluNextContour()</B> не используется. Если 
+            полигон состоит из нескольких контуров (то есть в нем есть дыры или 
+            дыры внутри дыр), эти контуры задаются один за другим, причем 
+            каждому должен предшествовать вызов функции <B>gluNextContour()</B>. 
+            Функция <B>gluTessVertex()</B> вызывается для каждой вершины каждого 
+            контура. Значениями для аргумента <I>type</I> функции 
+            <B>gluNextContour()</B> могут быть GLU_EXTERIOR, GLU_INTERIOR, 
+            GLU_CCW, GLU_CW или GLU_UNKNOWN. Этот аргумент служит только в 
+            качестве рекомендации для тесселятора. Если вы выберете для него 
+            правильное значение, тесселяция может завершиться быстрее. Если же 
+            выбранное значение неверно, аргумент будет проигнорирован, 
+            тесселяция пройдет медленнее, но по-прежнему успешно. Для полигонов 
+            с дырами один контур является внешним (GLU_EXTERIOR), а все 
+            остальные – внутренними (GLU_INTERIOR). Предполагается, что первый 
+            контур будет иметь тип GLU_EXTERIOR. Выбор ориентации по или против 
+            часовой стрелки (GLU_CW или GLU_CCW) может быть произвольным в 
+            трехмерном пространстве. Однако на любой плоскости существует две 
+            различных ориентации, поэтому GLU_CCW и GLU_CW должно быть 
+            последовательным. Если вы не знаете, к какому типу относится контур, 
+            используйте GLU_UNKNOWN.</P>
+            <P class=text>Строго рекомендуется приводить код для GLU 1.0/1.1 к 
+            коду, использующему новый интерфейс тесселяции. Это можно сделать, 
+            выполнив следующие шаги.</P>
+            <OL>
+              <LI>
+              <P class=text>Измените тип ссылок на объекты тесселяции с 
+              GLUtriangulatorObj на GLUtesselator. В GLU версии 1.2 эти типы 
+              определены одинаковым образом. </P>
+              <LI>
+              <P class=text>Конвертируйте <B>gluBeginPolygon()</B> в две 
+              команды: <B>gluTessBeginPolygon()</B> и 
+              <B>gluTessBeginContour()</B>. Все контуры должны быть заданы 
+              внутри, включая самый первый. </P>
+              <LI>
+              <P class=text>Конвертируйте <B>gluTessContour()</B> на 
+              <B>gluTessEndContour()</B> и <B>gluTessBeginContour()</B>. Вы 
+              должны завершить предыдущий контур до того, как начать следующий. 
+              </P>
+              <LI>
+              <P class=text>Замените <B>gluEndPolygon()</B> на 
+              <B>gluTessEndContour()</B> и <B>gluTessEndPolygon()</B>. Этим вы 
+              закроете последний контур. </P>
+              <LI>
+              <P class=text>В вызовах функции <B>gluTessCallback()</B> измените 
+              ссылки на константы. В GLU 1.2 GLU_BEGIN, GLU_VERTEX, GLU_END, 
+              GLU_ERROR и GLU_EDGE_FLAG определены как синонимы для 
+              GLU_TESS_BEGIN, GLU_TESS_VERTEX, GLU_TESS_END, GLU_TESS_ERROR и 
+              GLU_TESS_EDGE_FLAG. </P></LI></OL>
+            <H2>11.2 Квадрические объекты: визуализация сфер, цилиндров и 
+            дисков</H2>
+            <P class=text>Базовая библиотека OpenGL предоставляет поддержку 
+            только для моделирования и визуализации простых точек, линий и 
+            выпуклых закрашенных полигонов. Ни 3D объекты, ни часто используемые 
+            2D объекты, такие как круги, непосредственно недоступны.</P>
+            <P class=text>GLU предоставляет функции для моделирования и 
+            визуализации тесселированных полигональных аппроксимаций различных 
+            2D и 3D фигур (сфер, цилиндров, дисков и частей дисков), которые 
+            могут быть вычислены с помощью квадратных уравнений (именно поэтому 
+            такие объекты иногда называют квадрическими). Предоставляемая 
+            поддержка включает функции для отображения квадрических поверхностей 
+            различными стилями и с различной ориентацией. Квадрические 
+            поверхности в общем виде определяются следующим квадратным 
+            уравнением:
+            <P class=text><IMG height=31 
+            src="ProgZ_ru - gluTessVertex.files/form001.jpg" width=504 
+            align=textTop border=0></P>
+            <P class=text>Процесс создания и визуализации квадрической 
+            поверхности похож на процесс использования тесселятора. Чтобы 
+            использовать квадрический объект, выполните следующие шаги:</P>
+            <OL>
+              <LI>
+              <P class=text>Чтобы создать новый квадрический объект, используйте 
+              функцию <B>gluNewQuadric()</B>. </P>
+              <LI>
+              <P class=text>Задайте атрибуты визуализации для квадрического 
+              объекта (если, конечно, вы не удовлетворены атрибутами по 
+              умолчанию): 
+              <OL type=a>
+                <LI>
+                <P class=text>Используйте <B>gluQuadricOrientation()</B> для 
+                настройки правила оборота и отделения интерьера от экстерьера. 
+                </P>
+                <LI>
+                <P class=text>Используйте <B>gluQuadricDrawStyle()</B>, чтобы 
+                выбрать стиль визуализации – в виде точек, линий или закрашенных 
+                полигонов. </P>
+                <LI>
+                <P class=text>Если объекты предполагается освещать, используйте 
+                <B>gluQuadricNormals()</B>, задавая по одной нормали на вершину 
+                или по одной нормали на грань. По умолчанию нормали вообще не 
+                генерируются. </P>
+                <LI>
+                <P class=text>Если объекты предполагается текстурировать, 
+                используйте <B>gluQuadricTexture()</B>, чтобы настроить механизм 
+                автоматической генерации координат текстуры. </P></LI></OL>
+              <LI>
+              <P class=text>Зарегистрируйте возвратно-вызываемую функцию 
+              обработки ошибок с помощью <B>gluQuadricCallback()</B>. Возвратная 
+              функция будет вызвана, если в процессе визуализации возникнет 
+              ошибка. </P>
+              <LI>
+              <P class=text>Вызовите функцию визуализации желаемого 
+              квадрического объекта: <B>gluSphere()</B>, <B>gluCylinder()</B>, 
+              <B>gluDisk()</B> или <B>gluPartialDisk()</B>. Для увеличения 
+              скорости работы со статическими данными, инкапсулируйте 
+              квадрический объект в списке отображения. </P>
+              <LI>
+              <P class=text>После полного завершения работы с квадрическим 
+              объектом удалите его функцией <B>gluDeleteQuadric()</B>. Если вам 
+              нужно несколько фигур, лучше использовать для них всех один и тот 
+              же квадрический объект. </P></LI></OL>
+            <H2>11.2.1&nbsp;Управление квадрическими объектами</H2>
+            <P class=text>Квадрический объект состоит из параметров, аттрибутов 
+            и возвратно-вызываемых функций, сохраняемых в структуре данных типа 
+            GLUquadricObj. Квадрический объект может генерировать вершины, 
+            нормали, координаты текстуры и другие данные, которые могут 
+            использоваться либо непосредственно, либо сохраняться в списке 
+            отображения для более позднего использования. Следующие функции 
+            создают и уничтожают квадрический объект, а также устанавливают 
+            возвратную функцию обработки ошибок.</P>
+            <TABLE class=code id=table14 width="90%" align=center>
+              <TBODY>
+              <TR>
+                <TD>GLUquadricObj* <B>gluNewQuadric</B> 
+            (void);</TD></TR></TBODY></TABLE>
+            <P class=text>Создает новый квадрический объект и возвращает 
+            указатель на него. В случае неудачи функция возвращает нулевой 
+            указатель.</P>
+            <TABLE class=code id=table15 width="90%" align=center>
+              <TBODY>
+              <TR>
+                <TD>void <B>gluDeleteQuadric</B> (GLUquadricObj* 
+              qobj);</TD></TR></TBODY></TABLE>
+            <P class=text>Уничтожает квадрический объект <I>gobj</I> и 
+            освобождает всю память, используемую им.</P>
+            <TABLE class=code id=table16 width="90%" align=center>
+              <TBODY>
+              <TR>
+                <TD>void <B>gluQuadricCallback</B> (GLUquadricObj* 
+                  q<I>obj</I>, GLenum <I>which</I>, void 
+              (*<I>fn</I>)());</TD></TR></TBODY></TABLE>
+            <P class=text>Устанавливает, что функция <I>fn</I> будет вызвана в 
+            определенных ситуациях. Единственным допустимым значением для 
+            аргумента <I>which</I> является GLU_ERROR, то есть функция <I>fn</I> 
+            вызывается в случае ошибки. Если аргумент <I>fn</I> равен NULL, 
+            удаляется ссылка на текущую возвратную функцию.</P>
+            <P class=text>В случае GLU_ERROR <I>fn</I> вызывается с одним 
+            аргументом, равным коду ошибки. Функция <B>gluErrorString()</B> 
+            может быть полезна для конверсии этого кода в ASCII строку.</P>
+            <H2>11.2.2 Управление атрибутами квадрических объектов</H2>
+            <P class=text>Следующие функции воздействуют на то, какие данные 
+            генерируются квадрическими функциями. Эти функции следует 
+            использовать до создания примитивов.</P>
+            <P class=text>Пример 11-4, <B>quadric.cpp</B> демонстрирует 
+            изменение стиля рисования и характера генерируемых нормалей, а также 
+            создание квадрических объектов, обработку ошибок и рисование 
+            примитивов.</P>
+            <TABLE class=code id=table17 width="90%" align=center>
+              <TBODY>
+              <TR>
+                <TD>void <B>gluQuadricDrawStyle</B> (GLUquadricObj* 
+                  <I>qobj</I>, GLenum <I>drawStyle</I>);</TD></TR></TBODY></TABLE>
+            <P class=text>Аргумент <I>drawStyle</I> управляет стилем 
+            визуализации для объекта <I>qobj</I>. Допустимыми значениями 
+            <I>drawStyle</I> могут быть GLU_POINT, GLU_LINE, GLU_SILHOUETTE и 
+            GLU_FILL.</P>
+            <P class=text>GLU_POINT и GLU_LINE задают, что примитивы должны 
+            визуализироваться в виде точки в каждой вершине или в виде линий 
+            между парами соединяющихся вершин.</P>
+            <P class=text>GLU_SILHOUETTE также задает режим отображения в виде 
+            линий, но ребра, разделяющие соседние грани, не рисуются. Этот режим 
+            чаще всего используется для дисков или их частей.</P>
+            <P class=text>GLU_FILL задает визуализацию закрашенных полигонов 
+            там, где полигоны рисуются с ориентацией против часовой стрелки с 
+            учетом их нормалей. Данный параметр учитывает установки команды 
+            <B>gluQuadricOrientation()</B>.</P>
+            <TABLE class=code id=table18 width="90%" align=center>
+              <TBODY>
+              <TR>
+                <TD>void <B>gluQuadricOrientation</B> (GLUquadricObj* 
+                  <I>qobj</I>, GLenum <I>orientation</I>);</TD></TR></TBODY></TABLE>
+            <P class=text>Для объекта <I>qobj</I> аргумент <I>orientation</I> 
+            может принимать значения GLU_OUTSIDE (наружу, значение по умолчанию) 
+            или GLU_INSIDE (вовнутрь) и управляет направлением нормалей.</P>
+            <P class=text>Для сфер и цилиндров определение понятий наружу и 
+            вовнутрь очевидно. Для дисков и их частей сторона диска с 
+            положительным <I>z</I> считается находящейся снаружи.</P>
+            <TABLE class=code id=table19 width="90%" align=center>
+              <TBODY>
+              <TR>
+                <TD>void <B>gluQuadricNormals</B> (GLUquadricObj* <I>qobj</I>, 
+                  GLenum <I>normals</I>);</TD></TR></TBODY></TABLE>
+            <P class=text>Для объекта <I>qobj</I>, аргумент <I>normals</I> может 
+            принимать значения GLU_NONE (нормали не генерируются, значение по 
+            умолчанию), GLU_FLAT (генерация полигональных нормалей) или 
+            GLU_SMOOTH (генерация истинных нормалей).</P>
+            <P class=text><B>gluQuadricNormals()</B> используется для указания 
+            того, как генерировать нормали. GLU_NONE означает, что нормали 
+            вообще не генерируются, этот режим используется при работе без 
+            освещения. GLU_FLAT означает, что нормаль будет сгенерирована для 
+            каждой грани, что обычно используется при работе с освещением в 
+            режиме плоской заливки. GLU_SMOOTH означает, что нормаль будет 
+            сгенерирована для каждой вершины, этот режим дает наилучшие 
+            результаты при работе с освещением и плавной заливкой.</P>
+            <TABLE class=code id=table20 width="90%" align=center>
+              <TBODY>
+              <TR>
+                <TD>void <B>gluQuadricNormals</B> (GLUquadricObj* <I>qobj</I>, 
+                  GLenum <I>normals</I>);</TD></TR></TBODY></TABLE>
+            <P class=text>Для объекта <I>qobj</I> аргумент <I>textureCoords</I> 
+            может принимать значения GL_TRUE или GL_FALSE (значение по 
+            умолчанию) и управляет тем, следует ли генерировать для 
+            квадрического объекта координаты текстуры. Способ генерации 
+            текстурных координат зависит от типа квадрического объекта.</P>
+            <H2>11.2.3 Квадрические примитивы</H2>
+            <P class=text>Следующие функции непосредственно генерируют вершины и 
+            другие данные, составляющие квадрический объект. В каждом случае 
+            <I>qobj </I>представляет собой указатель, созданный с помощью 
+            <B>gluNewQuadric().</P>
+            <TABLE class=code id=table21 width="90%" align=center>
+              <TBODY>
+              <TR>
+                <TD>void <B>gluSphere</B> (GLUquadricObj* <I>qobj</I>, 
+                  GLdouble <I>radius</I>, GLint <I>slices</I>, GLint 
+                  <I>stacks</I>);</TD></TR></TBODY></TABLE></B>
+            <P class=text>Рисует сферу с радиусом равным аргументу 
+            <I>radius</I>, центр которой находится в начале координат. Вокруг 
+            оси <I>z</I> сфера состоит из частей, количеством <I>slices</I> 
+            (что-то вроде географической долготы), а вдоль <I>z</I> – из частей 
+            количеством <I>stacks (</I>что-то вроде географической 
+            широты<I>).</P></I>
+            <P class=text>Если требуется генерировать координаты текстуры, то 
+            координата <I>t</I> меняется от 0.0 на плоскости 
+            <I>z</I>=-<I>radius</I> до 1.0 на плоскости <I>z</I>=<I>radius</I>, 
+            то есть <I>t</I> линейно увеличивается вдоль линий долготы. В то же 
+            время <I>s</I> изменяется от 0.0 на оси +<I>y</I>, к 0.25 на оси 
+            +<I>x</I>, к 0.5 на оси –<I>y</I>, к 0.75 на оси –<I>x</I> до 1.0 
+            снова на оси +<I>y</I>.</P>
+            <TABLE class=code id=table22 width="90%" align=center>
+              <TBODY>
+              <TR>
+                <TD>
+                  <P class=Prototype>void <B>gluCylinder</B> (GLUquadricObj* 
+                  <I>qobj</I>, GLdouble <I>baseRadius</I>, GLdouble 
+                  <I>topRadius</I>,GLdouble <I>height</I>, GLint <I>slices</I>, 
+                  GLint <I>stacks</I>);</P></TD></TR></TBODY></TABLE></B></I>
+            <P class=text>Рисует цилиндр, ориентированный вдоль <I>z</I> оси, с 
+            основанием цилиндра на плоскости <I>z</I>=0, а вершиной на плоскости 
+            <I>z</I>=<I>height</I>. Также как и сфера, цилиндр разделяется 
+            вокруг <I>z</I> оси на <I>slices</I> частей, а вдоль <I>z</I> оси на 
+            <I>stacks</I> частей. <I>baseRadius</I> задает радиус цилиндра у 
+            основания, а <I>topRadius</I> – радиус в вершине (то есть с помощью 
+            этой функции рисуются не только цилиндры в классически 
+            геометрическом понимании, но и конусы и части конусов). Если 
+            <I>topRadius</I> установлен в 0.0, будет сгенерирован конус.</P>
+            <P class=text>Если требуется генерировать координаты текстуры, то 
+            координата <I>t </I>линейно изменяется от 0.0 на плоскости 
+            <I>z</I>=0 до 1.0 на плоскости <I>z</I>=<I>height</I>. Координата 
+            <I>s</I> генерируется также как для сферы.
+            <P class=warning>Замечание: У цилиндра не закрыты ни основание, ни 
+            вершина. Диски, представляющие собой основание и вершину, не 
+            рисуются.</P>
+            <TABLE class=code id=table23 width="90%" align=center>
+              <TBODY>
+              <TR>
+                <TD>
+                  <P class=Prototype>void <B>gluDisk</B> (GLUquadricObj* 
+                  <I>qobj</I>, GLdouble <I>innerRadius</I>, GLdouble 
+                  <I>outerRadius</I>, GLint <I>slices</I>, GLint 
+                  <I>rings</I>);</P></TD></TR></TBODY></TABLE>
+            <P class=text>Рисует диск на плоскости <I>z</I>=0, с радиусом 
+            <I>outerRadius</I> и концентрической дырой в центре радиусом 
+            <I>innerRadius</I>. Если <I>innerRadius</I> равен 0, никакой дыры в 
+            центре нет. Вокруг оси <I>z</I> диск разделяется на <I>slices</I> 
+            частей (что похоже на нарезку пиццы). Кроме того, в плоскости 
+            <I>z</I> диск разделяется на <I>rings</I> концентрических 
+кругов.</P>
+            <P class=text>С учетом ориентации <I>+z</I> сторона диска считается 
+            находящейся снаружи: то есть все генерируемые нормали указывают 
+            вдоль положительного направления оси <I>z</I>.</P>
+            <P class=text>Если следует генерировать координаты текстуры, то они 
+            генерируются линейно следующим образом. Если R=<I>outerRadius</I>, 
+            то значения <I>s</I> и <I>t</I> в точке (R, 0, 0) равны (1, 0.5), в 
+            точке (0, R, 0) – (0.5, 1), в точке (-R, 0, 0) – (0, 0.5), и, 
+            наконец, в точке (0, -R, 0) – (0.5, 0).</P>
+            <TABLE class=code id=table24 width="90%" align=center>
+              <TBODY>
+              <TR>
+                <TD>
+                  <P class=Prototype>void <B>gluPartialDisk</B> (GLUquadricObj* 
+                  <I>qobj</I>, GLdouble <I>innerRadius</I>, GLdouble 
+                  <I>outerRadius</I>,<BR>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 
+                  GLint <I>slices</I>, GLint <I>rings</I>, GLdouble 
+                  <I>startAngle</I>, GLdouble 
+              <I>sweepAngle</I>);</P></TD></TR></TBODY></TABLE>
+            <P class=text>Рисует часть диска на плоскости <I>z</I>=0. В терминах 
+            <I>outerRadius</I>, <I>innerRadius</I>, <I>slices</I> и <I>rings</I> 
+            часть диска похожа на целый диск. Разница в том, что рисуется только 
+            часть диска, начинающаяся с угла <I>startAngle</I> до угла 
+            <I>startAngle</I>+<I>sweepAngle</I> (где <I>startAngle</I> и 
+            <I>sweepAngle</I> измеряются в градусах, и угол 0 соответствует 
+            положительному направлению оси <I>y</I>, угол 90 – положительному 
+            направлению оси <I>x</I>, 180 – отрицательному направлению оси 
+            <I>y</I>, а 270 – отрицательному направлению оси <I>x</I>). </P>
+            <P class=text>Ориентация и координаты текстуры для части диска 
+            обрабатываются так же как для целого.</P>
+            <P class=warning>Замечание: Для всех квадрических объектов в случае 
+            необходимости изменить их размер лучше использовать аргументы 
+            функций построения квадрических примитивов (*Radius, height и так 
+            далее) вместо команды <B>glScale()</B>, так как в последнем случае 
+            нормали единичной длины должны быть повторно нормализованы. 
+            Устанавливайте аргументы <I>rings</I> и <I>stacks</I> в значения 
+            отличные от 1, чтобы расчеты освещенности производится с большей 
+            гранулярностью. Это особенно важно, если материал имеет высокий 
+            зеркальный коэффициент.</P>
+            <P class=text>Пример 11-4 демонстрирует все типы квадрических 
+            примитивов, а также различные стили рисования. Результат работы 
+            программы приводится на рисунке 11-5.</P>
+            <P class=text>Рисунок 11-5. Квадрические примитивы
+            <P align=center><IMG height=538 
+            src="ProgZ_ru - gluTessVertex.files/11-5.jpg" width=504 
+border=0></P>
+            <P class=text>Пример 11-4. Квадрические объекты: файл 
+quadric.cpp</P>
+            <TABLE class=code id=table25 width="90%" align=center>
+              <TBODY>
+              <TR>
+                <TD><PRE>#include <GLUT.H>
+#include <WINDOWS.H>
+#include <STDIO.H>
+
+#ifndef CALLBACK
+#define CALLBACK
+#endif
+
+GLuint startList;
+
+void CALLBACK errorCallback(GLenum errorCode)
+{
+      printf("Quadric error: %s\n",gluErrorString(errorCode));
+      exit(0);
+}
+
+//Инициализация
+void init(void)
+{
+      GLUquadricObj *qobj;
+      GLfloat mat_ambient[]={0.5,0.5,0.5,1.0};
+      GLfloat mat_specular[]={1.0,1.0,1.0,1.0};
+      GLfloat mat_shininess[]={50.0};
+      GLfloat light_position[4]={1.0,1.0,1.0,0.0};
+      GLfloat model_ambient[]={0.5,0.5,0.5,1.0};
+
+      glClearColor(0.0,0.0,0.0,0.0);
+
+      glMaterialfv(GL_FRONT,GL_AMBIENT,mat_ambient);
+      glMaterialfv(GL_FRONT,GL_SPECULAR,mat_specular);
+      glMaterialfv(GL_FRONT,GL_SHININESS,mat_shininess);
+      glLightfv(GL_LIGHT0,GL_POSITION,light_position);
+      glLightModelfv(GL_LIGHT_MODEL_AMBIENT,model_ambient);
+
+      glEnable(GL_LIGHT0);
+      glEnable(GL_DEPTH_TEST);
+
+      //Создать 4 списка каждый с разным квадрик-объектом.
+      //Используются различные стили и параметры нормалей
+      startList=glGenLists(4);
+      qobj=gluNewQuadric();
+      gluQuadricCallback(qobj,GLU_ERROR,
+                        (void(__stdcall*)(void))errorCallback);
+
+      //Плавно закрашенный
+      gluQuadricDrawStyle(qobj,GLU_FILL);
+      gluQuadricNormals(qobj,GLU_SMOOTH);
+      glNewList(startList,GL_COMPILE);
+            gluSphere(qobj,0.75,15,10);
+      glEndList();
+
+      //Плоско закрашенный
+      gluQuadricDrawStyle(qobj,GLU_FILL);
+      gluQuadricNormals(qobj,GLU_FLAT);
+      glNewList(startList+1,GL_COMPILE);
+            gluCylinder(qobj,0.5,0.3,1.0,15,5);
+      glEndList();
+
+      //Каркасный
+      gluQuadricDrawStyle(qobj,GLU_LINE);
+      gluQuadricNormals(qobj,GLU_NONE);
+      glNewList(startList+2,GL_COMPILE);
+            gluDisk(qobj,0.25,1.0,20,4);
+      glEndList();
+
+      //Силуэт
+      gluQuadricDrawStyle(qobj,GLU_SILHOUETTE);
+      gluQuadricNormals(qobj,GLU_NONE);
+      glNewList(startList+3,GL_COMPILE);
+            gluPartialDisk(qobj,0.0,1.0,20,4,0.0,225.0);
+      glEndList();
+}
+
+//Отображение
+void display(void)
+{
+      glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
+      glPushMatrix();
+
+      glEnable(GL_LIGHTING);
+      glShadeModel(GL_SMOOTH);
+      glTranslatef(-1.0,-1.0,0.0);
+      glCallList(startList);
+
+      glShadeModel(GL_FLAT);
+      glTranslatef(0.0,2.0,0.0);
+      glPushMatrix();
+      glRotatef(300.0,1.0,0.0,0.0);
+      glCallList(startList+1);
+      glPopMatrix();
+
+      glDisable(GL_LIGHTING);
+      glColor3f(0.0,1.0,1.0);
+      glTranslatef(2.0,-2.0,0.0);
+      glCallList(startList+2);
+
+      glColor3f(1.0,1.0,0.0);
+      glTranslatef(0.0,2.0,0.0);
+      glCallList(startList+3);
+
+      glPopMatrix();
+      glFlush();
+}
+
+//Изменение размеров окна
+void reshape(int w, int h)
+{
+      glViewport(0,0,(GLsizei) w, (GLsizei) h);
+      glMatrixMode(GL_PROJECTION);
+      glLoadIdentity();
+      if (w&lt;=h)
+            glOrtho(-2.5,2.5,-2.5*(GLfloat)h/(GLfloat)w,
+                     2.5*(GLfloat)h/(GLfloat)w,-10.0,10.0);
+      else
+            glOrtho(-2.5*(GLfloat)w/(GLfloat)h,
+                     2.5*(GLfloat)w/(GLfloat)h,-2.5,2.5,-10.0,10.0);
+      glMatrixMode(GL_MODELVIEW);
+      glLoadIdentity();
+}
+
+void keyboard(unsigned char key,int x,int y)
+{
+      switch(key)
+      {
+            case 27:
+                  exit(0);
+                  break;
+      }
+}
+
+int main (int argc, char** argv)
+{
+      glutInit(&amp;argc,argv);
+      glutInitDisplayMode(GLUT_SINGLE|GLUT_RGB|GLUT_DEPTH);
+      glutInitWindowSize(500,500);
+      glutInitWindowPosition(100,100);
+      glutCreateWindow("Quadrics Objects");
+      init();
+      glutDisplayFunc(display);
+      glutReshapeFunc(reshape);
+      glutKeyboardFunc(keyboard);
+      glutMainLoop();
+      return 0;   
+}</PRE></TD></TR></TBODY></TABLE>
+            <H2>11.3 Ссылки на примеры главы</H2>
+            <P class=text>Приложение <B>quadric</B>: квадрические 
+            примитивы.<BR><A 
+            href="http://www.progz.ru/download/opengl/chapter11/quadric.zip">Скачать</A> 
+            </P>
+            <P class=text>Приложение <B>tess</B>: пример применения 
+            тесселятора.<BR><A 
+            href="http://www.progz.ru/download/opengl/chapter11/tess.zip">Скачать</A> 
+            &nbsp;<BR>&nbsp;<BR></P></TD></TR></TBODY></TABLE></TD></TR></TBODY></TABLE>
+<TABLE width="100%" align=center>
+  <TBODY>
+  <TR>
+    <TD class=caption align=middle>All Right Reserved © 2003 <A class=menu 
+      href="mailto:info@progz.ru">ProgZ.ru</A> | Programming &amp; Design © 2003 
+      <A class=menu href="mailto:ex@progz.ru">Ex</A></TD>
+  <TR></TR></TBODY></TABLE></BODY></HTML>

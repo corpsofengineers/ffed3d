@@ -1,0 +1,18 @@
+No surprise  ... bits 0..2 mirror, 3..5 rotate around one of the axes (and 
+special value 6 uses a pre-set rotation matrix). In my wireframe mesh viewer 
+you can see some correct rotations, some bad... and the latest version draws 
+some of the Radiation warning signs on the Panther upside down -- again! 
+
+
+AND 38h negates rows per bit, AND 07h gives 5 additional rotations. 
+Bits 20h negates the top row of your matrix, 10h the second row, and 08h the 
+third row. 
+01h to 05h rotate 90deg along the x, y, and z axes. I had some problems 
+interpreting this until I found you have to do the negate first (if 
+necessary), then the rotation. Value 06h is a special (arbitrary) rotation 
+angle, and 07h seems unused (though I'm getting increasingly careful stating 
+something is "unused" :) 
+I still have problems with this rotation, though -- I'll try to update 
+galaxy7.html a.s.a. I have a fully working wireframe ... 
+At the mo' I don't even dare to *think* of planet code... 
+

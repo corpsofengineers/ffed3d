@@ -1,0 +1,109 @@
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+From:    Theunis de Jong <t.jong33@chello.nl>
+To:      'Александр Чернобровый' <dreamzzz@pisem.net>
+Date:    Friday, May 26, 2006, 4:00:13 PM
+Subject: ffe
+Files:   FrontierMeshes.rar
+--====----====----====----====----====----====----====----====----====----===--
+Hi Alexander!
+
+Hey, that's great! You've done some fantastic things so far! Milky way looks
+great, so does the text. And it must be a miracle it is actually playable as
+well :)
+Now I can see where you have problems (and how they relate to your
+questions), I'll take a closer look to them.
+With this latest build of my mesh viewer you can see where I'm still in the
+dark! A few keys: P for points, K for kolor, S for Solids (not depth sorted
+or textured...). Rotate with arrows or mouse, zoom in and out with numeric +
+and -. Type a number or use page up/down for other models; L to toggle
+Landing state (on ships and stations). R for 'random' parameters on ships
+and most cities.
+Oh, and you can change the vertical size of the window but it crashes when
+you change the width... (bah!).
+
+A few short answers I can quickly find in my source:
+
+SCALEDSUBOBJECT:
+obj1B ORIENTATION|VERTEX SCALE MATERIAL (VERTEX2|VERTEX1 VERTEX4|VERTEX3)
+The Scale is not a word :P but a high byte/low byte combo. If the low byte
+is zero, the high byte should be added to the orginal model scale AS A
+SIGNED CHAR.
+If the low byte is not zero (80h, might be other value???) the high byte is
+a LOCAL VARIABLE number, and also should be added to the original model
+scale. "Original model" is the PARENT it is drawn from, not the sub-object.
+That should take care of the large light masts I see on your orbiter
+stations :)
+
+MATERIAL with local colour:
+001A MATERIAL 00|NORMAL (?)
+001A MATERIAL1 VARIABLE|00 MAT2 MAT3 MAT4 MAT5 MAT6 MAT7 MAT8
+Every MODELINSTANCE has a "local material" word.  The command 001A sets this
+word to its result. The scaled subobject also has a MATERIAL parameter, I
+use it like this:
+DrawModel_t l_drawmdl;  // create the model locally
+l_drawmdl.local_color = MATERIAL;       // set its local color to the one in
+the command
+..
+drawmodel (&l_drawmdl); // ..and use it there
+It seems to work this way -- I haven't used textures but the colors _look_
+okay...
+On my web pages I say "The UNLIT bit. If set then shading should not be
+applied", but that only seems true for flat colors. Textures should always
+be shaded.
+
+BEZIER: 001C MATERIAL ... lots of points ..
+I found this by trial and error! Just kept on switching numbers until it
+worked...
+I really should update the web page for this, I think I have it right now in
+my mesh viewer.
+p1 = meshptr[4] // CONTROL 1
+p3 = meshptr[5] // END
+p0 = meshptr[6] // START
+p2 = meshptr[7] // CONTROL 2
+bezier (p0, p1, p2, p3);
+
+The same is true for the curves in the polygon. This is copied straight out
+of the mesh viewer (and I THINK it's okay there...).
+// StartCurve: 02|xx ST|C1 C2|ED
+where ST=Start, ED=End, C1,C2=Control. These are bytes (written down in word
+pairs), so if 02|XX is your current byte position, the '02' is at pos[1], ST
+is pos[3], C1 is pos[2], C2 is pos[5] and ED is pos[4].
+// ContinueCurve: 08|C1 C2|ED
+C1 is at pos[0], C2 at pos[3], and ED at pos[2]. The start point ST is the
+last coordinate from a previous command.
+
+Planet scales:
+well... I don't know FOR SURE. There is a Scale2 in the models, and I think
+it should be added to the Scale. The result should be used to draw the
+model. I know the models get very large: Object #146:Supergiant star,
+Scale=22 and Scale2=19, so that's 22+19 = 41 (in powers of 2: 10^12 times
+larger!). The game doesn't actually do any calculations with these large
+values, only comparisons.
+
+Mirror vertexes (Object #263):
+Vertex type 5 = Negative -- It works for me..?? See object 263 in the mesh
+viewer. Press 'p' to see point numbers, it might help.
+
+Rotations: ... i'll have to come back on those later...
+
+best!
+Theunis de Jong
+aka [Jongware]
+
+> -----Original Message-----
+> From: Александр Чернобровый [mailto:dreamzzz@pisem.net] 
+> Sent: donderdag 25 mei 2006 20:46
+> To: Theunis de Jong
+> Subject: ffe
+> 
+> 
+> Hello Theunis!
+> 
+>  I send you current version of my project.
+>  Some objects in this version i draw with 2D intersept, all 
+> others  with 3D. I have many problems and questions and i 
+> need you help.
+> [...]
+
+=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+
