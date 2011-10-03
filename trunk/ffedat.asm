@@ -158,14 +158,14 @@ _DATA_007890:
 _DATA_007891:
 	dd DATA_007891
 
-_DATA_007892:
-	dd DATA_007892
+_DATA_007892_Icosahedron:
+	dd DATA_007892_Icosahedron
 _DATA_007893:
 	dd DATA_007893
 _DATA_007894:
 	dd DATA_007894
-_DATA_008812:
-	dd DATA_008812	
+_DATA_008812_GraphicsDetailRelated:
+	dd DATA_008812_GraphicsDetailRelated	
 _DATA_009054:
 	dd DATA_009054	
 _DATA_009259:
@@ -198,8 +198,8 @@ _DATA_009274:
 	dd DATA_009274
 _DATA_009275:
 	dd DATA_009275
-_DATA_009276:
-	dd DATA_009276
+_DATA_009276_ArraySize:
+	dd DATA_009276_ArraySize
 _DATA_009277:
 	dd DATA_009277
 _DATA_009278:
@@ -26887,7 +26887,7 @@ DATA_007891:
 	db 0x1, 0x0, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff
 	db 0xff, 0xff, 0x1, 0x0, 0x1, 0x0, 0xff, 0xff
 	db 0x1, 0x0, 0x1, 0x0, 0xff, 0xff
-DATA_007892:			; icosahedron
+DATA_007892_Icosahedron:			; icosahedron
 	db 0x0, 0x0, 0x0, 0x0     ; 0
 	db 0xff, 0xff, 0xff, 0x7f ; 2147483647
 	db 0x0, 0x0, 0x0, 0x0     ; 0
@@ -28529,7 +28529,7 @@ DATA_008810:
 	resb 1
 DATA_008811:
 	resb 2
-DATA_008812:
+DATA_008812_GraphicsDetailRelated:
 	resb 4
 DATA_008813:
 	resb 8
@@ -29460,7 +29460,7 @@ DATA_009274:
 	resb 108000
 DATA_009275:
 	resb 4
-DATA_009276:
+DATA_009276_ArraySize:
 	resb 4
 DATA_009277:
 	resb 48000

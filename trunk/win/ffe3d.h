@@ -37,7 +37,7 @@
 #define CULL_CCW				0x03
 
 struct CUSTOMVERTEX {
-	FLOAT x,y,z;	// позиция вершины
+	D3DXVECTOR3 p;	// позиция вершины
 	D3DXVECTOR3 n; //Lighting Normal
 	DWORD color;		// Цвет вершины
 	FLOAT tu,tv;
@@ -204,7 +204,10 @@ struct ffeVertex {
 	int normal_x, normal_y, normal_z;	// 40, 44, 48
 	int unknown5_2;						// 52
 	int unknown6_2;						// 56
-	int x_2, y_2, z_2;					// 60, 64, 68
+	int x_2;	// 60
+	int y_2;	// 64
+	// до какой глубины деления делить
+	int z_2;	// 68
 
 };
 

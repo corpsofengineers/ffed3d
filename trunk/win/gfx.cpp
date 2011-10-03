@@ -36,7 +36,7 @@ bool subObject=false;
 float GetPlanetRadius (void *planet);
 
 extern "C" ffeVertex *DATA_009200; // Vertex buffer?
-extern "C" char *DATA_007892;
+extern "C" char *DATA_007892_Icosahedron;
 extern "C" char *DATA_008861;
 extern "C" char *DATA_006821;
 extern "C" unsigned char *DATA_008874;
@@ -1956,7 +1956,7 @@ Vect3f getReNormal(unsigned char num) {
 	Vect3f vNormal1, vNormal2, normal;
 
 	if (mod->Normals_ptr!=NULL && num>0) {
-		vNormal1 = GetVertexNormal(&Vect3f(Vertices->x, Vertices->y, Vertices->z)); 
+		vNormal1 = GetVertexNormal(&Vect3f(Vertices->p.x, Vertices->p.y, Vertices->p.z)); 
 
 		signed char *normalPtr = mod->Normals_ptr+(num/2-1)*6;
 		vNormal2.x=(float)*(normalPtr+2);
@@ -2264,6 +2264,8 @@ void CALLBACK errorCallback(GLenum errorCode)
 // Тесселяция закончена. Пересчитаем нормали (глючно)
 void CALLBACK endCallback(void)
 {
+	if (ucount == 0) return;
+
 	vertexType[curVer].type=currWhich;
 	vertexType[curVer].amount = ucount;
 	vertexType[curVer].textNum = currentTex;
@@ -5864,6 +5866,7 @@ extern "C" int C_Break(char *ptr, unsigned short *cmd)
 	modelList[modelNum].zenable=true;
 	modelList[modelNum].zclear=false;
 	modelList[modelNum].backsprite=false;
+	modelList[modelNum].cull=CULL_NONE;
 
 	if (objNum==315 || objNum==444)	{// galaxy background
 		modelList[modelNum].zwrite=false;
@@ -5955,7 +5958,7 @@ extern "C" int C_Break(char *ptr, unsigned short *cmd)
 		
 		if (currentModel!=445 && currentModel!=447 && currentModel!=449) {
 			if (dis > radius2*1.04) {
-				scale2=0.01f*(*(int*)(ptr+0x130));
+				scale2=0.01f;//*(*(int*)(ptr+0x130));
 				posMatrix[12]*=scale2;
 				posMatrix[13]*=scale2;
 				posMatrix[14]*=scale2;
@@ -5963,7 +5966,7 @@ extern "C" int C_Break(char *ptr, unsigned short *cmd)
 				if (pos.z<0)
 					return 0;
 				if ((currentModel<134 && currentModel>137) && currentModel!=148 && currentModel!=445) {
-					//modelList[modelNum].zclear=true;
+					modelList[modelNum].zclear=true;
 				}
 			} else {
 				modelList[modelNum].zclear=true;

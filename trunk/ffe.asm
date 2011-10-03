@@ -1754,10 +1754,10 @@ GLOBAL _DATA_007888
 GLOBAL _DATA_007889
 GLOBAL _DATA_007890
 GLOBAL _DATA_007891
-GLOBAL _DATA_007892
+GLOBAL _DATA_007892_Icosahedron
 GLOBAL _DATA_007893
 GLOBAL _DATA_007894
-GLOBAL _DATA_008812
+GLOBAL _DATA_008812_GraphicsDetailRelated
 GLOBAL _DATA_008874
 GLOBAL _DATA_009054
 GLOBAL _DATA_009259
@@ -1775,7 +1775,7 @@ GLOBAL _DATA_009272
 GLOBAL _DATA_009273
 GLOBAL _DATA_009274
 GLOBAL _DATA_009275
-GLOBAL _DATA_009276
+GLOBAL _DATA_009276_ArraySize
 GLOBAL _DATA_009277
 GLOBAL _DATA_009278
 GLOBAL _DATA_009279
@@ -1868,10 +1868,10 @@ EXTERN _FillAviFrame
 EXTERN _ResetAviFrame
 
 EXTERN _C_PlaceStation
-EXTERN _C_FUNC_001816
+EXTERN _C_FUNC_001816_ArrayInit
 EXTERN _FUNC_001874_DrawPlanet
-EXTERN _C_FUNC_001829
-EXTERN _C_FUNC_001829_2
+EXTERN _C_FUNC_001829_GetTriangulateDepth
+EXTERN _C_FUNC_001829_GetTriangulateDepth_2
 EXTERN _C_FUNC_001479_doOrtoXY
 
 EXTERN _C_FUNC_001752_SkipIfNotVisible
@@ -1905,7 +1905,7 @@ EXTERN _C_Break3
 EXTERN _C_Break4
 EXTERN _C_DrawScannerMarkerUp
 EXTERN _C_DrawScannerMarkerDown
-;EXTERN _C_FUNC_001846
+EXTERN _C_FUNC_001846
 EXTERN _C_FUNC_001849
 EXTERN _C_FUNC_001850
 EXTERN _C_FUNC_001851
@@ -68379,10 +68379,10 @@ FUNC_000917:			; Pos = 3c40c
 		push edi
 		call FUNC_000915
 		call FUNC_001903_SoundStopSong
-		cmp dword [DATA_008812],byte +0x0
+		cmp dword [DATA_008812_GraphicsDetailRelated],byte +0x0
 		jnl JUMP_003830
 		xor eax,eax
-		mov [DATA_008812],eax
+		mov [DATA_008812_GraphicsDetailRelated],eax
 	JUMP_003830:			; Pos = 3c432
 		or byte [DATA_008835],0x20
 		mov eax,[DATA_007201]
@@ -69286,8 +69286,8 @@ _asmmain:			; Pos = 3c5f4
 	;call _sprintf
 	;add esp, 16
 
-	push dword [DATA_009276]
-	push dword [DATA_009276]
+	push dword [DATA_009276_ArraySize]
+	push dword [DATA_009276_ArraySize]
 	push dword pDebugString11
 	push dword pTempString
 	call _sprintf
@@ -105478,7 +105478,7 @@ FUNC_001708:			; Pos = 5caa8
 		add esp,byte +0x8
 	JUMP_006505:			; Pos = 5cbd1
 		mov esi,eax
-		cmp dword [DATA_008812],byte +0x0
+		cmp dword [DATA_008812_GraphicsDetailRelated],byte +0x0
 		jl near JUMP_006525
 		cmp word [esi],0xf830
 		jl near JUMP_006525
@@ -106094,7 +106094,7 @@ FUNC_001712:			; Pos = 5d0c0
 		add esp,byte +0x8
 	JUMP_006542:			; Pos = 5d228
 		mov [ebp-0xc],eax
-		cmp dword [DATA_008812],byte +0x0
+		cmp dword [DATA_008812_GraphicsDetailRelated],byte +0x0
 		jl near JUMP_006566
 		mov eax,[ebp-0xc]
 		cmp word [eax],0xf830
@@ -110325,7 +110325,7 @@ FUNC_001751:			; Pos = 5fc48
 		xor eax,eax
 		jmp short JUMP_006775
 	JUMP_006770:			; Pos = 5fca5
-		mov eax,[DATA_008812]
+		mov eax,[DATA_008812_GraphicsDetailRelated]
 		test al,0x1
 		jz JUMP_006771
 		mov eax,[DATA_008813]
@@ -114103,7 +114103,7 @@ FUNC_001816:			; Pos = 623ac
 		xor eax,eax
 		mov [DATA_009273],eax
 		xor eax,eax
-		mov [DATA_009276],eax
+		mov [DATA_009276_ArraySize],eax
 	JUMP_006975:			; Pos = 62425
 		pop edi
 		pop esi
@@ -114162,8 +114162,8 @@ FUNC_001820:			; Pos = 62488
 		mov ebx,eax
 		mov eax,[eax]
 		mov [DATA_009275],eax
-		inc dword [DATA_009276]
-		;cmp dword [DATA_009276],0xbb8
+		inc dword [DATA_009276_ArraySize]
+		;cmp dword [DATA_009276_ArraySize],0xbb8
 		;jl JUMP_006977
 		;push byte +0x2
 		;push dword DATA_009271
@@ -114204,7 +114204,7 @@ FUNC_001821:			; Pos = 624cc
 		call FUNC_001819
 		pop ecx
 	JUMP_006980:			; Pos = 624ef
-		dec dword [DATA_009276]
+		dec dword [DATA_009276_ArraySize]
 		mov eax,[DATA_009275]
 		mov [ebx],eax
 		mov [DATA_009275],ebx
@@ -114816,7 +114816,7 @@ FUNC_001830:			; Pos = 62a70
 		mov ebx,[ebp+0x14]
 		mov esi,[ebp+0x10]
 		;call FUNC_001816
-		;call _C_FUNC_001816
+		;call _C_FUNC_001816_ArrayInit
 		mov eax,[ebp+0xc]
 		mov edx,[eax+0x4]
 		mov eax,edx
@@ -115093,7 +115093,7 @@ FUNC_001834:			; Pos = 62cb8
 		mov [DATA_009278],eax
 		push ebx
 		;call FUNC_001829
-		call _C_FUNC_001829
+		call _C_FUNC_001829_GetTriangulateDepth
 		pop ecx
 		movsx eax,word [ebx]
 		push eax
@@ -115107,7 +115107,7 @@ FUNC_001834:			; Pos = 62cb8
 		mov [ebx+0x26],ax
 		push esi
 		;call FUNC_001829
-		call _C_FUNC_001829
+		call _C_FUNC_001829_GetTriangulateDepth
 		pop ecx
 		movsx eax,word [esi]
 		push eax
@@ -115121,7 +115121,7 @@ FUNC_001834:			; Pos = 62cb8
 		mov [esi+0x26],ax
 		push edi
 		;call FUNC_001829
-		call _C_FUNC_001829
+		call _C_FUNC_001829_GetTriangulateDepth
 		pop ecx
 		movsx eax,word [edi]
 		push eax
@@ -115852,7 +115852,7 @@ FUNC_001840:			; Pos = 632d0
 		setng dl
 		and edx,byte +0x1
 		add eax,edx
-		cmp dword [DATA_008812],byte +0x0
+		cmp dword [DATA_008812_GraphicsDetailRelated],byte +0x0
 		jl JUMP_007089
 		cmp esi,0x1fffffff
 		jna JUMP_007088
@@ -116803,7 +116803,7 @@ FUNC_001845:			; Pos = 63e68
 		nop
 
 
-
+_FUNC_001846:
 FUNC_001846:			; Pos = 63ebc
 
 		push ebp
@@ -117187,7 +117187,7 @@ FUNC_001849:			; Pos = 64000
 		mov eax,[ebp+0x8]
 		push eax
 		push ebx
-		call _C_FUNC_001829_2
+		call _C_FUNC_001829_GetTriangulateDepth_2
 		add esp,byte +0x10
 	JUMP_007157:			; Pos = 6426a
 		pop edi
@@ -117411,7 +117411,7 @@ FUNC_001850:			; Pos = 64274
 	JUMP_007164:			; Pos = 644bd
 		;push ebx
 		;call FUNC_001829
-		;call _C_FUNC_001829
+		;call _C_FUNC_001829_GetTriangulateDepth
 		;pop ecx
 		
 		mov eax,[ebp+0x10]
@@ -117421,7 +117421,7 @@ FUNC_001850:			; Pos = 64274
 		mov eax,[ebp+0x8]
 		push eax
 		push ebx
-		call _C_FUNC_001829_2
+		call _C_FUNC_001829_GetTriangulateDepth_2
 		add esp,byte +0x10		
 	JUMP_007165:			; Pos = 644c4
 		pop edi
@@ -117652,7 +117652,7 @@ FUNC_001851:			; Pos = 644cc
 	JUMP_007174:			; Pos = 64723
 		;push ebx
 		;call FUNC_001829
-		;call _C_FUNC_001829
+		;call _C_FUNC_001829_GetTriangulateDepth
 		;pop ecx
 		
 		mov eax,[ebp+0x10]
@@ -117662,7 +117662,7 @@ FUNC_001851:			; Pos = 644cc
 		mov eax,[ebp+0x8]
 		push eax
 		push ebx
-		call _C_FUNC_001829_2
+		call _C_FUNC_001829_GetTriangulateDepth_2
 		add esp,byte +0x10		
 	JUMP_007175:			; Pos = 6472a
 		pop edi
@@ -117891,7 +117891,7 @@ FUNC_001852:			; Pos = 64734
 	JUMP_007182:			; Pos = 64989
 		;push ebx
 		;call FUNC_001829
-		;call _C_FUNC_001829
+		;call _C_FUNC_001829_GetTriangulateDepth
 		;pop ecx
 		
 		mov eax,[ebp+0x10]
@@ -117901,7 +117901,7 @@ FUNC_001852:			; Pos = 64734
 		mov eax,[ebp+0x8]
 		push eax
 		push ebx
-		call _C_FUNC_001829_2
+		call _C_FUNC_001829_GetTriangulateDepth_2
 		add esp,byte +0x10		
 	JUMP_007183:			; Pos = 64990
 		pop edi
@@ -118164,7 +118164,7 @@ FUNC_001853:			; Pos = 64998
 	JUMP_007197:			; Pos = 64c36
 		;push ebx
 		;call FUNC_001829
-		;call _C_FUNC_001829
+		;call _C_FUNC_001829_GetTriangulateDepth
 		;pop ecx
 
 		mov eax,[ebp+0x10]
@@ -118174,7 +118174,7 @@ FUNC_001853:			; Pos = 64998
 		mov eax,[ebp+0x8]
 		push eax
 		push ebx
-		call _C_FUNC_001829_2
+		call _C_FUNC_001829_GetTriangulateDepth_2
 		add esp,byte +0x10		
 	JUMP_007198:			; Pos = 64c3d
 		pop edi
@@ -118424,7 +118424,7 @@ FUNC_001854:			; Pos = 64c44
 	JUMP_007205:			; Pos = 64eef
 		;push ebx
 		;call FUNC_001829
-		;call _C_FUNC_001829
+		;call _C_FUNC_001829_GetTriangulateDepth
 		;pop ecx
 		
 		mov eax,[ebp+0x10]
@@ -118434,7 +118434,7 @@ FUNC_001854:			; Pos = 64c44
 		mov eax,[ebp+0x8]
 		push eax
 		push ebx
-		call _C_FUNC_001829_2
+		call _C_FUNC_001829_GetTriangulateDepth_2
 		add esp,byte +0x10		
 	JUMP_007206:			; Pos = 64ef6
 		pop edi
@@ -118689,7 +118689,7 @@ FUNC_001855:			; Pos = 64f00
 	JUMP_007215:			; Pos = 651ad
 		;push ebx
 		;call FUNC_001829
-		;call _C_FUNC_001829
+		;call _C_FUNC_001829_GetTriangulateDepth
 		;pop ecx
 		
 		mov eax,[ebp+0x10]
@@ -118699,7 +118699,7 @@ FUNC_001855:			; Pos = 64f00
 		mov eax,[ebp+0x8]
 		push eax
 		push ebx
-		call _C_FUNC_001829_2
+		call _C_FUNC_001829_GetTriangulateDepth_2
 		add esp,byte +0x10		
 	JUMP_007216:			; Pos = 651b4
 		pop edi
@@ -118955,7 +118955,7 @@ FUNC_001856:			; Pos = 651bc
 	JUMP_007223:			; Pos = 65476
 		;push ebx
 		;call FUNC_001829
-		;call _C_FUNC_001829
+		;call _C_FUNC_001829_GetTriangulateDepth
 		;pop ecx
 		
 		mov eax,[ebp+0x10]
@@ -118965,7 +118965,7 @@ FUNC_001856:			; Pos = 651bc
 		mov eax,[ebp+0x8]
 		push eax
 		push ebx
-		call _C_FUNC_001829_2
+		call _C_FUNC_001829_GetTriangulateDepth_2
 		add esp,byte +0x10		
 	JUMP_007224:			; Pos = 6547d
 		pop edi
@@ -119253,7 +119253,7 @@ FUNC_001857:			; Pos = 65484
 	JUMP_007238:			; Pos = 65778
 		;push ebx
 		;call FUNC_001829
-		;call _C_FUNC_001829
+		;call _C_FUNC_001829_GetTriangulateDepth
 		;pop ecx
 		
 		mov eax,[ebp+0x10]
@@ -119263,7 +119263,7 @@ FUNC_001857:			; Pos = 65484
 		mov eax,[ebp+0x8]
 		push eax
 		push ebx
-		call _C_FUNC_001829_2
+		call _C_FUNC_001829_GetTriangulateDepth_2
 		add esp,byte +0x10		
 	JUMP_007239:			; Pos = 6577f
 		pop edi
@@ -119635,7 +119635,7 @@ FUNC_001858:			; Pos = 65788
 		;mov eax,[ebp-0x4]
 		;push eax
 		;call FUNC_001829
-		;call _C_FUNC_001829
+		;call _C_FUNC_001829_GetTriangulateDepth
 		;pop ecx
 		
 		mov eax,[ebp+0x10]
@@ -119646,7 +119646,7 @@ FUNC_001858:			; Pos = 65788
 		push eax
 		mov eax,[ebp-0x4]
 		push eax
-		call _C_FUNC_001829_2
+		call _C_FUNC_001829_GetTriangulateDepth_2
 		add esp,byte +0x10		
 	JUMP_007255:			; Pos = 65b88
 		pop edi
@@ -120027,7 +120027,7 @@ FUNC_001859:			; Pos = 65b90
 		;mov eax,[ebp-0x4]
 		;push eax
 		;call FUNC_001829
-		;call _C_FUNC_001829
+		;call _C_FUNC_001829_GetTriangulateDepth
 		;pop ecx
 		
 		mov eax,[ebp+0x10]
@@ -120038,7 +120038,7 @@ FUNC_001859:			; Pos = 65b90
 		push eax
 		mov eax,[ebp-0x4]
 		push eax
-		call _C_FUNC_001829_2
+		call _C_FUNC_001829_GetTriangulateDepth_2
 		add esp,byte +0x10		
 		
 	JUMP_007273:			; Pos = 65fa3
@@ -120416,7 +120416,7 @@ FUNC_001860:			; Pos = 65fac
 		;mov eax,[ebp-0x8]
 		;push eax
 		;call FUNC_001829
-		;call _C_FUNC_001829
+		;call _C_FUNC_001829_GetTriangulateDepth
 		;pop ecx
 		
 		mov eax,[ebp+0x10]
@@ -120427,7 +120427,7 @@ FUNC_001860:			; Pos = 65fac
 		push eax
 		mov eax,[ebp-0x8]
 		push eax
-		call _C_FUNC_001829_2
+		call _C_FUNC_001829_GetTriangulateDepth_2
 		add esp,byte +0x10		
 		
 	JUMP_007289:			; Pos = 663bc
@@ -120821,7 +120821,7 @@ FUNC_001861:			; Pos = 663c4
 	JUMP_007311:			; Pos = 667da
 		;push ebx
 		;call FUNC_001829
-		;call _C_FUNC_001829
+		;call _C_FUNC_001829_GetTriangulateDepth
 		;pop ecx
 		
 		mov eax,[ebp+0x10]
@@ -120831,7 +120831,7 @@ FUNC_001861:			; Pos = 663c4
 		mov eax,[ebp+0x8]
 		push eax
 		push ebx
-		call _C_FUNC_001829_2
+		call _C_FUNC_001829_GetTriangulateDepth_2
 		add esp,byte +0x10		
 		
 	JUMP_007312:			; Pos = 667e1
@@ -121230,7 +121230,7 @@ FUNC_001862:			; Pos = 667e8
 		;mov eax,[ebp-0x4]
 		;push eax
 		;call FUNC_001829
-		;call _C_FUNC_001829
+		;call _C_FUNC_001829_GetTriangulateDepth
 		;pop ecx
 		
 		mov eax,[ebp+0x10]
@@ -121241,7 +121241,7 @@ FUNC_001862:			; Pos = 667e8
 		push eax
 		mov eax,[ebp-0x4]
 		push eax
-		call _C_FUNC_001829_2
+		call _C_FUNC_001829_GetTriangulateDepth_2
 		add esp,byte +0x10		
 		
 	JUMP_007328:			; Pos = 66c4a
@@ -121654,7 +121654,7 @@ FUNC_001863:			; Pos = 66c54
 		;mov eax,[ebp-0x4]
 		;push eax
 		;call FUNC_001829
-		;call _C_FUNC_001829
+		;call _C_FUNC_001829_GetTriangulateDepth
 		;pop ecx
 		
 		mov eax,[ebp+0x10]
@@ -121665,7 +121665,7 @@ FUNC_001863:			; Pos = 66c54
 		push eax
 		mov eax,[ebp-0x4]
 		push eax
-		call _C_FUNC_001829_2
+		call _C_FUNC_001829_GetTriangulateDepth_2
 		add esp,byte +0x10		
 		
 	JUMP_007346:			; Pos = 670c9
@@ -122070,7 +122070,7 @@ FUNC_001864:			; Pos = 670d0
 		;mov eax,[ebp-0x8]
 		;push eax
 		;call FUNC_001829
-		;call _C_FUNC_001829
+		;call _C_FUNC_001829_GetTriangulateDepth
 		;pop ecx
 		
 		mov eax,[ebp+0x10]
@@ -122081,7 +122081,7 @@ FUNC_001864:			; Pos = 670d0
 		push eax
 		mov eax,[ebp-0x8]
 		push eax
-		call _C_FUNC_001829_2
+		call _C_FUNC_001829_GetTriangulateDepth_2
 		add esp,byte +0x10		
 		
 	JUMP_007362:			; Pos = 67542
@@ -122504,7 +122504,7 @@ FUNC_001865:			; Pos = 6754c
 	JUMP_007384:			; Pos = 679be
 		;push ebx
 		;call FUNC_001829
-		;call _C_FUNC_001829
+		;call _C_FUNC_001829_GetTriangulateDepth
 		;pop ecx
 		
 		mov eax,[ebp+0x10]
@@ -122514,7 +122514,7 @@ FUNC_001865:			; Pos = 6754c
 		mov eax,[ebp+0x8]
 		push eax
 		push ebx
-		call _C_FUNC_001829_2
+		call _C_FUNC_001829_GetTriangulateDepth_2
 		add esp,byte +0x10		
 		
 	JUMP_007385:			; Pos = 679c5
@@ -122724,7 +122724,7 @@ FUNC_001866:			; Pos = 679cc
 	JUMP_007392:			; Pos = 67bf5
 		;push ebx
 		;call FUNC_001829
-		;call _C_FUNC_001829
+		;call _C_FUNC_001829_GetTriangulateDepth
 		;pop ecx
 		
 		mov eax,[ebp+0x10]
@@ -122734,7 +122734,7 @@ FUNC_001866:			; Pos = 679cc
 		mov eax,[ebp+0x8]
 		push eax
 		push ebx
-		call _C_FUNC_001829_2
+		call _C_FUNC_001829_GetTriangulateDepth_2
 		add esp,byte +0x10		
 		
 	JUMP_007393:			; Pos = 67bfc
@@ -122971,7 +122971,7 @@ FUNC_001867:			; Pos = 67c04
 	JUMP_007400:			; Pos = 67e83
 		;push ebx
 		;call FUNC_001829
-		;call _C_FUNC_001829
+		;call _C_FUNC_001829_GetTriangulateDepth
 		;pop ecx
 		
 		mov eax,[ebp+0x10]
@@ -122981,7 +122981,7 @@ FUNC_001867:			; Pos = 67c04
 		mov eax,[ebp+0x8]
 		push eax
 		push ebx
-		call _C_FUNC_001829_2
+		call _C_FUNC_001829_GetTriangulateDepth_2
 		add esp,byte +0x10		
 		
 	JUMP_007401:			; Pos = 67e8a
@@ -131053,7 +131053,7 @@ FUNC_001876:			; Pos = 6d648
 		mov [ebp-0x8],eax
 		cmp dword [ebp+0x34],byte +0x0
 		jnz near JUMP_007966
-		mov eax,[DATA_008812]
+		mov eax,[DATA_008812_GraphicsDetailRelated]
 		dec eax
 		mov [DATA_007837],eax
 		mov eax,[ebp+0x1c]
@@ -131116,7 +131116,7 @@ FUNC_001876:			; Pos = 6d648
 		inc dword [DATA_007837]
 		jmp short JUMP_007967
 	JUMP_007966:			; Pos = 6da05
-		mov eax,[DATA_008812]
+		mov eax,[DATA_008812_GraphicsDetailRelated]
 		dec eax
 		mov [DATA_007837],eax
 	JUMP_007967:			; Pos = 6da10
@@ -131128,7 +131128,7 @@ FUNC_001876:			; Pos = 6d648
 		mov [DATA_009269],eax
 		xor ebx,ebx
 		lea edi,[ebp+0xfffff7e8]
-		mov esi,DATA_007892
+		mov esi,DATA_007892_Icosahedron
 	JUMP_007968:			; Pos = 6da32
 		mov eax,[ebp+0x20]
 		mov eax,[eax]
@@ -131302,7 +131302,7 @@ FUNC_001876:			; Pos = 6d648
 		jmp JUMP_008044
 	JUMP_007974:			; Pos = 6dbee
 		call FUNC_001816
-		;call _C_FUNC_001816
+		;call _C_FUNC_001816_ArrayInit
 		xor ebx,ebx
 		lea esi,[ebp+0xfffff6f4]
 		lea edi,[ebp+0xfffff67c]

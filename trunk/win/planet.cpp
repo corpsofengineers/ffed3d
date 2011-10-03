@@ -11,19 +11,11 @@
 #include "Render/RenderSystem.h"
 #include "xmath.h"
 
-void Vec32to64 (__int64 *resVec, int *starport) {
-	int x,y,z;
-
-	x = *starport;
-	resVec[0] = (__int64)x;
-
-	y = *(starport+1);
-	resVec[1] = (__int64)y;
-
-	z = *(starport+2);
-	resVec[2] = (__int64)z;
+void Vec32to64 (__int64 *dst, int *src) {
+	dst[0] = (__int64)src[0];
+	dst[1] = (__int64)src[1];
+	dst[2] = (__int64)src[2];
 }
-
 
 extern "C" void C_PlaceStation (void *starport, int lat, int lon, void *objectList)
 {
@@ -124,30 +116,10 @@ extern "C" void C_PlaceStation (void *starport, int lat, int lon, void *objectLi
 // Randomizer
 unsigned int C_FUNC_001824_Random(unsigned int A8)
 {
-	unsigned int ecx, edx;
+	unsigned int edx;
 
-	/*
-		push ebp
-		mov ebp,esp
-		mov eax,[ebp+0x8]
-		mov edx,eax
-		shr edx,0x1b
-		mov ecx,eax
-		shl ecx,0x5
-		or edx,ecx
-		add edx,eax
-		mov ecx,edx
-		shr ecx,0x10
-		shl edx,0x10
-		or ecx,edx
-		add eax,ecx
-		pop ebp
-		ret
-*/
-    edx = A8 >> 27;
-    edx = (edx | (A8 << 5)) + A8;
-    ecx = edx >> 16;
-    return A8 + (ecx | (edx << 16));
+    edx = ((A8 >> 27) | (A8 << 5)) + A8;
+    return A8 + ((edx >> 16) | (edx << 16));
 }
 
 
@@ -156,7 +128,7 @@ int fix31 (__int64 in) {
 }
 
 // Multiple with normalize
-int C_FUNC_001521(int A8, int AC)
+int C_FUNC_001521_MulWithNormalize(int A8, int AC)
 {
 	return FUNC_001521(A8, AC);
 	/*
@@ -222,7 +194,7 @@ int C_FUNC_001825_MaxUsedBitsInXYZ(int *A8)
     return C_FUNC_001656_FindMSB(w);
 }
 
-//C_FUNC_001479_doOrtoXY((int*)&tempVertArray[counter * 2].orto_x, (ffeVector*)&tempVertArray[counter * 2].nx);
+//C_FUNC_001479_doOrtoXY((int*)&CurrentPlanetArray[counter * 2].orto_x, (ffeVector*)&CurrentPlanetArray[counter * 2].nx);
 
 int tricounter=0;
 int segmcounter=0;
@@ -301,7 +273,7 @@ extern "C" int C_FUNC_001479_doOrtoXY(int *orto_xy, ffeVector *vertex)
 }
 
 extern "C" int FUNC_001876(int, int, int, int, int, int, int, int, int, int, int, int);
-int C_FUNC_001876(int A8, int Ac, char *A10_ModelInstance_t, char *A14_DrawModel_t, int A18, ffeVector *A1c_origin, ffePoint *A20_vertexArray, int A24_extra1, int A28_extra3, int A2c_extra2, int A30_rgbColor, int A34_flag);
+int C_FUNC_001876(int A8, int Ac, char *A10_ModelInstance_t, char *A14_DrawModel_t, int A18, ffeVector *CurrentPlanetPosition, ffePoint *CurrentPlanetMatrix, int A24_extra1, int A28_extra3, int A2c_extra2, int A30_rgbColor, int A34_flag);
 
 extern "C" int FUNC_001874_DrawPlanet(unsigned char *DrawMdl, char *cmd)
 {
@@ -376,15 +348,38 @@ int C_FUNC_001874_DrawPlanet(char *DrawMdl, char *cmd)
 extern int vertexNum;
 extern sVertexBuffer vertexBuffer;
 extern VERTEXTYPE vertexType[MAXVERT];
-VERTEXTYPE vertexTypeBuf[MAXVERT];
 
 extern void newIndex(Vect3f *curpoint);
 
 VertexXYZNDT1* Vertices;
-VertexXYZNDT1 VerticesBuf[MAXVERT];
 
-int vertexNumBuf=0, bufferedPlanet=0;
 //D3DXVECTOR3 vNormal, t1, t2, t3, r1, r2;
+
+D3DXVECTOR3 CalculationTangent( CUSTOMVERTEX *A, CUSTOMVERTEX *B, CUSTOMVERTEX *C)
+{
+    D3DXVECTOR3 vAB = B->p - A->p;
+    D3DXVECTOR3 vAC = C->p - A->p;
+    D3DXVECTOR3 n  = A->n;
+
+    D3DXVECTOR3 vProjAB = vAB - (D3DXVec3Dot(&n, &vAB) * n);
+    D3DXVECTOR3 vProjAC = vAC - (D3DXVec3Dot(&n, &vAC) * n);
+
+    FLOAT duAB = B->tu - A->tu;
+    FLOAT duAC = C->tu - A->tu;
+    FLOAT dvAB = B->tv - A->tv;
+    FLOAT dvAC = C->tv - A->tv;
+
+    if( duAC*dvAB > duAB*dvAC )
+    {
+        duAC = -duAC;
+        duAB = -duAB;
+    }
+
+    D3DXVECTOR3 vTangent = duAC*vProjAB - duAB*vProjAC;
+    D3DXVec3Normalize( &vTangent, &vTangent );
+
+    return vTangent;
+}
 
 int etex=94;
 void inline DrawCustomTriangle2(CUSTOMVERTEX *p1, CUSTOMVERTEX *p2, CUSTOMVERTEX *p3)
@@ -401,6 +396,8 @@ void inline DrawCustomTriangle2(CUSTOMVERTEX *p1, CUSTOMVERTEX *p2, CUSTOMVERTEX
 	int colMult;
 	int colAdd;
 	int colDiv;
+
+	D3DXVECTOR3 tangent = CalculationTangent(p1, p2, p3);
 
 	Vertices = (VertexXYZNDT1*)renderSystem->LockVertexBuffer(vertexBuffer,vertexNum,3*vertexBuffer.vertexSize);
 /*
@@ -458,29 +455,19 @@ void inline DrawCustomTriangle2(CUSTOMVERTEX *p1, CUSTOMVERTEX *p2, CUSTOMVERTEX
 	color.set(r*colMult/colDiv+colAdd, g*colMult/colDiv+colAdd, b*colMult/colDiv+colAdd);
 	if (b>r*2 && b>g*2 && vertexType[vertexNum].textNum == etex) {
 		vertexType[vertexNum].specular=true;
-		if (!bufferedPlanet)
-			vertexTypeBuf[vertexNumBuf].specular=true;
 	} else {
 		vertexType[vertexNum].specular=false;
-		if (!bufferedPlanet)
-			vertexTypeBuf[vertexNumBuf].specular=false;
 	}
 
 	vertexType[vertexNum].type = GL_TRIANGLES;
 	vertexType[vertexNum].amount = 3;
 	vertexType[vertexNum].doLight=true;
 	vertexType[vertexNum].transparent=false;
+	vertexType[vertexNum].tangent = tangent;
 	
-	if (!bufferedPlanet) {
-		vertexTypeBuf[vertexNumBuf].type = GL_TRIANGLES;
-		vertexTypeBuf[vertexNumBuf].amount = 3;
-		vertexTypeBuf[vertexNumBuf].doLight=true;
-		vertexTypeBuf[vertexNumBuf].transparent=false;
-	}
-
-	Vertices->pos.x = (p1->x-originptr->nx) / DIVIDER;
-	Vertices->pos.y = (p1->y-originptr->ny) / DIVIDER;
-	Vertices->pos.z = (p1->z-originptr->nz) / DIVIDER;
+	Vertices->pos.x = (p1->p.x-originptr->nx) / DIVIDER;
+	Vertices->pos.y = (p1->p.y-originptr->ny) / DIVIDER;
+	Vertices->pos.z = (p1->p.z-originptr->nz) / DIVIDER;
 	Vertices->difuse = color;
 	Vertices->u1() = p1->tu;
 	Vertices->v1() = p1->tv;
@@ -491,28 +478,14 @@ void inline DrawCustomTriangle2(CUSTOMVERTEX *p1, CUSTOMVERTEX *p2, CUSTOMVERTEX
 	Vertices++;
 	vertexNum++;
 
-	if (!bufferedPlanet) {
-		VerticesBuf[vertexNumBuf].pos.x = p1->x;
-		VerticesBuf[vertexNumBuf].pos.y = p1->y;
-		VerticesBuf[vertexNumBuf].pos.z = p1->z;
-		VerticesBuf[vertexNumBuf].difuse = color;
-		VerticesBuf[vertexNumBuf].u1() = p1->tu;
-		VerticesBuf[vertexNumBuf].v1() = p1->tv;
-		VerticesBuf[vertexNumBuf].n.x = p1->n.x;
-		VerticesBuf[vertexNumBuf].n.y = p1->n.y;
-		VerticesBuf[vertexNumBuf].n.z = p1->n.z;
-
-		vertexNumBuf++;
-	}
-
 	b=(p2->color&0x00FF0000)>>16;
 	g=(p2->color&0x0000FF00)>>8;
 	r=(p2->color&0x000000FF);
 	color.set(r*colMult/colDiv+colAdd, g*colMult/colDiv+colAdd, b*colMult/colDiv+colAdd);
 
-	Vertices->pos.x = (p2->x-originptr->nx) / DIVIDER;
-	Vertices->pos.y = (p2->y-originptr->ny) / DIVIDER;
-	Vertices->pos.z = (p2->z-originptr->nz) / DIVIDER;
+	Vertices->pos.x = (p2->p.x-originptr->nx) / DIVIDER;
+	Vertices->pos.y = (p2->p.y-originptr->ny) / DIVIDER;
+	Vertices->pos.z = (p2->p.z-originptr->nz) / DIVIDER;
 	Vertices->difuse = color;
 	Vertices->u1() = p2->tu;
 	Vertices->v1() = p2->tv;
@@ -523,28 +496,14 @@ void inline DrawCustomTriangle2(CUSTOMVERTEX *p1, CUSTOMVERTEX *p2, CUSTOMVERTEX
 	Vertices++;
 	vertexNum++;
 
-	if (!bufferedPlanet) {
-		VerticesBuf[vertexNumBuf].pos.x = p2->x;
-		VerticesBuf[vertexNumBuf].pos.y = p2->y;
-		VerticesBuf[vertexNumBuf].pos.z = p2->z;
-		VerticesBuf[vertexNumBuf].difuse = color;
-		VerticesBuf[vertexNumBuf].u1() = p2->tu;
-		VerticesBuf[vertexNumBuf].v1() = p2->tv;
-		VerticesBuf[vertexNumBuf].n.x = p2->n.x;
-		VerticesBuf[vertexNumBuf].n.y = p2->n.y;
-		VerticesBuf[vertexNumBuf].n.z = p2->n.z;
-
-		vertexNumBuf++;
-	}
-
 	b=(p3->color&0x00FF0000)>>16;
 	g=(p3->color&0x0000FF00)>>8;
 	r=(p3->color&0x000000FF);
 	color.set(r*colMult/colDiv+colAdd, g*colMult/colDiv+colAdd, b*colMult/colDiv+colAdd);
 
-	Vertices->pos.x = (p3->x-originptr->nx) / DIVIDER;
-	Vertices->pos.y = (p3->y-originptr->ny) / DIVIDER;
-	Vertices->pos.z = (p3->z-originptr->nz) / DIVIDER;
+	Vertices->pos.x = (p3->p.x-originptr->nx) / DIVIDER;
+	Vertices->pos.y = (p3->p.y-originptr->ny) / DIVIDER;
+	Vertices->pos.z = (p3->p.z-originptr->nz) / DIVIDER;
 	Vertices->difuse = color;
 	Vertices->u1() = p3->tu;
 	Vertices->v1() = p3->tv;
@@ -555,19 +514,6 @@ void inline DrawCustomTriangle2(CUSTOMVERTEX *p1, CUSTOMVERTEX *p2, CUSTOMVERTEX
 	Vertices++;
 	vertexNum++;
 
-	if (!bufferedPlanet) {
-		VerticesBuf[vertexNumBuf].pos.x = p3->x;
-		VerticesBuf[vertexNumBuf].pos.y = p3->y;
-		VerticesBuf[vertexNumBuf].pos.z = p3->z;
-		VerticesBuf[vertexNumBuf].difuse = color;
-		VerticesBuf[vertexNumBuf].u1() = p3->tu;
-		VerticesBuf[vertexNumBuf].v1() = p3->tv;
-		VerticesBuf[vertexNumBuf].n.x = p3->n.x;
-		VerticesBuf[vertexNumBuf].n.y = p3->n.y;
-		VerticesBuf[vertexNumBuf].n.z = p3->n.z;
-
-		vertexNumBuf++;
-	}
 	renderSystem->UnlockVertexBuffer(vertexBuffer);
 }
 
@@ -575,36 +521,8 @@ void inline DrawCustomTriangle2(CUSTOMVERTEX *p1, CUSTOMVERTEX *p2, CUSTOMVERTEX
 #define FFE_TWOPI 6.283185308
 #define M_1_PI 0.318309886183790671538
 
-void SphereMap(double x,double y,double z,float &u,float &v)
-{
-	double radius;
-	D3DXVECTOR3 p;
-	D3DXMATRIX tmpMatrix;
-	double t1,t2,t3;
-
-	p.x=x/DIVIDER;
-	p.y=y/DIVIDER;
-	p.z=z/DIVIDER;
-
-	//D3DXVec3Normalize(&p, &p);
-	D3DXMatrixInverse(&tmpMatrix,NULL, &mainRotMatrixO);
-	D3DXVec3TransformCoord(&p, &p, &tmpMatrix);
-	
-	radius = sqrt(p.x*p.x + p.y*p.y + p.z*p.z);
-
-	v = acosf(p.z/radius) / FFE_PI;
-	u = acosf(p.x/(radius * sin(FFE_PI*(v))));
-
-	if (p.y < 0) {
-		//u += FFE_PI;
-	}
-
-	u /= FFE_TWOPI;
-}
-
 void SphereMap2(double x,double y,double z,float &u,float &v)
 {
-	double d;
 	D3DXVECTOR3 p;
 	D3DXMATRIX tmpMatrix,tmpMatrix2;
 
@@ -612,16 +530,12 @@ void SphereMap2(double x,double y,double z,float &u,float &v)
 	p.y=y/DIVIDER;
 	p.z=z/DIVIDER;
 	D3DXVec3Normalize(&p, &p);
+	
 	D3DXMatrixInverse(&tmpMatrix,NULL, &mainRotMatrixO);
-	D3DXMatrixRotationX(&tmpMatrix2, 3.14f/2);
-	D3DXMatrixMultiply(&tmpMatrix, &tmpMatrix, &tmpMatrix2);
 	D3DXVec3TransformCoord(&p, &p, &tmpMatrix);
 
-	d = p.x*p.x + p.y*p.y + p.z*p.z;
-	u = v= 0;
-
-	u = (float)(0.5*(1 - atan2(p.x, p.y) * M_1_PI));
-	v = (float)(acos(p.z) * M_1_PI);
+	u = asinf(p.x)/D3DX_PI+0.5f; 
+	v = 1.0f-(asinf(p.y)/D3DX_PI+0.5f);
 }
 
 inline int classify_point2D(ffeVertex *p0, ffeVertex *p1, ffeVertex *p2) {
@@ -634,112 +548,41 @@ void DrawCustomTriangle(Vect3f *p1, Vect3f *p2, Vect3f *p3, Vect3f *n1, Vect3f *
 
 int C_FUNC_001823(int *A8, short *Ac);
 
-int bufcounter=0;
-
-int C_FUNC_001876(int A8, int Ac, char *A10_ModelInstance_t, char *A14_DrawModel_t, int A18, ffeVector *A1c_origin, ffePoint *A20_vertexArray, int A24_extra1, int A28_extra3, int A2c_extra2, int A30_rgbColor, int A34_flag)
+int C_FUNC_001876(int A8, int Ac, char *A10_ModelInstance_t, char *A14_DrawModel_t, int A18, ffeVector *CurrentPlanetPosition, ffePoint *CurrentPlanetMatrix, int A24_extra1, int A28_extra3, int A2c_extra2, int A30_rgbColor, int A34_flag)
 //  A8; // 0
 //  Ac; // 0
 //  A10_ModelInstance_t;
 //  A14_DrawModel_t;
 //  A18; // pointer to 0807 000C 0040 00F4 FFB3 FFFF 00CE FFFF ; 7,8,12, 0x0040,0x00F4,0xFFB3,0xFFFF,0x00CE,0xFFFF
-//  A1c_origin; // origin?
-//  A20_vertexArray; // vertex array pointer?
+//  CurrentPlanetPosition; // origin?
+//  CurrentPlanetMatrix; // vertex array pointer?
 //  A24_extra1; // *(ebx + 6) /Cmd 1Fh(RGB(6,6,7), 6,2,4,0, -->0x0000<--,0x0B85,0x0478/
 //  A28_extra3; // radius factor? /Cmd 1Fh(RGB(6,6,7), 6,2,4,0, 0x0000,0x0B85,-->0x0478<--/
 //  A2c_extra2; // *(ebx + 8) << 16 /Cmd 1Fh(RGB(6,6,7), 6,2,4,0, 0x0000,-->0x0B85<--,0x0478/
 //  A30_rgbColor; // rgb color
 //  A34_flag; // flag?
 {
-	float p1[3], p2[3], p3[3];
 	double x,y,z,w;
 	int unique_Id; // ebp - 4
 	int dist1; // &ebp_8
-	int dist2; // ebp - 12
+	int minPlanetRadius; // ebp - 12
 	int scaleFactor; // ebp - 16
 	int ebp_20; // ebp - 20
 	int ebp_24; // ebp - 24
 	int ebp_28; // ebp - 28
 	int ebp_32; // ebp - 32
-	int ebp_48[4]; // Array 4*4?
 	int dist3; // ebp - 52
-	UnknownStruct1 array1[20*100]; // ebp - 636  4*120
-	ffeVertex tempVertArray[12]; // ebp - 2076
-	int array2[60*100]; // ebp - 2316  4*60
-	ffeVertex** array3[30]; // ebp - 2436 // Массив указателей на вершины
+	UnknownStruct1 faces[20]; // ebp - 636  4*120
+	ffeVertex vertices[12]; // ebp - 2076
+	int array2[60]; // ebp - 2316  4*60
+	ffeVertex** edges[30]; // ebp - 2436 // Массив указателей на вершины
 	int eax, ebx;
 	
 
-	memcpy (&array1[0], DATA_007893, 4*6*20);
+	memcpy (&faces[0], DATA_007893, 4*6*20);
 	memcpy (&array2[0], DATA_007894, 4*60);
 
 	unique_Id = *(int*)(A10_ModelInstance_t+0xa0);
-
-	int i=0;
-	bufferedPlanet = -1;
-	if (bufferedPlanet > 0 && bufferedPlanet==currentModel) {
-		Vertices = (VertexXYZNDT1*)renderSystem->LockVertexBuffer(vertexBuffer,vertexNum,vertexNumBuf*vertexBuffer.vertexSize);
-		for(; i<vertexNumBuf; i++) {
-			vertexType[vertexNum].specular=vertexTypeBuf[i].specular;
-			vertexType[vertexNum].type = vertexTypeBuf[i].type;
-			vertexType[vertexNum].amount = vertexTypeBuf[i].amount;
-			vertexType[vertexNum].doLight = vertexTypeBuf[i].doLight;
-			vertexType[vertexNum].transparent = vertexTypeBuf[i].transparent;
-
-			Vertices->pos.x = (VerticesBuf[i].pos.x-originptr->nx) / DIVIDER;;
-			Vertices->pos.y = (VerticesBuf[i].pos.y-originptr->ny) / DIVIDER;;
-			Vertices->pos.z = (VerticesBuf[i].pos.z-originptr->nz) / DIVIDER;;
-			Vertices->difuse = VerticesBuf[i].difuse;
-			Vertices->u1() = VerticesBuf[i].u1();
-			Vertices->v1() = VerticesBuf[i].v1();
-			Vertices->n.x = VerticesBuf[i].n.x;
-			Vertices->n.y = VerticesBuf[i].n.y;
-			Vertices->n.z = VerticesBuf[i].n.z;
-
-			Vertices++;
-			vertexNum++;
-			i++;
-
-			Vertices->pos.x = (VerticesBuf[i].pos.x-originptr->nx) / DIVIDER;;
-			Vertices->pos.y = (VerticesBuf[i].pos.y-originptr->ny) / DIVIDER;;
-			Vertices->pos.z = (VerticesBuf[i].pos.z-originptr->nz) / DIVIDER;;
-			Vertices->difuse = VerticesBuf[i].difuse;
-			Vertices->u1() = VerticesBuf[i].u1();
-			Vertices->v1() = VerticesBuf[i].v1();
-			Vertices->n.x = VerticesBuf[i].n.x;
-			Vertices->n.y = VerticesBuf[i].n.y;
-			Vertices->n.z = VerticesBuf[i].n.z;
-
-			Vertices++;
-			vertexNum++;
-			i++;
-
-			Vertices->pos.x = (VerticesBuf[i].pos.x-originptr->nx) / DIVIDER;;
-			Vertices->pos.y = (VerticesBuf[i].pos.y-originptr->ny) / DIVIDER;;
-			Vertices->pos.z = (VerticesBuf[i].pos.z-originptr->nz) / DIVIDER;;
-			Vertices->difuse = VerticesBuf[i].difuse;
-			Vertices->u1() = VerticesBuf[i].u1();
-			Vertices->v1() = VerticesBuf[i].v1();
-			Vertices->n.x = VerticesBuf[i].n.x;
-			Vertices->n.y = VerticesBuf[i].n.y;
-			Vertices->n.z = VerticesBuf[i].n.z;
-
-			Vertices++;
-			vertexNum++;
-		}
-		renderSystem->UnlockVertexBuffer(vertexBuffer);
-		bufferedPlanet = 0;
-		vertexNumBuf = 0;
-		bufcounter = 0;
-		return A18;
-	} else if (bufferedPlanet > 0) {
-		bufcounter++;
-	}
-
-	if (bufcounter>10) {
-		bufferedPlanet = 0;
-		vertexNumBuf = 0;
-		bufcounter = 0;
-	}
 
 	if (A34_flag != 0) { 
 		// ... not need for call from FUNC_001874
@@ -760,48 +603,48 @@ int C_FUNC_001876(int A8, int Ac, char *A10_ModelInstance_t, char *A14_DrawModel
 		// Atmosphere?
 		tricounter=0;
 		segmcounter=0;
-		//FUNC_001877(A14_DrawModel_t, (int*)&A1c_origin->x, (int*)&A20_vertexArray->v1x, *(int*)*(int*)DATA_009259, A2c_extra2, A28_extra3);
+		//FUNC_001877(A14_DrawModel_t, (int*)&CurrentPlanetPosition->x, (int*)&CurrentPlanetMatrix->v1x, *(int*)*(int*)DATA_009259, A2c_extra2, A28_extra3);
 
 	}
 
-	x = A20_vertexArray->v1x;
-	y = A20_vertexArray->v1y;
-	z = A20_vertexArray->v1z;
+	x = CurrentPlanetMatrix->v1x;
+	y = CurrentPlanetMatrix->v1y;
+	z = CurrentPlanetMatrix->v1z;
 	w = x*x+y*y+z*z;	
-	dist2 = (int)sqrt(w);
+	minPlanetRadius = (int)sqrt(w);
 
-	x = A20_vertexArray->v2x;
-	y = A20_vertexArray->v2y;
-	z = A20_vertexArray->v2z;
-	w = x*x+y*y+z*z;	
-	dist1 = (int)sqrt(w);
-
-	dist2 = min(dist1, dist2);
-
-	x = A20_vertexArray->v3x;
-	y = A20_vertexArray->v3y;
-	z = A20_vertexArray->v3z;
+	x = CurrentPlanetMatrix->v2x;
+	y = CurrentPlanetMatrix->v2y;
+	z = CurrentPlanetMatrix->v2z;
 	w = x*x+y*y+z*z;	
 	dist1 = (int)sqrt(w);
 
-	dist2 = min(dist1, dist2);
+	minPlanetRadius = min(dist1, minPlanetRadius);
 
-	dist1 = C_FUNC_001521(dist2, 0x54000000);
+	x = CurrentPlanetMatrix->v3x;
+	y = CurrentPlanetMatrix->v3y;
+	z = CurrentPlanetMatrix->v3z;
+	w = x*x+y*y+z*z;	
+	dist1 = (int)sqrt(w);
+
+	minPlanetRadius = min(dist1, minPlanetRadius);
+
+	dist1 = C_FUNC_001521_MulWithNormalize(minPlanetRadius, 0x54000000);
 	dist1 *=2;
 
 	if(A34_flag == 0 && currentModel==449) { //
-		*(int*)DATA_007837 = *(int*)DATA_008812 - 1;
+		*(int*)DATA_007837 = *(int*)DATA_008812_GraphicsDetailRelated - 1;
 
-		x = A1c_origin->x;
-		y = A1c_origin->y;
-		z = A1c_origin->z;
+		x = CurrentPlanetPosition->x;
+		y = CurrentPlanetPosition->y;
+		z = CurrentPlanetPosition->z;
 		w = x*x+y*y+z*z;	
 		dist3 = (int)sqrt(w);
 
-		if((dist2 >> 4) + dist2 < dist3) {
+		if((minPlanetRadius >> 4) + minPlanetRadius < dist3) {
 			*(int*)DATA_007837 = *(int*)DATA_007837 + 1;
 			//*(int*)DATA_007837 = *(int*)DATA_007837 - 1;
-			if((dist2 >> 3) + dist2 < dist3) {
+			if((minPlanetRadius >> 3) + minPlanetRadius < dist3) {
 				*(int*)DATA_007837 = *(int*)DATA_007837 + 1;
 				//*(int*)DATA_007837 = *(int*)DATA_007837 - 1;
 			}
@@ -809,15 +652,15 @@ int C_FUNC_001876(int A8, int Ac, char *A10_ModelInstance_t, char *A14_DrawModel
 
 	} else { //
 		// ... not need for call from FUNC_001874
-		// DATA_008812 - graphics detail related - -1/0/1
-		*(int*)DATA_007837 = *(int*)DATA_008812 - 1;
+		// DATA_008812_GraphicsDetailRelated - graphics detail related - -1/0/1
+		*(int*)DATA_007837 = *(int*)DATA_008812_GraphicsDetailRelated - 1;
 	}
 	// set level of detail
 	//*(int*)DATA_009269 = C_FUNC_001656_FindMSB(dist1) + *(int*)DATA_007837;
 	*(int*)DATA_009269 = *(int*)DATA_007837;
 
 //	if (C_FUNC_001656_FindMSB(dist1)>=8)
-//		*(int*)DATA_009269 -= 10-C_FUNC_001656_FindMSB(abs(A1c_origin->z-A20_vertexArray->v1z));
+//		*(int*)DATA_009269 -= 10-C_FUNC_001656_FindMSB(abs(CurrentPlanetPosition->z-CurrentPlanetMatrix->v1z));
 	
 	if (currentModel>=125 && currentModel<=132) { // earth type
 		*(int*)DATA_009269 += max_divide_deep;
@@ -832,19 +675,19 @@ int C_FUNC_001876(int A8, int Ac, char *A10_ModelInstance_t, char *A14_DrawModel
 	}
 
 	int counter = 0;
-	ffeVector *icosahedron = (ffeVector *)DATA_007892; // икосаэдр
+	ffeVector *icosahedron = (ffeVector *)DATA_007892_Icosahedron; // икосаэдр
 	__int64 mv_x, mv_y, mv_z; // matrix vector column
 	ffeMatrix m;
 
-	m._11 = A20_vertexArray->v1x;
-	m._12 = A20_vertexArray->v1y;
-	m._13 = A20_vertexArray->v1z;
-	m._21 = A20_vertexArray->v2x;
-	m._22 = A20_vertexArray->v2y;
-	m._23 = A20_vertexArray->v2z;
-	m._31 = A20_vertexArray->v3x;
-	m._32 = A20_vertexArray->v3y;
-	m._33 = A20_vertexArray->v3z;
+	m._11 = CurrentPlanetMatrix->v1x;
+	m._12 = CurrentPlanetMatrix->v1y;
+	m._13 = CurrentPlanetMatrix->v1z;
+	m._21 = CurrentPlanetMatrix->v2x;
+	m._22 = CurrentPlanetMatrix->v2y;
+	m._23 = CurrentPlanetMatrix->v2z;
+	m._31 = CurrentPlanetMatrix->v3x;
+	m._32 = CurrentPlanetMatrix->v3y;
+	m._33 = CurrentPlanetMatrix->v3z;
 
 	do { //
 		mv_x = icosahedron[counter].x;
@@ -852,22 +695,22 @@ int C_FUNC_001876(int A8, int Ac, char *A10_ModelInstance_t, char *A14_DrawModel
 		mv_z = icosahedron[counter].z;
 
 		// multiple icosahedron on planet matrix?
-		tempVertArray[counter].nx = (int)(fix31(mv_x * m._11) + fix31(mv_y * m._21) + fix31(mv_z * m._31));
-		tempVertArray[counter].ny = (int)(fix31(mv_x * m._12) + fix31(mv_y * m._22) + fix31(mv_z * m._32));
-		tempVertArray[counter].nz = (int)(fix31(mv_x * m._13) + fix31(mv_y * m._23) + fix31(mv_z * m._33));
+		vertices[counter].nx = (int)(fix31(mv_x * m._11) + fix31(mv_y * m._21) + fix31(mv_z * m._31));
+		vertices[counter].ny = (int)(fix31(mv_x * m._12) + fix31(mv_y * m._22) + fix31(mv_z * m._32));
+		vertices[counter].nz = (int)(fix31(mv_x * m._13) + fix31(mv_y * m._23) + fix31(mv_z * m._33));
 
-		tempVertArray[counter].normal_x = tempVertArray[counter].nx;
-		tempVertArray[counter].normal_y = tempVertArray[counter].ny;
-		tempVertArray[counter].normal_z = tempVertArray[counter].nz;
+		vertices[counter].normal_x = vertices[counter].nx;
+		vertices[counter].normal_y = vertices[counter].ny;
+		vertices[counter].normal_z = vertices[counter].nz;
 
-		tempVertArray[counter].nx = tempVertArray[counter].nx + A1c_origin->x;
-		tempVertArray[counter].ny = tempVertArray[counter].ny + A1c_origin->y;
-		tempVertArray[counter].nz = tempVertArray[counter].nz + A1c_origin->z;
+		vertices[counter].nx = vertices[counter].nx + CurrentPlanetPosition->x;
+		vertices[counter].ny = vertices[counter].ny + CurrentPlanetPosition->y;
+		vertices[counter].nz = vertices[counter].nz + CurrentPlanetPosition->z;
 
 		if(A34_flag != 1) { //
 			// calculate orto xy
-			C_FUNC_001479_doOrtoXY((int*)&tempVertArray[counter].orto_x, (ffeVector*)&tempVertArray[counter].nx);
-			//FUNC_001479((int*)&tempVertArray[counter].orto_x, (int*)&tempVertArray[counter].nx);
+			C_FUNC_001479_doOrtoXY((int*)&vertices[counter].orto_x, (ffeVector*)&vertices[counter].nx);
+			//FUNC_001479((int*)&CurrentPlanetArray[counter].orto_x, (int*)&CurrentPlanetArray[counter].nx);
 		}
 
 		// get pseudo random value
@@ -878,10 +721,10 @@ int C_FUNC_001876(int A8, int Ac, char *A10_ModelInstance_t, char *A14_DrawModel
 
 		if ((int*)aaa != FUNC_001840_addr) {
 			// mars type
-			tempVertArray[counter].x_2 = (icosahedron[counter].y >> 5) + 0x4000000; // 67108864
+			vertices[counter].x_2 = (icosahedron[counter].y >> 5) + 0x4000000; // 67108864
 		} else {
 			// earth type
-			tempVertArray[counter].x_2 = unique_Id >> 4;
+			vertices[counter].x_2 = unique_Id >> 4;
 		}
 
 		counter = counter + 1;
@@ -890,20 +733,20 @@ int C_FUNC_001876(int A8, int Ac, char *A10_ModelInstance_t, char *A14_DrawModel
 
 	A18 = FUNC_001823(&ebp_20, (short *)A18);
 
-	ebp_24 = A1c_origin->z > dist2 ? 1 : 0; // Находимся в атмосфере планеты
+	ebp_24 = CurrentPlanetPosition->z > minPlanetRadius ? 1 : 0; // Находимся в атмосфере планеты
 	eax = 0;//SetJmp(DATA_009271);
 	ebp_32 = eax;
 	if(ebp_32 != 0) {
 		FUNC_001817();  // *DATA_009272=0;
 		eax = A18;
 	} else {
-		C_FUNC_001816();
+		C_FUNC_001816_ArrayInit();
 		ebx = 0;
 		// hmmm... index buffer?
 		do {
-			array3[ebx] = C_FUNC_001820();//(unsigned int)C_FUNC_001820();
+			edges[ebx] = C_FUNC_001820_ArrayCreateNewElement();//(unsigned int)C_FUNC_001820_ArrayCreateNewElement();
 			eax = array2[ebx*2];
-			*array3[ebx] = &tempVertArray[eax];
+			*edges[ebx] = &vertices[eax];
 			ebx = ebx + 1;
 		} while(ebx < 30);
 
@@ -917,15 +760,12 @@ int C_FUNC_001876(int A8, int Ac, char *A10_ModelInstance_t, char *A14_DrawModel
 			ebx = 0;
 			maxTessVerts=0;
 			do {		
-				//if (classify_point2D(&tempVertArray[array1[ebx].var1],&tempVertArray[array1[ebx].var2],&tempVertArray[array1[ebx].var3]) <= 0) {
-				//if (tempVertArray[array1[ebx].var1].nz < A1c_origin->z && tempVertArray[array1[ebx].var2].nz < A1c_origin->z && tempVertArray[array1[ebx].var3].nz < A1c_origin->z)
-				if (i==0)
-					C_FUNC_001835(&tempVertArray[array1[ebx].var1], 
-								  &tempVertArray[array1[ebx].var2], 
-								  &tempVertArray[array1[ebx].var3], 
-								  array3[array1[ebx].var4],
-								  array3[array1[ebx].var5],
-								  array3[array1[ebx].var6],
+					C_FUNC_001835(&vertices[faces[ebx].var1], 
+								  &vertices[faces[ebx].var2], 
+								  &vertices[faces[ebx].var3], 
+								  edges[faces[ebx].var4],
+								  edges[faces[ebx].var5],
+								  edges[faces[ebx].var6],
 								  dist1, 
 								  *(int*)((int*)ebp_20 + ebx + 2), 
 								  ebp_24, 
@@ -939,7 +779,7 @@ int C_FUNC_001876(int A8, int Ac, char *A10_ModelInstance_t, char *A14_DrawModel
 		//FUNC_001817(); // *DATA_009272=0;
 		ebx = 0;
 		do {
-			C_FUNC_001821(array3[ebx]);//(unsigned int)C_FUNC_001820();
+			C_FUNC_001821_ArrayRemoveElement(edges[ebx]);//(unsigned int)C_FUNC_001820_ArrayCreateNewElement();
 			ebx = ebx + 1;
 		} while(ebx < 30);
 
@@ -948,13 +788,11 @@ int C_FUNC_001876(int A8, int Ac, char *A10_ModelInstance_t, char *A14_DrawModel
 		}
 		eax = A18;
 	}
-	if (bufferedPlanet == 0) 
-		bufferedPlanet = currentModel;
 
 	return eax;
 }
 
-void C_FUNC_001835(ffeVertex*A8, ffeVertex*Ac, ffeVertex*A10, ffeVertex**A14, ffeVertex**A18, ffeVertex**A1c, int A20, int A24, int A28, int A2c, int A30)
+void C_FUNC_001835(ffeVertex* A8, ffeVertex* Ac, ffeVertex* A10, ffeVertex** A14, ffeVertex** A18, ffeVertex** A1c, int A20, int A24, int A28, int A2c, int A30)
 {
 	int eax;
 
@@ -994,20 +832,8 @@ int C_FUNC_001823(int *A8, short *Ac)
 // void  A8; // result
 // void  Ac; // // pointer to 0807 000C 0040 00F4 FFB3 FFFF 00CE FFFF ; 7,8,12, 0x0040,0x00F4,0xFFB3,0xFFFF,0x00CE,0xFFFF
 {
-	char	*eax;
-    char	*ebx;
-	char	*ecx;
-	int		edx;
-    int		esi;
-    char	*local1; // ebp - 0x1c				temp for ebx
-    int		local2;  // ebp - 0x18				bits counter for local7
     char	*local3; // ebp - 0x14				(int*)DATA_009258
     int		local4;  // &ebp_10				0x58 - counter
-    int		local5;  // &ebp_c		next short after local7
-    int		local6;  // ebp - 0x8		temp local7
-    int		local7;  // ebp - 0x4		(short) 0807
-
-
 
     local4 = 0x58; // 88
     local3 = DATA_009258; // DATA_009258 - array 4096 bytes
@@ -1106,13 +932,12 @@ int C_FUNC_001823(int *A8, short *Ac)
 }
 
 // Инициализация массивов
-extern "C" void C_FUNC_001816(void)
+extern "C" void C_FUNC_001816_ArrayInit(void)
 {
 	int		eax;
     int		ebx;
 	int		edx;
 	int		ecx;
-    int		esi;
 
     ecx = (int)&C_DATA_009274[0];
     ebx = (int)&C_DATA_009277[0];
@@ -1122,9 +947,6 @@ extern "C" void C_FUNC_001816(void)
         edx = ecx;
 
 		do {
-            //esi = (eax << 3) + (eax << 3) * 8;
-			//esi = eax * 72;
-            //*(int*)edx = esi + ecx + 72;
 			*(int*)edx = edx + 72;
 
             eax = eax + 1;
@@ -1137,8 +959,6 @@ extern "C" void C_FUNC_001816(void)
         edx = ebx;
 
 		do {
-            //ecx = eax << 4;
-            //*(int*)edx = ecx + ebx + 16;
 			*(int*)edx = edx + 16;
             eax = eax + 1;
             edx = edx + 16;
@@ -1147,11 +967,11 @@ extern "C" void C_FUNC_001816(void)
         *(int*)(ebx + (MAX_PLANET_VERT - 1) * 16) = 0; //0xbb70
         *(int*)DATA_009273 = 0;
         eax = 0;
-        *(int*)DATA_009276 = 0;
+        *(int*)DATA_009276_ArraySize = 0;
     }
 }
 
-int C_FUNC_001818() // Удалить вершину из начала буфера?
+int C_FUNC_001818_ArrayRemoveFirstElement() // Удалить вершину из начала буфера?
 {
 	//return FUNC_001818();
 
@@ -1172,7 +992,7 @@ int C_FUNC_001818() // Удалить вершину из начала буфера?
 	
 }
 
-void C_FUNC_001819(int A8) // Вставить вершину в начало буфера?
+void C_FUNC_001819_ArrayInsertFirstElement(int A8) // Вставить вершину в начало буфера?
 {
 	int eax, edx;
 
@@ -1184,7 +1004,7 @@ void C_FUNC_001819(int A8) // Вставить вершину в начало буфера?
 }
 
 // Создание нового элемента массива вершин?
-ffeVertex** C_FUNC_001820(void)
+ffeVertex** C_FUNC_001820_ArrayCreateNewElement(void)
 {
 	int		eax;
     ffeVertex** ebx;
@@ -1192,8 +1012,8 @@ ffeVertex** C_FUNC_001820(void)
 	eax = *(int*)DATA_009275; // Получили указатель на пустой эллемент массива
     ebx = (ffeVertex**)eax; // его функция и будет возвращать
     *(int*)DATA_009275 = *(int*)eax; // Теперь переменная будет хранить указатель на следующий пустой элемент массива
-    *(int*)DATA_009276 = *(int*)DATA_009276 + 1; // Увеличиваем колличество вершин
-    if(*(int*)DATA_009276 >= 3000) { // 3000 вершин максимум?
+    *(int*)DATA_009276_ArraySize = *(int*)DATA_009276_ArraySize + 1; // Увеличиваем колличество вершин
+    if(*(int*)DATA_009276_ArraySize >= 3000) { // 3000 вершин максимум?
         //LongJmp((int*)DATA_009271, 2);
     }
     ebx[1] = 0;
@@ -1203,25 +1023,23 @@ ffeVertex** C_FUNC_001820(void)
 }
 
 //Удаление эллемента массива вершина
-int C_FUNC_001821(ffeVertex** A8)
+int C_FUNC_001821_ArrayRemoveElement(ffeVertex** A8)
 {
-    ffeVertex**  ebx;
+    ffeVertex** ebx;
 	int eax;
-
-
 
     ebx = A8;
     do {
         eax = (int)ebx[1];
         if(eax != 0) { // если это не последний эллемент массива, сначала удалим все, что после него
-            C_FUNC_001821((ffeVertex**)eax);
+            C_FUNC_001821_ArrayRemoveElement((ffeVertex**)eax);
         }
         eax = (int)ebx[2];
         if(eax != 0) { // хз что делает, потом посмотрю
             FUNC_001819(eax);
         }
 
-        *(int*)DATA_009276 = *(int*)DATA_009276 - 1; // уменьшение количества вершин
+        *(int*)DATA_009276_ArraySize = *(int*)DATA_009276_ArraySize - 1; // уменьшение количества вершин
 
         eax = *(int*)DATA_009275; // Указатель на последний(пустой) эллемент массива
         *ebx = (ffeVertex*)eax; // Теперь указатель будет указывает на следущий эллемент массива (т.е. будет пустым)
@@ -1270,9 +1088,9 @@ int C_FUNC_001833(char *DrawModel_t, int dist, int extra1, int flag)
 
 int (*shiftCall2) (short);
 /*
-A8		(int*)&tempVertArray[array1[ebx].var1 * 2].orto_x 
-Ac		(int*)&tempVertArray[array1[ebx].var2 * 2].orto_x 
-A10		(int*)&tempVertArray[array1[ebx].var3 * 2].orto_x 
+A8		(int*)&CurrentPlanetArray[array1[ebx].var1 * 2].orto_x 
+Ac		(int*)&CurrentPlanetArray[array1[ebx].var2 * 2].orto_x 
+A10		(int*)&CurrentPlanetArray[array1[ebx].var3 * 2].orto_x 
 A14		*(int*)((int*)ebp_20 + ebx + 2) 
 A18		ebp_24 
 A1c		ebp_28 
@@ -1281,13 +1099,7 @@ int funcNum;
 
 void C_FUNC_001834(ffeVertex *A8, ffeVertex *Ac, ffeVertex *A10, int A14, int A18, int A1c)
 {
-    int		local0;
-    int		local1;
-    int		local2;
-    int		local3;
-
 	int		eax;
-	int		edx;
 
     eax = A1c;
     if(A14 != 0) {
@@ -1302,8 +1114,8 @@ void C_FUNC_001834(ffeVertex *A8, ffeVertex *Ac, ffeVertex *A10, int A14, int A1
     *(int*)DATA_009278 = *(int*)(eax * 4 + DATA_007845);
 	funcNum = eax;
 
-    ;C_FUNC_001829(A8);
-	C_FUNC_001829_2(A8, A8, Ac, A10);
+    //C_FUNC_001829_GetTriangulateDepth(A8);
+	C_FUNC_001829_GetTriangulateDepth_2(A8, A8, Ac, A10);
 
 	shiftCall2 = (int(*)(short)) *(int*)DATA_009280;
 	A8->orto_x_2 = (short)shiftCall2((short)*(int*)A8);
@@ -1311,8 +1123,8 @@ void C_FUNC_001834(ffeVertex *A8, ffeVertex *Ac, ffeVertex *A10, int A14, int A1
 	shiftCall2 = (int(*)(short)) *(int*)DATA_009281;
 	A8->orto_y_2 = (short)shiftCall2((short)*((char*)A8 + 2));
 
-    ;C_FUNC_001829(Ac);
-	C_FUNC_001829_2(Ac, A8, Ac, A10);
+    //C_FUNC_001829_GetTriangulateDepth(Ac);
+	C_FUNC_001829_GetTriangulateDepth_2(Ac, A8, Ac, A10);
 
 	shiftCall2 = (int(*)(short)) *(int*)DATA_009280;
 	Ac->orto_x_2 = (short)shiftCall2((short)*(int*)Ac);
@@ -1320,8 +1132,8 @@ void C_FUNC_001834(ffeVertex *A8, ffeVertex *Ac, ffeVertex *A10, int A14, int A1
 	shiftCall2 = (int(*)(short)) *(int*)DATA_009281;
 	Ac->orto_y_2 = (short)shiftCall2((short)*((char*)Ac + 2));
 
-	;C_FUNC_001829(A10);
-	C_FUNC_001829_2(A10, A8, Ac, A10);
+	//C_FUNC_001829_GetTriangulateDepth(A10);
+	C_FUNC_001829_GetTriangulateDepth_2(A10, A8, Ac, A10);
 
 	shiftCall2 = (int(*)(short)) *(int*)DATA_009280;
 	A10->orto_x_2 = (short)shiftCall2((short)*(int*)A10);
@@ -1383,9 +1195,9 @@ void C_FUNC_001834(ffeVertex *A8, ffeVertex *Ac, ffeVertex *A10, int A14, int A1
 int (*shiftCall3)(int*,int*,int*,int*,int);
 
 /*
-A8				(int*)&tempVertArray[array1[ebx].var1 * 2].orto_x, 
-Ac				(int*)&tempVertArray[array1[ebx].var2 * 2].orto_x, 
-A10				(int*)&tempVertArray[array1[ebx].var3 * 2].orto_x, 
+A8				(int*)&CurrentPlanetArray[array1[ebx].var1 * 2].orto_x, 
+Ac				(int*)&CurrentPlanetArray[array1[ebx].var2 * 2].orto_x, 
+A10				(int*)&CurrentPlanetArray[array1[ebx].var3 * 2].orto_x, 
 A14				array3[array1[ebx].var4],
 A18				array3[array1[ebx].var5],
 A1c				array3[array1[ebx].var6],
@@ -1420,9 +1232,7 @@ inline void C_FUNC_001869(ffeVertex *A8, ffeVertex *Ac, ffeVertex *A10, ffeVerte
 	int		ebp_30[3];
 	int		ebp_38[3];
 	int		ebp_40[3];
-	int		ebp_44;
 	int		ebp_48;
-	int		ebp_4c;
 	int		ebp_50;
 	int		ebp_54;
 	int		ebp_58;
@@ -1440,9 +1250,6 @@ inline void C_FUNC_001869(ffeVertex *A8, ffeVertex *Ac, ffeVertex *A10, ffeVerte
 
 	int		temp1;			
 
-	float p1[3], p2[3], p3[3];
-	float n1[3], n2[3], n3[3];
-
 	//if (A8->z_2 < 6 && Ac->z_2 < 6 && A10->z_2 < 6 && classify_point2D(A8, Ac, A10) >= 7000)
 	//	return 0;
 
@@ -1450,9 +1257,9 @@ inline void C_FUNC_001869(ffeVertex *A8, ffeVertex *Ac, ffeVertex *A10, ffeVerte
 	//	return 0;
 
     esi = A20;
-    //if(esi < 10) {
+    if(esi < 10) {
         edi = dist;
-    /*} else {
+    } else {
 		if(Ac->y_2 > A8->y_2) {
 			ebp_24 = A8->y_2;
 			edi = Ac->y_2;
@@ -1469,18 +1276,21 @@ inline void C_FUNC_001869(ffeVertex *A8, ffeVertex *Ac, ffeVertex *A10, ffeVerte
         }
 		temp1 = (edi - ebp_24) >> 3;
 		edi = abs(A8->normal_x) + abs(A8->normal_y) + abs(A8->normal_z);
-        edi = C_FUNC_001521(edi, temp1) + dist;
-    }*/
+        edi = C_FUNC_001521_MulWithNormalize(edi, temp1) + dist;
+    }
 
 	eax = A8->nz + edi;
     ebp_1c = eax;
-	if(ebp_1c >= 64) {
+	if(ebp_1c >= 64) 
+	{
         eax = abs(A8->nx) - edi;
-		if(eax <= ebp_1c) {
+		if(eax <= ebp_1c) 
+		{
             eax = abs(A8->ny) - edi;
-			if(eax <= ebp_1c) {
+			if(eax <= ebp_1c) 
+			{
                 if(A8->nz < 64 || Ac->nz < 64 || A10->nz < 64) {
-                    //goto L00468c26;
+                    goto L00468c26;
                 }
 /*
 				// Определение ориентации треугольника (classify point 2d)
@@ -1512,19 +1322,19 @@ inline void C_FUNC_001869(ffeVertex *A8, ffeVertex *Ac, ffeVertex *A10, ffeVerte
 				eax = (A10->x_2 <= 0) + (Ac->x_2 <= 0) + (A8->x_2 <= 0);
 
 				// зависимость, ровная ли поверхность?
-				//if ( eax && eax != 3 )
-				//	eax = esi - 1;
-				//else
+				if ( eax && eax != 3 )
+					eax = esi - 1;
+				else
 					eax = esi;
 
-                //if(esi <= 10) {
+                if(esi <= 10) {
 					// Если еще остались треугольники которые надо поделить...
 					if (eax <= A8->z_2 || eax <= Ac->z_2 || eax <= A10->z_2) {
 						// До этой глубины деления делим, иначе рисуем
-						//if (eax <= 8)
+						if (eax <= 8)
 							goto L00468ad1;
 					}
-			//}
+				}
 				//if (classify_point2D(A8, Ac, A10) > 100)
 				//	return;
 /*
@@ -1551,17 +1361,17 @@ inline void C_FUNC_001869(ffeVertex *A8, ffeVertex *Ac, ffeVertex *A10, ffeVerte
 						//A10->ny-=10000;
 				//}
 
-				//eax =	Ac->orto_x_2 | A8->orto_x_2 | A10->orto_x_2;
+				eax =	Ac->orto_x_2 | A8->orto_x_2 | A10->orto_x_2;
 
-				if(1) {//*(int*)(eax * 4 + (int)DATA_007838) == 0) {
+				if(*(int*)(eax * 4 + (int)DATA_007838) == 0) {
 
-					//eax =	Ac->orto_y_2 | A8->orto_y_2 | A10->orto_y_2;
+					eax =	Ac->orto_y_2 | A8->orto_y_2 | A10->orto_y_2;
 
-					if(1) {//*(int*)(eax * 4 + DATA_007838) == 0) {
-				       // eax = (A10->x_2 <= 0) + (Ac->x_2 <= 0) + (A8->x_2 <= 0);
-						//ebp_48 = (A10->x_2 <= 0) + (Ac->x_2 <= 0) + (A8->x_2 <= 0);
+					if(*(int*)(eax * 4 + DATA_007838) == 0) {
+				        eax = (A10->x_2 <= 0) + (Ac->x_2 <= 0) + (A8->x_2 <= 0);
+						ebp_48 = (A10->x_2 <= 0) + (Ac->x_2 <= 0) + (A8->x_2 <= 0);
 
-						if(1) {//ebp_48 == 1 || ebp_48 == 2/* || ebp_44 > 0*/) {
+						if(1) {//ebp_48 == 1 || ebp_48 == 2 || ebp_44 > 0) {
 							
 							//newVertexXYZ.x = A8->nx;
 							//newVertexXYZ.y = A8->ny;
@@ -1592,7 +1402,7 @@ inline void C_FUNC_001869(ffeVertex *A8, ffeVertex *Ac, ffeVertex *A10, ffeVerte
 											 ebp_4c);
 							*/
 			
-							ffeVertex *V1, *V2, *V3, *old_A8, *old_Ac, *old_A10;
+							ffeVertex *V1, *V2, *V3;
 							int vn1, vn2, vn3;
 
 
@@ -1680,14 +1490,33 @@ inline void C_FUNC_001869(ffeVertex *A8, ffeVertex *Ac, ffeVertex *A10, ffeVerte
 
 											etex=94;
 										} else { // вода
+											
 											//tessVerts[0].tu=0;
 											//tessVerts[0].tv=0;
 											//tessVerts[1].tu=1;
 											//tessVerts[1].tv=0;
 											//tessVerts[2].tu=1;
 											//tessVerts[2].tv=1;
+											
+											SphereMap2(V1->nx-originptr->nx, V1->ny-originptr->ny, V1->nz-originptr->nz, tessVerts[vn1].tu, tessVerts[vn1].tv);
+											SphereMap2(V2->nx-originptr->nx, V2->ny-originptr->ny, V2->nz-originptr->nz, tessVerts[vn2].tu, tessVerts[vn2].tv);
+											SphereMap2(V3->nx-originptr->nx, V3->ny-originptr->ny, V3->nz-originptr->nz, tessVerts[vn3].tu, tessVerts[vn3].tv);
+											tessVerts[vn1].tu*=1000;
+											tessVerts[vn1].tv*=1000;
+											tessVerts[vn2].tu*=1000;
+											tessVerts[vn2].tv*=1000;
+											tessVerts[vn3].tu*=1000;
+											tessVerts[vn3].tv*=1000;
+											//tessVerts[vn1].tu+=*DATA_008804/600000.0f;
+											//tessVerts[vn1].tv+=*DATA_008804/600000.0f;
+											//tessVerts[vn2].tu+=*DATA_008804/600000.0f;
+											//tessVerts[vn2].tv+=*DATA_008804/600000.0f;
+											//tessVerts[vn3].tu+=*DATA_008804/600000.0f;
+											//tessVerts[vn3].tv+=*DATA_008804/600000.0f;
+											
 
-											//etex=64;
+											etex=720;
+											
 										}
 									//}
 								} else if (eax == 0) {
@@ -1721,12 +1550,22 @@ inline void C_FUNC_001869(ffeVertex *A8, ffeVertex *Ac, ffeVertex *A10, ffeVerte
 
 											etex=94;
 										} else { 
-											tessVerts[vn1].tu=0;
-											tessVerts[vn1].tv=0;
-											tessVerts[vn2].tu=1;
-											tessVerts[vn2].tv=1;
-											tessVerts[vn3].tu=0;
-											tessVerts[vn3].tv=1;
+											//tessVerts[vn1].tu=0;
+											//tessVerts[vn1].tv=0;
+											//tessVerts[vn2].tu=1;
+											//tessVerts[vn2].tv=1;
+											//tessVerts[vn3].tu=0;
+											//tessVerts[vn3].tv=1;
+
+											SphereMap2(V1->nx-originptr->nx, V1->ny-originptr->ny, V1->nz-originptr->nz, tessVerts[vn1].tu, tessVerts[vn1].tv);
+											SphereMap2(V2->nx-originptr->nx, V2->ny-originptr->ny, V2->nz-originptr->nz, tessVerts[vn2].tu, tessVerts[vn2].tv);
+											SphereMap2(V3->nx-originptr->nx, V3->ny-originptr->ny, V3->nz-originptr->nz, tessVerts[vn3].tu, tessVerts[vn3].tv);
+											tessVerts[vn1].tu*=1000;
+											tessVerts[vn1].tv*=1000;
+											tessVerts[vn2].tu*=1000;
+											tessVerts[vn2].tv*=1000;
+											tessVerts[vn3].tu*=1000;
+											tessVerts[vn3].tv*=1000;
 
 											etex=64;
 										}
@@ -1765,12 +1604,22 @@ inline void C_FUNC_001869(ffeVertex *A8, ffeVertex *Ac, ffeVertex *A10, ffeVerte
 										etex=94;
 									} else { // ровная поверхность
 										//if ((A8->x_2 >> 0x12) & 65535 < 0x1ff) {
-											tessVerts[vn1].tu=0;
-											tessVerts[vn1].tv=0;
-											tessVerts[vn2].tu=1;
-											tessVerts[vn2].tv=0;
-											tessVerts[vn3].tu=1;
-											tessVerts[vn3].tv=1;
+											//tessVerts[vn1].tu=0;
+											//tessVerts[vn1].tv=0;
+											//tessVerts[vn2].tu=1;
+											//tessVerts[vn2].tv=0;
+											//tessVerts[vn3].tu=1;
+											//tessVerts[vn3].tv=1;
+
+											SphereMap2(V1->nx-originptr->nx, V1->ny-originptr->ny, V1->nz-originptr->nz, tessVerts[vn1].tu, tessVerts[vn1].tv);
+											SphereMap2(V2->nx-originptr->nx, V2->ny-originptr->ny, V2->nz-originptr->nz, tessVerts[vn2].tu, tessVerts[vn2].tv);
+											SphereMap2(V3->nx-originptr->nx, V3->ny-originptr->ny, V3->nz-originptr->nz, tessVerts[vn3].tu, tessVerts[vn3].tv);
+											tessVerts[vn1].tu*=1000;
+											tessVerts[vn1].tv*=1000;
+											tessVerts[vn2].tu*=1000;
+											tessVerts[vn2].tv*=1000;
+											tessVerts[vn3].tu*=1000;
+											tessVerts[vn3].tv*=1000;
 
 											etex=64;
 										//}
@@ -1781,9 +1630,9 @@ inline void C_FUNC_001869(ffeVertex *A8, ffeVertex *Ac, ffeVertex *A10, ffeVerte
 								//A10 = old_A10;
 							} else {
 
-								SphereMap2((A8->nx-originptr->nx), (A8->ny-originptr->ny), (A8->nz-originptr->nz), tessVerts[0].tu, tessVerts[0].tv);
-								SphereMap2((Ac->nx-originptr->nx), (Ac->ny-originptr->ny), (Ac->nz-originptr->nz), tessVerts[1].tu, tessVerts[1].tv);
-								SphereMap2((A10->nx-originptr->nx), (A10->ny-originptr->ny), (A10->nz-originptr->nz), tessVerts[2].tu, tessVerts[2].tv);								
+								SphereMap2(A8->nx-originptr->nx, A8->ny-originptr->ny, A8->nz-originptr->nz, tessVerts[0].tu, tessVerts[0].tv);
+								SphereMap2(Ac->nx-originptr->nx, Ac->ny-originptr->ny, Ac->nz-originptr->nz, tessVerts[1].tu, tessVerts[1].tv);
+								SphereMap2(A10->nx-originptr->nx, A10->ny-originptr->ny, A10->nz-originptr->nz, tessVerts[2].tu, tessVerts[2].tv);																
 
 								if (abs(tessVerts[0].tu-tessVerts[1].tu) >= 0.5 && abs(tessVerts[0].tu-tessVerts[2].tu) >= 0.5) {
 									if (tessVerts[0].tu>=0.5)
@@ -1822,8 +1671,8 @@ inline void C_FUNC_001869(ffeVertex *A8, ffeVertex *Ac, ffeVertex *A10, ffeVerte
 									else
 										tessVerts[2].tv+=1;
 								}
-								
 							}
+
 							//SphereMap2((A8->nx-originptr->nx), (A8->ny-originptr->ny), (A8->nz-originptr->nz), tessVerts[0].tu, tessVerts[0].tv);
 							//SphereMap2((Ac->nx-originptr->nx), (Ac->ny-originptr->ny), (Ac->nz-originptr->nz), tessVerts[1].tu, tessVerts[1].tv);
 							//SphereMap2((A10->nx-originptr->nx), (A10->ny-originptr->ny), (A10->nz-originptr->nz), tessVerts[2].tu, tessVerts[2].tv);								
@@ -1835,17 +1684,17 @@ inline void C_FUNC_001869(ffeVertex *A8, ffeVertex *Ac, ffeVertex *A10, ffeVerte
 							//tessVerts[2].tv*=1000;
 							//etex == 720;
 
-							tessVerts[0].x=(float)(A8->nx);
-							tessVerts[0].y=(float)(A8->ny);
-							tessVerts[0].z=(float)(A8->nz);
+							tessVerts[0].p.x=(float)(A8->nx);
+							tessVerts[0].p.y=(float)(A8->ny);
+							tessVerts[0].p.z=(float)(A8->nz);
 
-							tessVerts[1].x=(float)(Ac->nx);
-							tessVerts[1].y=(float)(Ac->ny);
-							tessVerts[1].z=(float)(Ac->nz);
+							tessVerts[1].p.x=(float)(Ac->nx);
+							tessVerts[1].p.y=(float)(Ac->ny);
+							tessVerts[1].p.z=(float)(Ac->nz);
 
-							tessVerts[2].x=(float)(A10->nx);
-							tessVerts[2].y=(float)(A10->ny);
-							tessVerts[2].z=(float)(A10->nz);
+							tessVerts[2].p.x=(float)(A10->nx);
+							tessVerts[2].p.y=(float)(A10->ny);
+							tessVerts[2].p.z=(float)(A10->nz);
 							///////////////////////
 
 							tessVerts[0].n.x=(float)A8->normal_x / DIVIDER;
@@ -1998,11 +1847,11 @@ L00468ce0:
                                                         shiftCall3((int*)A1c, (int*)A10, (int*)A8, (int*)Ac, esi);
 														shiftCall3((int*)A14, (int*)A8, (int*)Ac, (int*)A10, esi);
                                                     }
-                                                    ebp_8 = C_FUNC_001820();
+                                                    ebp_8 = C_FUNC_001820_ArrayCreateNewElement();
                                                     *ebp_8 = A18[2];
-                                                    ebp_c = C_FUNC_001820();
+                                                    ebp_c = C_FUNC_001820_ArrayCreateNewElement();
                                                     *ebp_c = A1c[2];
-                                                    ebp_10 = C_FUNC_001820();
+                                                    ebp_10 = C_FUNC_001820_ArrayCreateNewElement();
                                                     *ebp_10 = A14[2];
                                                     esi = esi + 1;
                                                     dist = dist >> 1;
@@ -2120,9 +1969,9 @@ L00468ce0:
 																	dist, 
 																	0);
                                                     }
-                                                    C_FUNC_001821(ebp_8);
-                                                    C_FUNC_001821(ebp_c);
-                                                    C_FUNC_001821(ebp_10);
+                                                    C_FUNC_001821_ArrayRemoveElement(ebp_8);
+                                                    C_FUNC_001821_ArrayRemoveElement(ebp_c);
+                                                    C_FUNC_001821_ArrayRemoveElement(ebp_10);
                                                 }
                                             }
                                         }
@@ -2148,7 +1997,6 @@ int C_FUNC_001840(ffeVertex* A8, ffeVertex* Ac, ffeVertex* A10, ffeVector* A14, 
 	ffeVertex*	tmpVertexPtr;
 
     int		local0;
-    int		local1;
     int		local2;
     int		local3;
 
@@ -2242,7 +2090,7 @@ int C_FUNC_001840(ffeVertex* A8, ffeVertex* Ac, ffeVertex* A10, ffeVector* A14, 
     eax = eax + (edx & 1);
 	
 /*	
-    if(*(int*)DATA_008812 >= 0) {
+    if(*(int*)DATA_008812_GraphicsDetailRelated >= 0) {
         if(esi <= 0x1fffffff) {
             goto L0046342d;
         }
@@ -2480,16 +2328,10 @@ inline int GetColor(ffeVertex* V, int type)
     int		ebx;
     int		ecx;
 	int		edx;
-	int		esi;
 	ffeVertex*	edi;
-	ffeVertex*	tmpVertexPtr;
 
     int		local0;
-    int		local1;
     int		local2;
-    int		local3;
-
-
 
     local2 = 0;
 
@@ -2644,10 +2486,6 @@ int GetColor2(ffeVertex* V)
 void C_FUNC_001826_NormalizeTo13Bits(ffeVector* New, ffeVector* A8)
 {
     int		eax;
-    int		ecx;
-	int		edx;
-	int		esi;
-	int		edi;
 
 	eax = abs(A8->x) | abs(A8->y) | abs(A8->z);
     eax = FUNC_001656_FindMSB(eax) - 0xd;
@@ -2666,10 +2504,7 @@ void C_FUNC_001826_NormalizeTo13Bits(ffeVector* New, ffeVector* A8)
 void C_FUNC_001827_CalculateNewVertexXYZ(ffeVector* New, ffeVector* A8, ffeVector* Ac, ffeVector* A10)
 {
     int		eax;
-    int		ecx;
 	int		edx;
-	int		esi;
-	int		edi;
 
     int  x2;	// Vffffffe8
     int  y2;	// Vffffffec
@@ -2737,8 +2572,6 @@ int C_FUNC_001777(int *Data, ffeVector* A8)
 	int		ebx;
     int		ecx;
 	int		edx;
-	int		esi;
-	int		edi;
 
 	if(A8->z <= 0) {
         eax = 1;
@@ -2761,18 +2594,18 @@ int C_FUNC_001777(int *Data, ffeVector* A8)
 	return eax;
 }
 
-int C_FUNC_001846(int A8, int Ac, int A10)
+extern "C" int C_FUNC_001846(int A8, int Ac, int A10)
 {
     int  eax, ebx;
 
     if(A10 <= 1) {
-        eax = FUNC_001824(A8 ^ Ac) >> 4;
+        eax = C_FUNC_001824_Random(A8 ^ Ac) >> 4;
     } else {
         ebx = A8 - Ac;
         if(ebx < 0) {
             ebx = ~ebx;
         }
-        eax = C_FUNC_001521(FUNC_001824(A8 ^ Ac), ebx) >> 1;
+        eax = C_FUNC_001521_MulWithNormalize(FUNC_001824(A8 ^ Ac), ebx) >> 1;
     }
 	return eax;
 }
@@ -2793,30 +2626,30 @@ extern "C" int C_FUNC_001849(int* A8, ffeVertex* Ac, ffeVertex* A10, ffeVertex* 
     edi = A8;
 	eax = *(edi+2);
     if(eax == 0) {
-        eax = C_FUNC_001818();
+        eax = C_FUNC_001818_ArrayRemoveFirstElement();
         *(int*)(edi+2) = eax;
         ebx = (ffeVertex *)*(int*)(edi+2);
         if(esi == (ffeVertex*)*edi) {
-            eax = (int)C_FUNC_001820();
+            eax = (int)C_FUNC_001820_ArrayCreateNewElement();
             *(int*)(edi+1) = eax;
             *(int*)*(int*)(edi+1) = (int)esi;
-            eax = (int)C_FUNC_001820();
+            eax = (int)C_FUNC_001820_ArrayCreateNewElement();
             *(int*)(edi+3) = eax;
             *(int*)eax = (int)A10;
         } else {
-            eax = (int)C_FUNC_001820();
+            eax = (int)C_FUNC_001820_ArrayCreateNewElement();
             *(int*)(edi+1) = eax;
             *(int*)eax = (int)A10;
-            eax = (int)C_FUNC_001820();
+            eax = (int)C_FUNC_001820_ArrayCreateNewElement();
             *(int*)(edi+3) = eax;
             *(int*)*(int*)(edi+3) = (int)esi;
         }
 		eax = esi->normal_x + A10->normal_x;
-		ebx->normal_x = C_FUNC_001521(eax, *(int*)(A18 * 4 + (int)DATA_007840));
+		ebx->normal_x = C_FUNC_001521_MulWithNormalize(eax, *(int*)(A18 * 4 + (int)DATA_007840));
 		eax = esi->normal_y + A10->normal_y;
-		ebx->normal_y = C_FUNC_001521(eax, *(int*)(A18 * 4 + (int)DATA_007840));
+		ebx->normal_y = C_FUNC_001521_MulWithNormalize(eax, *(int*)(A18 * 4 + (int)DATA_007840));
 		eax = esi->normal_z + A10->normal_z;
-		ebx->normal_z = C_FUNC_001521(eax, *(int*)(A18 * 4 + (int)DATA_007840));
+		ebx->normal_z = C_FUNC_001521_MulWithNormalize(eax, *(int*)(A18 * 4 + (int)DATA_007840));
         edi = (int*)*(int*)(A18 * 4 + DATA_007839);
 		if(A18 > esi->z_2 && A18 > A10->z_2) {
 			eax = esi->nx;
@@ -2876,17 +2709,17 @@ extern "C" int C_FUNC_001849(int* A8, ffeVertex* Ac, ffeVertex* A10, ffeVertex* 
 				
             }
         } else {
-			eax = C_FUNC_001521(ebx->normal_x, (int)edi);
+			eax = C_FUNC_001521_MulWithNormalize(ebx->normal_x, (int)edi);
 			ebx->nx = eax + ((esi->nx + A10->nx) >> 1);
-			eax = C_FUNC_001521(ebx->normal_y, (int)edi);
+			eax = C_FUNC_001521_MulWithNormalize(ebx->normal_y, (int)edi);
 			ebx->ny = eax + ((esi->ny + A10->ny) >> 1);
-			eax = C_FUNC_001521(ebx->normal_z, (int)edi);
+			eax = C_FUNC_001521_MulWithNormalize(ebx->normal_z, (int)edi);
 			ebx->nz = eax + ((esi->nz + A10->nz) >> 1);
             //*L006c7348(ebx); // call near [DATA_009282]
 			shiftCall = (char *(*)(int)) *(int*)(DATA_009282); // pointer to func
 			shiftCall((int)ebx);
         }
-        C_FUNC_001829(ebx);
+        C_FUNC_001829_GetTriangulateDepth(ebx);
     }
 	return 0;
 }
@@ -2897,7 +2730,6 @@ extern "C" int C_FUNC_001850(int* A8, ffeVertex* Ac, ffeVertex* A10, ffeVertex* 
 	ffeVertex*		ebx;
     int		ecx;
 	ffeVertex*		edx;
-	ffeVertex*		esi;
 	int*		edi;
 
 	int		ebp_4;
@@ -2906,21 +2738,21 @@ extern "C" int C_FUNC_001850(int* A8, ffeVertex* Ac, ffeVertex* A10, ffeVertex* 
     edi = A8;
 	eax = *(edi+2);
     if(eax == 0) {
-        eax = C_FUNC_001818();
+        eax = C_FUNC_001818_ArrayRemoveFirstElement();
         *(int*)(edi+2) = eax;
         ebx = (ffeVertex *)*(int*)(edi+2);
         if(Ac == (ffeVertex*)*edi) {
-            eax = (int)C_FUNC_001820();
+            eax = (int)C_FUNC_001820_ArrayCreateNewElement();
             *(int*)(edi+1) = eax;
             *(int*)*(int*)(edi+1) = (int)Ac;
-            eax = (int)C_FUNC_001820();
+            eax = (int)C_FUNC_001820_ArrayCreateNewElement();
             *(int*)(edi+3) = eax;
             *(int*)eax = (int)A10;
         } else {
-            eax = (int)C_FUNC_001820();
+            eax = (int)C_FUNC_001820_ArrayCreateNewElement();
             *(int*)(edi+1) = eax;
             *(int*)eax = (int)A10;
-            eax = (int)C_FUNC_001820();
+            eax = (int)C_FUNC_001820_ArrayCreateNewElement();
             *(int*)(edi+3) = eax;
             *(int*)*(int*)(edi+3) = (int)Ac;
         }
@@ -2990,17 +2822,17 @@ extern "C" int C_FUNC_001850(int* A8, ffeVertex* Ac, ffeVertex* A10, ffeVertex* 
 			int ebp_12 = (Ac->x_2 + A10->x_2) >> 1;
 			ebx->x_2 = C_FUNC_001846( Ac->x_2, A10->x_2, A18) + ebp_12;
 
-			eax = C_FUNC_001521(ebx->normal_x, (int)edi);
-			ebx->nx = eax + ((esi->nx + A10->nx) >> 1);
-			eax = C_FUNC_001521(ebx->normal_y, (int)edi);
-			ebx->ny = eax + ((esi->ny + A10->ny) >> 1);
-			eax = C_FUNC_001521(ebx->normal_z, (int)edi);
-			ebx->nz = eax + ((esi->nz + A10->nz) >> 1);
+			eax = C_FUNC_001521_MulWithNormalize(ebx->normal_x, (int)edi);
+			ebx->nx = eax + ((Ac->nx + A10->nx) >> 1);
+			eax = C_FUNC_001521_MulWithNormalize(ebx->normal_y, (int)edi);
+			ebx->ny = eax + ((Ac->ny + A10->ny) >> 1);
+			eax = C_FUNC_001521_MulWithNormalize(ebx->normal_z, (int)edi);
+			ebx->nz = eax + ((Ac->nz + A10->nz) >> 1);
             //*L006c7348(ebx); // call near [DATA_009282]
 			shiftCall = (char *(*)(int)) *(int*)(DATA_009282); // pointer to func
 			shiftCall((int)ebx);
         }
-        C_FUNC_001829(ebx);
+        C_FUNC_001829_GetTriangulateDepth(ebx);
     }
 	return 0;
 }
@@ -3018,7 +2850,6 @@ extern "C" int C_FUNC_001851(int* A8, ffeVertex* Ac, ffeVertex* A10, ffeVertex* 
 	int v13; // eax@4
 	int v14; // eax@4
 	bool v15; // eax@14
-	int v16; // edx@14
 	bool v17; // [sp+10h] [bp-4h]@14
 	bool v18; // [sp+Ch] [bp-8h]@14
 
@@ -3027,24 +2858,24 @@ extern "C" int C_FUNC_001851(int* A8, ffeVertex* Ac, ffeVertex* A10, ffeVertex* 
 	result = *(int *)((int)A8 + 8);
 	if ( !result )
 	{
-		v10 = (int)C_FUNC_001818();
+		v10 = (int)C_FUNC_001818_ArrayRemoveFirstElement();
 		*(int *)(v6 + 8) = v10;
 		v8 = v10;
 		if ( v7 == *(int *)v6 )
 		{
-			v11 = (int)C_FUNC_001820();
+			v11 = (int)C_FUNC_001820_ArrayCreateNewElement();
 			*(int *)(v6 + 4) = v11;
 			*(int *)v11 = v7;
-			v12 = (int)C_FUNC_001820();
+			v12 = (int)C_FUNC_001820_ArrayCreateNewElement();
 			*(int *)(v6 + 12) = v12;
 			*(int *)v12 = (int)A10;
 		}
 		else
 		{
-			v13 = (int)C_FUNC_001820();
+			v13 = (int)C_FUNC_001820_ArrayCreateNewElement();
 			*(int *)(v6 + 4) = v13;
 			*(int *)v13 = (int)A10;
-			v14 = (int)C_FUNC_001820();
+			v14 = (int)C_FUNC_001820_ArrayCreateNewElement();
 			*(int *)(v6 + 12) = v14;
 			*(int *)v14 = v7;
 		}
@@ -3059,9 +2890,9 @@ extern "C" int C_FUNC_001851(int* A8, ffeVertex* Ac, ffeVertex* A10, ffeVertex* 
 		{
 			*(int *)(v8 + 60) = ((*(int *)((int)A10 + 60) + *(int *)(v7 + 60)) >> 1)
 				+ C_FUNC_001846(*(int *)(v7 + 60), *(int *)((int)A10 + 60), A18);
-			*(int *)(v8 + 4) = ((*(int *)((int)A10 + 4) + *(int *)(v7 + 4)) >> 1) + C_FUNC_001521(*(int *)(v8 + 40), 0);
-			*(int *)(v8 + 8) = ((*(int *)((int)A10 + 8) + *(int *)(v7 + 8)) >> 1) + C_FUNC_001521(*(int *)(v8 + 44), 0);
-			*(int *)(v8 + 12) = ((*(int *)((int)A10 + 12) + *(int *)(v7 + 12)) >> 1) + C_FUNC_001521(*(int *)(v8 + 48), 0);
+			*(int *)(v8 + 4) = ((*(int *)((int)A10 + 4) + *(int *)(v7 + 4)) >> 1) + C_FUNC_001521_MulWithNormalize(*(int *)(v8 + 40), 0);
+			*(int *)(v8 + 8) = ((*(int *)((int)A10 + 8) + *(int *)(v7 + 8)) >> 1) + C_FUNC_001521_MulWithNormalize(*(int *)(v8 + 44), 0);
+			*(int *)(v8 + 12) = ((*(int *)((int)A10 + 12) + *(int *)(v7 + 12)) >> 1) + C_FUNC_001521_MulWithNormalize(*(int *)(v8 + 48), 0);
 			shiftCall = (char *(*)(int)) *(int*)(DATA_009282);
 			shiftCall((int)v8);
 		}
@@ -3094,7 +2925,7 @@ extern "C" int C_FUNC_001851(int* A8, ffeVertex* Ac, ffeVertex* A10, ffeVertex* 
 				shiftCall((int)v8);
 			}
 		}
-		C_FUNC_001829((ffeVertex*)v8);
+		C_FUNC_001829_GetTriangulateDepth((ffeVertex*)v8);
 	}
 	return 0;
 }
@@ -3111,7 +2942,6 @@ extern "C" int C_FUNC_001852(int* A8, ffeVertex* Ac, ffeVertex* A10, ffeVertex* 
 	int v12; // eax@4
 	int v13; // eax@4
 	bool v14; // eax@11
-	int v15; // edx@11
 	int v16; // edi@13
 	int v17; // eax@13
 	int v18; // edi@13
@@ -3124,24 +2954,24 @@ extern "C" int C_FUNC_001852(int* A8, ffeVertex* Ac, ffeVertex* A10, ffeVertex* 
 	result = *(int *)((int)A8 + 8);
 	if ( !result )
 	{
-		v9 = (int)C_FUNC_001818();
+		v9 = (int)C_FUNC_001818_ArrayRemoveFirstElement();
 		*(int *)(v6 + 8) = v9;
 		v8 = v9;
 		if ( v7 == *(int *)v6 )
 		{
-			v10 = (int)C_FUNC_001820();
+			v10 = (int)C_FUNC_001820_ArrayCreateNewElement();
 			*(int *)(v6 + 4) = v10;
 			*(int *)v10 = v7;
-			v11 = (int)C_FUNC_001820();
+			v11 = (int)C_FUNC_001820_ArrayCreateNewElement();
 			*(int *)(v6 + 12) = v11;
 			*(int *)v11 = (int)A10;
 		}
 		else
 		{
-			v12 = (int)C_FUNC_001820();
+			v12 = (int)C_FUNC_001820_ArrayCreateNewElement();
 			*(int *)(v6 + 4) = v12;
 			*(int *)v12 = (int)A10;
-			v13 = (int)C_FUNC_001820();
+			v13 = (int)C_FUNC_001820_ArrayCreateNewElement();
 			*(int *)(v6 + 12) = v13;
 			*(int *)v13 = v7;
 		}
@@ -3155,10 +2985,10 @@ extern "C" int C_FUNC_001852(int* A8, ffeVertex* Ac, ffeVertex* A10, ffeVertex* 
 			*(int *)(v8 + 60) = v16 + C_FUNC_001846(*(int *)(v7 + 60), *(int *)(A10 + 60), A18);
 			v17 = v19 + ((*(int *)(v8 + 60) - v16) >> 3);
 			v18 = v19 + ((*(int *)(v8 + 60) - v16) >> 3);
-			*(int *)(v8 + 4) = ((*(int *)((int)A10 + 4) + *(int *)(v7 + 4)) >> 1) + C_FUNC_001521(*(int *)(v8 + 40), v17);
-			*(int *)(v8 + 8) = ((*(int *)((int)A10 + 8) + *(int *)(v7 + 8)) >> 1) + C_FUNC_001521(*(int *)(v8 + 44), v18);
+			*(int *)(v8 + 4) = ((*(int *)((int)A10 + 4) + *(int *)(v7 + 4)) >> 1) + C_FUNC_001521_MulWithNormalize(*(int *)(v8 + 40), v17);
+			*(int *)(v8 + 8) = ((*(int *)((int)A10 + 8) + *(int *)(v7 + 8)) >> 1) + C_FUNC_001521_MulWithNormalize(*(int *)(v8 + 44), v18);
 			*(int *)(v8 + 12) = ((*(int *)((int)A10 + 12) + *(int *)(v7 + 12)) >> 1)
-				+ C_FUNC_001521(*(int *)(v8 + 48), v18);
+				+ C_FUNC_001521_MulWithNormalize(*(int *)(v8 + 48), v18);
 			shiftCall = (char *(*)(int)) *(int*)(DATA_009282);
 			shiftCall((int)v8);
 		}
@@ -3191,7 +3021,7 @@ extern "C" int C_FUNC_001852(int* A8, ffeVertex* Ac, ffeVertex* A10, ffeVertex* 
 				shiftCall((int)v8);
 			}
 		}
-		C_FUNC_001829((ffeVertex*)v8);
+		C_FUNC_001829_GetTriangulateDepth((ffeVertex*)v8);
 	}
 	return 0;
 }
@@ -3213,7 +3043,6 @@ extern "C" int C_FUNC_001853(int* A8, ffeVertex* Ac, ffeVertex* A10, ffeVertex* 
 	int v16; // eax@4
 	int v17; // eax@12
 	bool v18; // eax@18
-	int v19; // edx@18
 	int v20; // edi@23
 	bool v21; // [sp+10h] [bp-4h]@18
 	bool v22; // [sp+Ch] [bp-8h]@18
@@ -3223,24 +3052,24 @@ extern "C" int C_FUNC_001853(int* A8, ffeVertex* Ac, ffeVertex* A10, ffeVertex* 
 	result = *(int *)((int)A8 + 8);
 	if ( !result )
 	{
-		v12 = (int)C_FUNC_001818();
+		v12 = (int)C_FUNC_001818_ArrayRemoveFirstElement();
 		*(int *)(v6 + 8) = v12;
 		v8 = v12;
 		if ( v7 == *(int *)v6 )
 		{
-			v13 = (int)C_FUNC_001820();
+			v13 = (int)C_FUNC_001820_ArrayCreateNewElement();
 			*(int *)(v6 + 4) = v13;
 			*(int *)v13 = v7;
-			v14 = (int)C_FUNC_001820();
+			v14 = (int)C_FUNC_001820_ArrayCreateNewElement();
 			*(int *)(v6 + 12) = v14;
 			*(int *)v14 = (int)A10;
 		}
 		else
 		{
-			v15 = (int)C_FUNC_001820();
+			v15 = (int)C_FUNC_001820_ArrayCreateNewElement();
 			*(int *)(v6 + 4) = v15;
 			*(int *)v15 = (int)A10;
-			v16 = (int)C_FUNC_001820();
+			v16 = (int)C_FUNC_001820_ArrayCreateNewElement();
 			*(int *)(v6 + 12) = v16;
 			*(int *)v16 = v7;
 		}
@@ -3262,12 +3091,12 @@ extern "C" int C_FUNC_001853(int* A8, ffeVertex* Ac, ffeVertex* A10, ffeVertex* 
 			*(int *)(v8 + 64) = v11;
 			v20 = (v11 - ((*(int *)((int)A10 + 64) + *(int *)(v7 + 64)) >> 1)) >> 3;
 			*(int *)(v8 + 4) = ((*(int *)((int)A10 + 4) + *(int *)(v7 + 4)) >> 1)
-				+ C_FUNC_001521(
+				+ C_FUNC_001521_MulWithNormalize(
 				*(int *)(v8 + 40),
 				(v11 - ((*(int *)((int)A10 + 64) + *(int *)(v7 + 64)) >> 1)) >> 3);
-			*(int *)(v8 + 8) = ((*(int *)((int)A10 + 8) + *(int *)(v7 + 8)) >> 1) + C_FUNC_001521(*(int *)(v8 + 44), v20);
+			*(int *)(v8 + 8) = ((*(int *)((int)A10 + 8) + *(int *)(v7 + 8)) >> 1) + C_FUNC_001521_MulWithNormalize(*(int *)(v8 + 44), v20);
 			*(int *)(v8 + 12) = ((*(int *)((int)A10 + 12) + *(int *)(v7 + 12)) >> 1)
-				+ C_FUNC_001521(*(int *)(v8 + 48), v20);
+				+ C_FUNC_001521_MulWithNormalize(*(int *)(v8 + 48), v20);
 			shiftCall = (char *(*)(int)) *(int*)(DATA_009282);
 			shiftCall((int)v8);
 		}
@@ -3311,7 +3140,7 @@ extern "C" int C_FUNC_001853(int* A8, ffeVertex* Ac, ffeVertex* A10, ffeVertex* 
 				shiftCall((int)v8);
 			}
 		}
-		C_FUNC_001829((ffeVertex*)v8);
+		C_FUNC_001829_GetTriangulateDepth((ffeVertex*)v8);
 	}
 	return 0;
 }
@@ -3328,7 +3157,6 @@ extern "C" int C_FUNC_001854(int* A8, ffeVertex* Ac, ffeVertex* A10, ffeVertex* 
 	int v12; // eax@4
 	int v13; // eax@4
 	bool v14; // eax@11
-	int v15; // edx@11
 	int v16; // [sp+18h] [bp-4h]@5
 	bool v17; // [sp+10h] [bp-Ch]@11
 	bool v18; // [sp+Ch] [bp-10h]@11
@@ -3339,39 +3167,39 @@ extern "C" int C_FUNC_001854(int* A8, ffeVertex* Ac, ffeVertex* A10, ffeVertex* 
 	result = *(int *)((int)A8 + 8);
 	if ( !result )
 	{
-		v9 = (int)C_FUNC_001818();
+		v9 = (int)C_FUNC_001818_ArrayRemoveFirstElement();
 		*(int *)((int)A8 + 8) = v9;
 		v8 = v9;
 		if ( v7 == *(int *)(int)A8 )
 		{
-			v10 = (int)C_FUNC_001820();
+			v10 = (int)C_FUNC_001820_ArrayCreateNewElement();
 			*(int *)((int)A8 + 4) = v10;
 			*(int *)v10 = v7;
-			v11 = (int)C_FUNC_001820();
+			v11 = (int)C_FUNC_001820_ArrayCreateNewElement();
 			*(int *)((int)A8 + 12) = v11;
 			*(int *)v11 = (int)A10;
 		}
 		else
 		{
-			v12 = (int)C_FUNC_001820();
+			v12 = (int)C_FUNC_001820_ArrayCreateNewElement();
 			*(int *)((int)A8 + 4) = v12;
 			*(int *)v12 = (int)A10;
-			v13 = (int)C_FUNC_001820();
+			v13 = (int)C_FUNC_001820_ArrayCreateNewElement();
 			*(int *)((int)A8 + 12) = v13;
 			*(int *)v13 = v7;
 		}
-		*(int *)(v8 + 40) = C_FUNC_001521(*(int *)((int)A10 + 40) + *(int *)(v7 + 40), *(int*)(A18 * 4 + (int)DATA_007840));
-		*(int *)(v8 + 44) = C_FUNC_001521(*(int *)((int)A10 + 44) + *(int *)(v7 + 44), *(int*)(A18 * 4 + (int)DATA_007840));
-		*(int *)(v8 + 48) = C_FUNC_001521(*(int *)((int)A10 + 48) + *(int *)(v7 + 48), *(int*)(A18 * 4 + (int)DATA_007840));
+		*(int *)(v8 + 40) = C_FUNC_001521_MulWithNormalize(*(int *)((int)A10 + 40) + *(int *)(v7 + 40), *(int*)(A18 * 4 + (int)DATA_007840));
+		*(int *)(v8 + 44) = C_FUNC_001521_MulWithNormalize(*(int *)((int)A10 + 44) + *(int *)(v7 + 44), *(int*)(A18 * 4 + (int)DATA_007840));
+		*(int *)(v8 + 48) = C_FUNC_001521_MulWithNormalize(*(int *)((int)A10 + 48) + *(int *)(v7 + 48), *(int*)(A18 * 4 + (int)DATA_007840));
 		v16 = *(int*)(A18 * 4 + (int)DATA_007839);
 		if ( v6 <= *(int *)(v7 + 68) || v6 <= *(int *)((int)A10 + 68) )
 		{
 			v19 = (*(int *)((int)A10 + 60) + *(int *)(v7 + 60)) >> 1;
 			*(int *)(v8 + 60) = v19 + C_FUNC_001846(*(int *)(v7 + 60), *(int *)((int)A10 + 60), v6);
-			*(int *)(v8 + 4) = ((*(int *)((int)A10 + 4) + *(int *)(v7 + 4)) >> 1) + C_FUNC_001521(*(int *)(v8 + 40), v16);
-			*(int *)(v8 + 8) = ((*(int *)((int)A10 + 8) + *(int *)(v7 + 8)) >> 1) + C_FUNC_001521(*(int *)(v8 + 44), v16);
+			*(int *)(v8 + 4) = ((*(int *)((int)A10 + 4) + *(int *)(v7 + 4)) >> 1) + C_FUNC_001521_MulWithNormalize(*(int *)(v8 + 40), v16);
+			*(int *)(v8 + 8) = ((*(int *)((int)A10 + 8) + *(int *)(v7 + 8)) >> 1) + C_FUNC_001521_MulWithNormalize(*(int *)(v8 + 44), v16);
 			*(int *)(v8 + 12) = ((*(int *)((int)A10 + 12) + *(int *)(v7 + 12)) >> 1)
-				+ C_FUNC_001521(*(int *)(v8 + 48), v16);
+				+ C_FUNC_001521_MulWithNormalize(*(int *)(v8 + 48), v16);
 			shiftCall = (char *(*)(int)) *(int*)(DATA_009282);
 			shiftCall((int)v8);
 		}
@@ -3404,7 +3232,7 @@ extern "C" int C_FUNC_001854(int* A8, ffeVertex* Ac, ffeVertex* A10, ffeVertex* 
 				shiftCall((int)v8);
 			}
 		}
-		C_FUNC_001829((ffeVertex*)v8);
+		C_FUNC_001829_GetTriangulateDepth((ffeVertex*)v8);
 	}
 	return 0;
 }
@@ -3423,7 +3251,6 @@ extern "C" int C_FUNC_001855(int* A8, ffeVertex* Ac, ffeVertex* A10, ffeVertex* 
 	int v14; // eax@4
 	int v15; // eax@4
 	bool v16; // eax@14
-	int v17; // edx@14
 	bool v18; // [sp+10h] [bp-4h]@14
 	bool v19; // [sp+Ch] [bp-8h]@14
 
@@ -3432,30 +3259,30 @@ extern "C" int C_FUNC_001855(int* A8, ffeVertex* Ac, ffeVertex* A10, ffeVertex* 
 	result = *(int *)((int)A8 + 8);
 	if ( !result )
 	{
-		v11 = (int)C_FUNC_001818();
+		v11 = (int)C_FUNC_001818_ArrayRemoveFirstElement();
 		*(int *)(v6 + 8) = v11;
 		v8 = v11;
 		if ( v7 == *(int *)v6 )
 		{
-			v12 = (int)C_FUNC_001820();
+			v12 = (int)C_FUNC_001820_ArrayCreateNewElement();
 			*(int *)(v6 + 4) = v12;
 			*(int *)v12 = v7;
-			v13 = (int)C_FUNC_001820();
+			v13 = (int)C_FUNC_001820_ArrayCreateNewElement();
 			*(int *)(v6 + 12) = v13;
 			*(int *)v13 = (int)A10;
 		}
 		else
 		{
-			v14 = (int)C_FUNC_001820();
+			v14 = (int)C_FUNC_001820_ArrayCreateNewElement();
 			*(int *)(v6 + 4) = v14;
 			*(int *)v14 = (int)A10;
-			v15 = (int)C_FUNC_001820();
+			v15 = (int)C_FUNC_001820_ArrayCreateNewElement();
 			*(int *)(v6 + 12) = v15;
 			*(int *)v15 = v7;
 		}
-		*(int *)(v8 + 40) = C_FUNC_001521(*(int *)((int)A10 + 40) + *(int *)(v7 + 40), *(int*)(A18 * 4 + (int)DATA_007840));
-		*(int *)(v8 + 44) = C_FUNC_001521(*(int *)((int)A10 + 44) + *(int *)(v7 + 44), *(int*)(A18 * 4 + (int)DATA_007840));
-		*(int *)(v8 + 48) = C_FUNC_001521(*(int *)((int)A10 + 48) + *(int *)(v7 + 48), *(int*)(A18 * 4 + (int)DATA_007840));
+		*(int *)(v8 + 40) = C_FUNC_001521_MulWithNormalize(*(int *)((int)A10 + 40) + *(int *)(v7 + 40), *(int*)(A18 * 4 + (int)DATA_007840));
+		*(int *)(v8 + 44) = C_FUNC_001521_MulWithNormalize(*(int *)((int)A10 + 44) + *(int *)(v7 + 44), *(int*)(A18 * 4 + (int)DATA_007840));
+		*(int *)(v8 + 48) = C_FUNC_001521_MulWithNormalize(*(int *)((int)A10 + 48) + *(int *)(v7 + 48), *(int*)(A18 * 4 + (int)DATA_007840));
 		v9 = *(int*)(A18 * 4 + (int)DATA_007839);
 		if ( ((*(int *)((int)A10 + 60) - 1) ^ (*(int *)(v7 + 60) - 1)) >= 0 )
 			v10 = (int)A18;
@@ -3465,10 +3292,10 @@ extern "C" int C_FUNC_001855(int* A8, ffeVertex* Ac, ffeVertex* A10, ffeVertex* 
 		{
 			*(int *)(v8 + 60) = ((*(int *)((int)A10 + 60) + *(int *)(v7 + 60)) >> 1)
 				+ C_FUNC_001846(*(int *)(v7 + 60), *(int *)((int)A10 + 60), A18);
-			*(int *)(v8 + 4) = ((*(int *)((int)A10 + 4) + *(int *)(v7 + 4)) >> 1) + C_FUNC_001521(*(int *)(v8 + 40), v9);
-			*(int *)(v8 + 8) = ((*(int *)((int)A10 + 8) + *(int *)(v7 + 8)) >> 1) + C_FUNC_001521(*(int *)(v8 + 44), v9);
+			*(int *)(v8 + 4) = ((*(int *)((int)A10 + 4) + *(int *)(v7 + 4)) >> 1) + C_FUNC_001521_MulWithNormalize(*(int *)(v8 + 40), v9);
+			*(int *)(v8 + 8) = ((*(int *)((int)A10 + 8) + *(int *)(v7 + 8)) >> 1) + C_FUNC_001521_MulWithNormalize(*(int *)(v8 + 44), v9);
 			*(int *)(v8 + 12) = ((*(int *)((int)A10 + 12) + *(int *)(v7 + 12)) >> 1)
-				+ C_FUNC_001521(*(int *)(v8 + 48), v9);
+				+ C_FUNC_001521_MulWithNormalize(*(int *)(v8 + 48), v9);
 			shiftCall = (char *(*)(int)) *(int*)(DATA_009282);
 			shiftCall((int)v8);
 		}
@@ -3501,7 +3328,7 @@ extern "C" int C_FUNC_001855(int* A8, ffeVertex* Ac, ffeVertex* A10, ffeVertex* 
 				shiftCall((int)v8);
 			}
 		}
-		C_FUNC_001829((ffeVertex*)v8);
+		C_FUNC_001829_GetTriangulateDepth((ffeVertex*)v8);
 	}
 	return 0;
 }
@@ -3518,7 +3345,6 @@ extern "C" int C_FUNC_001856(int* A8, ffeVertex* Ac, ffeVertex* A10, ffeVertex* 
 	int v12; // eax@4
 	int v13; // eax@4
 	bool v14; // eax@11
-	int v15; // edx@11
 	int v16; // eax@13
 	int v17; // [sp+18h] [bp-4h]@5
 	bool v18; // [sp+10h] [bp-Ch]@11
@@ -3530,30 +3356,30 @@ extern "C" int C_FUNC_001856(int* A8, ffeVertex* Ac, ffeVertex* A10, ffeVertex* 
 	result = *(int *)((int)A8 + 8);
 	if ( !result )
 	{
-		v9 = (int)C_FUNC_001818();
+		v9 = (int)C_FUNC_001818_ArrayRemoveFirstElement();
 		*(int *)((int)A8 + 8) = v9;
 		v8 = v9;
 		if ( v7 == *(int *)(int)A8 )
 		{
-			v10 = (int)C_FUNC_001820();
+			v10 = (int)C_FUNC_001820_ArrayCreateNewElement();
 			*(int *)((int)A8 + 4) = v10;
 			*(int *)v10 = v7;
-			v11 = (int)C_FUNC_001820();
+			v11 = (int)C_FUNC_001820_ArrayCreateNewElement();
 			*(int *)((int)A8 + 12) = v11;
 			*(int *)v11 = (int)A10;
 		}
 		else
 		{
-			v12 = (int)C_FUNC_001820();
+			v12 = (int)C_FUNC_001820_ArrayCreateNewElement();
 			*(int *)((int)A8 + 4) = v12;
 			*(int *)v12 = (int)A10;
-			v13 = (int)C_FUNC_001820();
+			v13 = (int)C_FUNC_001820_ArrayCreateNewElement();
 			*(int *)((int)A8 + 12) = v13;
 			*(int *)v13 = v7;
 		}
-		*(int *)(v8 + 40) = C_FUNC_001521(*(int *)((int)A10 + 40) + *(int *)(v7 + 40), *(int*)(A18 * 4 + (int)DATA_007840));
-		*(int *)(v8 + 44) = C_FUNC_001521(*(int *)((int)A10 + 44) + *(int *)(v7 + 44), *(int*)(A18 * 4 + (int)DATA_007840));
-		*(int *)(v8 + 48) = C_FUNC_001521(*(int *)((int)A10 + 48) + *(int *)(v7 + 48), *(int*)(A18 * 4 + (int)DATA_007840));
+		*(int *)(v8 + 40) = C_FUNC_001521_MulWithNormalize(*(int *)((int)A10 + 40) + *(int *)(v7 + 40), *(int*)(A18 * 4 + (int)DATA_007840));
+		*(int *)(v8 + 44) = C_FUNC_001521_MulWithNormalize(*(int *)((int)A10 + 44) + *(int *)(v7 + 44), *(int*)(A18 * 4 + (int)DATA_007840));
+		*(int *)(v8 + 48) = C_FUNC_001521_MulWithNormalize(*(int *)((int)A10 + 48) + *(int *)(v7 + 48), *(int*)(A18 * 4 + (int)DATA_007840));
 		v17 = *(int*)(A18 * 4 + (int)DATA_007839);
 		if ( v6 <= *(int *)(v7 + 68) || v6 <= *(int *)((int)A10 + 68) )
 		{
@@ -3562,10 +3388,10 @@ extern "C" int C_FUNC_001856(int* A8, ffeVertex* Ac, ffeVertex* A10, ffeVertex* 
 			v16 = (*(int *)(v8 + 60) - v20) >> 3;
 			v20 = v17 + v16;
 			*(int *)(v8 + 4) = ((*(int *)((int)A10 + 4) + *(int *)(v7 + 4)) >> 1)
-				+ C_FUNC_001521(*(int *)(v8 + 40), v17 + v16);
-			*(int *)(v8 + 8) = ((*(int *)((int)A10 + 8) + *(int *)(v7 + 8)) >> 1) + C_FUNC_001521(*(int *)(v8 + 44), v20);
+				+ C_FUNC_001521_MulWithNormalize(*(int *)(v8 + 40), v17 + v16);
+			*(int *)(v8 + 8) = ((*(int *)((int)A10 + 8) + *(int *)(v7 + 8)) >> 1) + C_FUNC_001521_MulWithNormalize(*(int *)(v8 + 44), v20);
 			*(int *)(v8 + 12) = ((*(int *)((int)A10 + 12) + *(int *)(v7 + 12)) >> 1)
-				+ C_FUNC_001521(*(int *)(v8 + 48), v20);
+				+ C_FUNC_001521_MulWithNormalize(*(int *)(v8 + 48), v20);
 			shiftCall = (char *(*)(int)) *(int*)(DATA_009282);
 			shiftCall((int)v8);
 		}
@@ -3598,7 +3424,7 @@ extern "C" int C_FUNC_001856(int* A8, ffeVertex* Ac, ffeVertex* A10, ffeVertex* 
 				shiftCall((int)v8);
 			}
 		}
-		C_FUNC_001829((ffeVertex*)v8);
+		C_FUNC_001829_GetTriangulateDepth((ffeVertex*)v8);
 	}
 	return 0;
 }
@@ -3618,7 +3444,6 @@ extern "C" int C_FUNC_001857(int* A8, ffeVertex* Ac, ffeVertex* A10, ffeVertex* 
 	int v17; // eax@4
 	int v18; // eax@12
 	bool v19; // eax@18
-	int v20; // edx@18
 	int v21; // edi@23
 	bool v22; // [sp+10h] [bp-4h]@18
 	bool v23; // [sp+Ch] [bp-8h]@18
@@ -3627,30 +3452,30 @@ extern "C" int C_FUNC_001857(int* A8, ffeVertex* Ac, ffeVertex* A10, ffeVertex* 
 	result = *(int *)(v6 + 8);
 	if ( !result )
 	{
-		v13 = (int)C_FUNC_001818();
+		v13 = (int)C_FUNC_001818_ArrayRemoveFirstElement();
 		*(int *)(v6 + 8) = v13;
 		v8 = (ffeVertex*)v13;
 		if ((int)Ac == *(int *)v6 )
 		{
-			v14 = (int)C_FUNC_001820();
+			v14 = (int)C_FUNC_001820_ArrayCreateNewElement();
 			*(int *)(v6 + 4) = v14;
 			*(int *)v14 = (int)Ac;
-			v15 = (int)C_FUNC_001820();
+			v15 = (int)C_FUNC_001820_ArrayCreateNewElement();
 			*(int *)(v6 + 12) = v15;
 			*(int *)v15 = (int)A10;
 		}
 		else
 		{
-			v16 = (int)C_FUNC_001820();
+			v16 = (int)C_FUNC_001820_ArrayCreateNewElement();
 			*(int *)(v6 + 4) = v16;
 			*(int *)v16 = (int)A10;
-			v17 = (int)C_FUNC_001820();
+			v17 = (int)C_FUNC_001820_ArrayCreateNewElement();
 			*(int *)(v6 + 12) = v17;
 			*(int *)v17 = (int)Ac;
 		}
-		v8->normal_x = (int)C_FUNC_001521(A10->normal_x + Ac->normal_x, *(int*)(A18 * 4 + (int)DATA_007840));//v8->nx_2 = 0xfffa3ce9
-		v8->normal_y = (int)C_FUNC_001521(A10->normal_y + Ac->normal_y, *(int*)(A18 * 4 + (int)DATA_007840));//v8->ny_2 = 0x000a735b
-		v8->normal_z = (int)C_FUNC_001521(A10->normal_z + Ac->normal_z, *(int*)(A18 * 4 + (int)DATA_007840));//v8->nz_2 = 0x0000e7c7
+		v8->normal_x = (int)C_FUNC_001521_MulWithNormalize(A10->normal_x + Ac->normal_x, *(int*)(A18 * 4 + (int)DATA_007840));//v8->nx_2 = 0xfffa3ce9
+		v8->normal_y = (int)C_FUNC_001521_MulWithNormalize(A10->normal_y + Ac->normal_y, *(int*)(A18 * 4 + (int)DATA_007840));//v8->ny_2 = 0x000a735b
+		v8->normal_z = (int)C_FUNC_001521_MulWithNormalize(A10->normal_z + Ac->normal_z, *(int*)(A18 * 4 + (int)DATA_007840));//v8->nz_2 = 0x0000e7c7
 		v9 = *(int*)(A18 * 4 + (int)DATA_007839);//v9 = 0x00500a5d
 
 		if ( ((A10->x_2 - 1) ^ (Ac->x_2 - 1)) >= 0 )
@@ -3666,9 +3491,9 @@ extern "C" int C_FUNC_001857(int* A8, ffeVertex* Ac, ffeVertex* A10, ffeVertex* 
 				v12 = v8->x_2;
 			v8->y_2 = v12;//v8->y_2 = 0x00000000
 			v21 = ((v12 - ((A10->y_2 + Ac->y_2) >> 1)) >> 3) + v9;//v21 = 0xffdf019e
-			v8->nx = ((A10->nx + Ac->nx) >> 1) + (int)C_FUNC_001521(v8->normal_x, v21);//v8->nx = 0xfb64abe4
-			v8->ny = ((A10->ny + Ac->ny) >> 1) + (int)C_FUNC_001521(v8->normal_y, v21);//v8->ny = 0xfd4fb7d7
-			v8->nz = ((A10->nz + Ac->nz) >> 1) + (int)C_FUNC_001521(v8->normal_z, v21);//v8->nz = 0x00b938c8
+			v8->nx = ((A10->nx + Ac->nx) >> 1) + (int)C_FUNC_001521_MulWithNormalize(v8->normal_x, v21);//v8->nx = 0xfb64abe4
+			v8->ny = ((A10->ny + Ac->ny) >> 1) + (int)C_FUNC_001521_MulWithNormalize(v8->normal_y, v21);//v8->ny = 0xfd4fb7d7
+			v8->nz = ((A10->nz + Ac->nz) >> 1) + (int)C_FUNC_001521_MulWithNormalize(v8->normal_z, v21);//v8->nz = 0x00b938c8
 			shiftCall = (char *(*)(int)) *(int*)(DATA_009282);
 			shiftCall((int)v8);
 		}
@@ -3713,7 +3538,7 @@ extern "C" int C_FUNC_001857(int* A8, ffeVertex* Ac, ffeVertex* A10, ffeVertex* 
 				shiftCall((int)v8);
 			}
 		}
-		C_FUNC_001829(v8);
+		C_FUNC_001829_GetTriangulateDepth(v8);
 	}
 	return 0;
 }
@@ -3774,24 +3599,24 @@ extern "C" int C_FUNC_001858(int* A8, ffeVertex* Ac, ffeVertex* A10, ffeVertex* 
 	}
 	else
 	{
-		v19 = (int)C_FUNC_001818();
+		v19 = (int)C_FUNC_001818_ArrayRemoveFirstElement();
 		*(int *)(v6 + 8) = v19;
 		v29 = v19;
 		if ( *(int *)v6 == (int)Ac )
 		{
-			v20 = (int)C_FUNC_001820();
+			v20 = (int)C_FUNC_001820_ArrayCreateNewElement();
 			*(int *)(v6 + 4) = v20;
 			*(int *)v20 = (int)Ac;
-			v21 = (int)C_FUNC_001820();
+			v21 = (int)C_FUNC_001820_ArrayCreateNewElement();
 			*(int *)(v6 + 12) = v21;
 			*(int *)v21 = (int)A10;
 		}
 		else
 		{
-			v22 = (int)C_FUNC_001820();
+			v22 = (int)C_FUNC_001820_ArrayCreateNewElement();
 			*(int *)(v6 + 4) = v22;
 			*(int *)v22 = (int)A10;
-			v23 = (int)C_FUNC_001820();
+			v23 = (int)C_FUNC_001820_ArrayCreateNewElement();
 			*(int *)(v6 + 12) = v23;
 			*(int *)v23 = (int)Ac;
 		}
@@ -3849,11 +3674,11 @@ extern "C" int C_FUNC_001858(int* A8, ffeVertex* Ac, ffeVertex* A10, ffeVertex* 
 			}
 			while ( v17 < 2 );
 			*(int *)(v29 + 4) = ((A10->nx + Ac->nx) >> 1)
-				+ C_FUNC_001521(*(int *)(v29 + 40), v31);
+				+ C_FUNC_001521_MulWithNormalize(*(int *)(v29 + 40), v31);
 			*(int *)(v29 + 8) = ((A10->ny + Ac->ny) >> 1)
-				+ C_FUNC_001521(*(int *)(v29 + 44), v31);
+				+ C_FUNC_001521_MulWithNormalize(*(int *)(v29 + 44), v31);
 			*(int *)(v29 + 12) = ((A10->nz + Ac->nz) >> 1)
-				+ C_FUNC_001521(*(int *)(v29 + 48), v31);
+				+ C_FUNC_001521_MulWithNormalize(*(int *)(v29 + 48), v31);
 			shiftCall = (char *(*)(int)) *(int*)(DATA_009282);
 			shiftCall(v29);
 		}
@@ -3888,7 +3713,7 @@ extern "C" int C_FUNC_001858(int* A8, ffeVertex* Ac, ffeVertex* A10, ffeVertex* 
 				shiftCall(v29);
 			}
 		}
-		C_FUNC_001829((ffeVertex *)v29);
+		C_FUNC_001829_GetTriangulateDepth((ffeVertex *)v29);
 	}
 	return 0;
 }
@@ -3950,24 +3775,24 @@ extern "C" int C_FUNC_001859(int* A8, ffeVertex* Ac, ffeVertex* A10, ffeVertex* 
 	}
 	else
 	{
-		v20 = (int)C_FUNC_001818();
+		v20 = (int)C_FUNC_001818_ArrayRemoveFirstElement();
 		*(int *)(v6 + 8) = v20;
 		v30 = v20;
 		if ( *(int *)v6 == (int)Ac )
 		{
-			v21 = (int)C_FUNC_001820();
+			v21 = (int)C_FUNC_001820_ArrayCreateNewElement();
 			*(int *)(v6 + 4) = v21;
 			*(int *)v21 = (int)Ac;
-			v22 = (int)C_FUNC_001820();
+			v22 = (int)C_FUNC_001820_ArrayCreateNewElement();
 			*(int *)(v6 + 12) = v22;
 			*(int *)v22 = (int)A10;
 		}
 		else
 		{
-			v23 = (int)C_FUNC_001820();
+			v23 = (int)C_FUNC_001820_ArrayCreateNewElement();
 			*(int *)(v6 + 4) = v23;
 			*(int *)v23 = (int)A10;
-			v24 = (int)C_FUNC_001820();
+			v24 = (int)C_FUNC_001820_ArrayCreateNewElement();
 			*(int *)(v6 + 12) = v24;
 			*(int *)v24 = (int)Ac;
 		}
@@ -4030,11 +3855,11 @@ extern "C" int C_FUNC_001859(int* A8, ffeVertex* Ac, ffeVertex* A10, ffeVertex* 
 			}
 			while ( v18 < 2 );
 			*(int *)(v30 + 4) = ((A10->nx + Ac->nx) >> 1)
-				+ C_FUNC_001521(*(int *)(v30 + 40), v32);
+				+ C_FUNC_001521_MulWithNormalize(*(int *)(v30 + 40), v32);
 			*(int *)(v30 + 8) = ((A10->ny + Ac->ny) >> 1)
-				+ C_FUNC_001521(*(int *)(v30 + 44), v32);
+				+ C_FUNC_001521_MulWithNormalize(*(int *)(v30 + 44), v32);
 			*(int *)(v30 + 12) = ((A10->nz + Ac->nz) >> 1)
-				+ C_FUNC_001521(*(int *)(v30 + 48), v32);
+				+ C_FUNC_001521_MulWithNormalize(*(int *)(v30 + 48), v32);
 			shiftCall = (char *(*)(int)) *(int*)(DATA_009282);
 			shiftCall(v30);
 		}
@@ -4070,7 +3895,7 @@ extern "C" int C_FUNC_001859(int* A8, ffeVertex* Ac, ffeVertex* A10, ffeVertex* 
 				shiftCall(v30);
 			}
 		}
-		C_FUNC_001829((ffeVertex *)v30);
+		C_FUNC_001829_GetTriangulateDepth((ffeVertex *)v30);
 	}
 	return 0;
 }
@@ -4134,24 +3959,24 @@ extern "C" int C_FUNC_001860(int* A8, ffeVertex* Ac, ffeVertex* A10, ffeVertex* 
 	}
 	else
 	{
-		v19 = (int)C_FUNC_001818();
+		v19 = (int)C_FUNC_001818_ArrayRemoveFirstElement();
 		*(int *)(v6 + 8) = v19;
 		v31 = v19;
 		if ( *(int *)v6 == (int)Ac )
 		{
-			v20 = (int)C_FUNC_001820();
+			v20 = (int)C_FUNC_001820_ArrayCreateNewElement();
 			*(int *)(v6 + 4) = v20;
 			*(int *)v20 = (int)Ac;
-			v21 = (int)C_FUNC_001820();
+			v21 = (int)C_FUNC_001820_ArrayCreateNewElement();
 			*(int *)(v6 + 12) = v21;
 			*(int *)v21 = (int)A10;
 		}
 		else
 		{
-			v22 = (int)C_FUNC_001820();
+			v22 = (int)C_FUNC_001820_ArrayCreateNewElement();
 			*(int *)(v6 + 4) = v22;
 			*(int *)v22 = (int)A10;
-			v23 = (int)C_FUNC_001820();
+			v23 = (int)C_FUNC_001820_ArrayCreateNewElement();
 			*(int *)(v6 + 12) = v23;
 			*(int *)v23 = (int)Ac;
 		}
@@ -4211,11 +4036,11 @@ extern "C" int C_FUNC_001860(int* A8, ffeVertex* Ac, ffeVertex* A10, ffeVertex* 
 			v28 = v33 + ((*(int *)(v31 + 60) - v17) >> 3);
 			v29 = v33 + ((*(int *)(v31 + 60) - v17) >> 3);
 			*(int *)(v31 + 4) = ((*(int *)((int)A10 + 4) + *(int *)((int)Ac + 4)) >> 1)
-				+ (int)C_FUNC_001521(*(int *)(v31 + 40), v28);
+				+ (int)C_FUNC_001521_MulWithNormalize(*(int *)(v31 + 40), v28);
 			*(int *)(v31 + 8) = ((*(int *)((int)A10 + 8) + *(int *)((int)Ac + 8)) >> 1)
-				+ (int)C_FUNC_001521(*(int *)(v31 + 44), v29);
+				+ (int)C_FUNC_001521_MulWithNormalize(*(int *)(v31 + 44), v29);
 			*(int *)(v31 + 12) = ((*(int *)((int)A10 + 12) + *(int *)((int)Ac + 12)) >> 1)
-				+ (int)C_FUNC_001521(*(int *)(v31 + 48), v29);
+				+ (int)C_FUNC_001521_MulWithNormalize(*(int *)(v31 + 48), v29);
 			shiftCall = (char *(*)(int)) *(int*)(DATA_009282);
 			shiftCall((int)v31);
 		}
@@ -4316,24 +4141,24 @@ extern "C" int C_FUNC_001861(int* A8, ffeVertex* Ac, ffeVertex* A10, ffeVertex* 
 	}
 	else
 	{
-		v21 = (int)C_FUNC_001818();
+		v21 = (int)C_FUNC_001818_ArrayRemoveFirstElement();
 		*(int *)(v6 + 8) = v21;
 		v11 = v21;
 		if ( *(int *)v6 == (int)Ac )
 		{
-			v22 = (int)C_FUNC_001820();
+			v22 = (int)C_FUNC_001820_ArrayCreateNewElement();
 			*(int *)(v6 + 4) = v22;
 			*(int *)v22 = (int)Ac;
-			v23 = (int)C_FUNC_001820();
+			v23 = (int)C_FUNC_001820_ArrayCreateNewElement();
 			*(int *)(v6 + 12) = v23;
 			*(int *)v23 = (int)A10;
 		}
 		else
 		{
-			v24 = (int)C_FUNC_001820();
+			v24 = (int)C_FUNC_001820_ArrayCreateNewElement();
 			*(int *)(v6 + 4) = v24;
 			*(int *)v24 = (int)A10;
-			v25 = (int)C_FUNC_001820();
+			v25 = (int)C_FUNC_001820_ArrayCreateNewElement();
 			*(int *)(v6 + 12) = v25;
 			*(int *)v25 = (int)Ac;
 		}
@@ -4401,13 +4226,13 @@ extern "C" int C_FUNC_001861(int* A8, ffeVertex* Ac, ffeVertex* A10, ffeVertex* 
 			*(int *)(v11 + 64) = v20;
 			v30 = v34 + ((v20 - ((*(int *)((int)A10 + 64) + *(int *)((int)Ac + 64)) >> 1)) >> 3);
 			*(int *)(v11 + 4) = ((*(int *)((int)A10 + 4) + *(int *)((int)Ac + 4)) >> 1)
-				+ C_FUNC_001521(
+				+ C_FUNC_001521_MulWithNormalize(
 				*(int *)(v11 + 40),
 				v34 + ((v20 - ((*(int *)((int)A10 + 64) + *(int *)((int)Ac + 64)) >> 1)) >> 3));
 			*(int *)(v11 + 8) = ((*(int *)((int)A10 + 8) + *(int *)((int)Ac + 8)) >> 1)
-				+ C_FUNC_001521(*(int *)(v11 + 44), v30);
+				+ C_FUNC_001521_MulWithNormalize(*(int *)(v11 + 44), v30);
 			*(int *)(v11 + 12) = ((*(int *)((int)A10 + 12) + *(int *)((int)Ac + 12)) >> 1)
-				+ C_FUNC_001521(*(int *)(v11 + 48), v30);
+				+ C_FUNC_001521_MulWithNormalize(*(int *)(v11 + 48), v30);
 			shiftCall = (char *(*)(int)) *(int*)(DATA_009282);
 			shiftCall((int)v11);
 		}
@@ -4451,7 +4276,7 @@ extern "C" int C_FUNC_001861(int* A8, ffeVertex* Ac, ffeVertex* A10, ffeVertex* 
 				shiftCall(v11);
 			}
 		}
-		C_FUNC_001829((ffeVertex*)v11);
+		C_FUNC_001829_GetTriangulateDepth((ffeVertex*)v11);
 	}
 	return 0;
 }
@@ -4511,24 +4336,24 @@ extern "C" int C_FUNC_001862(int* A8, ffeVertex* Ac, ffeVertex* A10, ffeVertex* 
 	}
 	else
 	{
-		v19 = (int)C_FUNC_001818();
+		v19 = (int)C_FUNC_001818_ArrayRemoveFirstElement();
 		*(int *)(v6 + 8) = v19;
 		v28 = v19;
 		if ( *(int *)v6 == (int)Ac )
 		{
-			v20 = (int)C_FUNC_001820();
+			v20 = (int)C_FUNC_001820_ArrayCreateNewElement();
 			*(int *)(v6 + 4) = v20;
 			*(int *)v20 = (int)Ac;
-			v21 = (int)C_FUNC_001820();
+			v21 = (int)C_FUNC_001820_ArrayCreateNewElement();
 			*(int *)(v6 + 12) = v21;
 			*(int *)v21 = (int)A10;
 		}
 		else
 		{
-			v22 = (int)C_FUNC_001820();
+			v22 = (int)C_FUNC_001820_ArrayCreateNewElement();
 			*(int *)(v6 + 4) = v22;
 			*(int *)v22 = (int)A10;
-			v23 = (int)C_FUNC_001820();
+			v23 = (int)C_FUNC_001820_ArrayCreateNewElement();
 			*(int *)(v6 + 12) = v23;
 			*(int *)v23 = (int)Ac;
 		}
@@ -4551,9 +4376,9 @@ extern "C" int C_FUNC_001862(int* A8, ffeVertex* Ac, ffeVertex* A10, ffeVertex* 
 			v29 += 256;
 		}
 		while ( v14 < 2 );
-		*(int *)(v28 + 40) = C_FUNC_001521(*(int *)((int)A10 + 40) + *(int *)((int)Ac + 40), *(int*)(A18 * 4 + (int)DATA_007840));
-		*(int *)(v28 + 44) = C_FUNC_001521(*(int *)((int)A10 + 44) + *(int *)((int)Ac + 44), *(int*)(A18 * 4 + (int)DATA_007840));
-		*(int *)(v28 + 48) = C_FUNC_001521(*(int *)((int)A10 + 48) + *(int *)((int)Ac + 48), *(int*)(A18 * 4 + (int)DATA_007840));
+		*(int *)(v28 + 40) = C_FUNC_001521_MulWithNormalize(*(int *)((int)A10 + 40) + *(int *)((int)Ac + 40), *(int*)(A18 * 4 + (int)DATA_007840));
+		*(int *)(v28 + 44) = C_FUNC_001521_MulWithNormalize(*(int *)((int)A10 + 44) + *(int *)((int)Ac + 44), *(int*)(A18 * 4 + (int)DATA_007840));
+		*(int *)(v28 + 48) = C_FUNC_001521_MulWithNormalize(*(int *)((int)A10 + 48) + *(int *)((int)Ac + 48), *(int*)(A18 * 4 + (int)DATA_007840));
 		v30 = *(int*)(A18 * 4 + (int)DATA_007839);
 		if ( *(int *)((int)Ac + 68) >= A18 || *(int *)((int)A10 + 68) >= A18 )
 		{
@@ -4585,11 +4410,11 @@ extern "C" int C_FUNC_001862(int* A8, ffeVertex* Ac, ffeVertex* A10, ffeVertex* 
 			}
 			while ( v17 < 2 );
 			*(int *)(v28 + 4) = ((*(int *)((int)A10 + 4) + *(int *)((int)Ac + 4)) >> 1)
-				+ C_FUNC_001521(*(int *)(v28 + 40), v30);
+				+ C_FUNC_001521_MulWithNormalize(*(int *)(v28 + 40), v30);
 			*(int *)(v28 + 8) = ((*(int *)((int)A10 + 8) + *(int *)((int)Ac + 8)) >> 1)
-				+ C_FUNC_001521(*(int *)(v28 + 44), v30);
+				+ C_FUNC_001521_MulWithNormalize(*(int *)(v28 + 44), v30);
 			*(int *)(v28 + 12) = ((*(int *)((int)A10 + 12) + *(int *)((int)Ac + 12)) >> 1)
-				+ C_FUNC_001521(*(int *)(v28 + 48), v30);
+				+ C_FUNC_001521_MulWithNormalize(*(int *)(v28 + 48), v30);
 			shiftCall = (char *(*)(int)) *(int*)(DATA_009282);
 			shiftCall((int)v28);
 		}
@@ -4622,7 +4447,7 @@ extern "C" int C_FUNC_001862(int* A8, ffeVertex* Ac, ffeVertex* A10, ffeVertex* 
 				shiftCall(v28);
 			}
 		}
-		C_FUNC_001829((ffeVertex*)v28);
+		C_FUNC_001829_GetTriangulateDepth((ffeVertex*)v28);
 	}
 	return 0;
 }
@@ -4683,24 +4508,24 @@ extern "C" int C_FUNC_001863(int* A8, ffeVertex* Ac, ffeVertex* A10, ffeVertex* 
 	}
 	else
 	{
-		v20 = (int)C_FUNC_001818();
+		v20 = (int)C_FUNC_001818_ArrayRemoveFirstElement();
 		*(int *)(v6 + 8) = v20;
 		v29 = v20;
 		if ( *(int *)v6 == (int)Ac )
 		{
-			v21 = (int)C_FUNC_001820();
+			v21 = (int)C_FUNC_001820_ArrayCreateNewElement();
 			*(int *)(v6 + 4) = v21;
 			*(int *)v21 = (int)Ac;
-			v22 = (int)C_FUNC_001820();
+			v22 = (int)C_FUNC_001820_ArrayCreateNewElement();
 			*(int *)(v6 + 12) = v22;
 			*(int *)v22 = (int)A10;
 		}
 		else
 		{
-			v23 = (int)C_FUNC_001820();
+			v23 = (int)C_FUNC_001820_ArrayCreateNewElement();
 			*(int *)(v6 + 4) = v23;
 			*(int *)v23 = (int)A10;
-			v24 = (int)C_FUNC_001820();
+			v24 = (int)C_FUNC_001820_ArrayCreateNewElement();
 			*(int *)(v6 + 12) = v24;
 			*(int *)v24 = (int)Ac;
 		}
@@ -4723,9 +4548,9 @@ extern "C" int C_FUNC_001863(int* A8, ffeVertex* Ac, ffeVertex* A10, ffeVertex* 
 			v30 += 256;
 		}
 		while ( v14 < 2 );
-		*(int *)(v29 + 40) = C_FUNC_001521(*(int *)((int)A10 + 40) + *(int *)((int)Ac + 40), *(int*)(A18 * 4 + (int)DATA_007840));
-		*(int *)(v29 + 44) = C_FUNC_001521(*(int *)((int)A10 + 44) + *(int *)((int)Ac + 44), *(int*)(A18 * 4 + (int)DATA_007840));
-		*(int *)(v29 + 48) = C_FUNC_001521(*(int *)((int)A10 + 48) + *(int *)((int)Ac + 48), *(int*)(A18 * 4 + (int)DATA_007840));
+		*(int *)(v29 + 40) = C_FUNC_001521_MulWithNormalize(*(int *)((int)A10 + 40) + *(int *)((int)Ac + 40), *(int*)(A18 * 4 + (int)DATA_007840));
+		*(int *)(v29 + 44) = C_FUNC_001521_MulWithNormalize(*(int *)((int)A10 + 44) + *(int *)((int)Ac + 44), *(int*)(A18 * 4 + (int)DATA_007840));
+		*(int *)(v29 + 48) = C_FUNC_001521_MulWithNormalize(*(int *)((int)A10 + 48) + *(int *)((int)Ac + 48), *(int*)(A18 * 4 + (int)DATA_007840));
 		v31 = *(int*)(A18 * 4 + (int)DATA_007839);
 		if ( ((*(int *)((int)A10 + 60) - 1) ^ (*(int *)((int)Ac + 60) - 1)) >= 0 )
 			v15 = A18;
@@ -4761,11 +4586,11 @@ extern "C" int C_FUNC_001863(int* A8, ffeVertex* Ac, ffeVertex* A10, ffeVertex* 
 			}
 			while ( v18 < 2 );
 			*(int *)(v29 + 4) = ((*(int *)((int)A10 + 4) + *(int *)((int)Ac + 4)) >> 1)
-				+ C_FUNC_001521(*(int *)(v29 + 40), v31);
+				+ C_FUNC_001521_MulWithNormalize(*(int *)(v29 + 40), v31);
 			*(int *)(v29 + 8) = ((*(int *)((int)A10 + 8) + *(int *)((int)Ac + 8)) >> 1)
-				+ C_FUNC_001521(*(int *)(v29 + 44), v31);
+				+ C_FUNC_001521_MulWithNormalize(*(int *)(v29 + 44), v31);
 			*(int *)(v29 + 12) = ((*(int *)((int)A10 + 12) + *(int *)((int)Ac + 12)) >> 1)
-				+ C_FUNC_001521(*(int *)(v29 + 48), v31);
+				+ C_FUNC_001521_MulWithNormalize(*(int *)(v29 + 48), v31);
 			shiftCall = (char *(*)(int)) *(int*)(DATA_009282);
 			shiftCall((int)v29);
 		}
@@ -4798,7 +4623,7 @@ extern "C" int C_FUNC_001863(int* A8, ffeVertex* Ac, ffeVertex* A10, ffeVertex* 
 				shiftCall(v29);
 			}
 		}
-		C_FUNC_001829((ffeVertex*)v29);
+		C_FUNC_001829_GetTriangulateDepth((ffeVertex*)v29);
 	}
 	return 0;
 }
@@ -4861,24 +4686,24 @@ extern "C" int C_FUNC_001864(int* A8, ffeVertex* Ac, ffeVertex* A10, ffeVertex* 
 	}
 	else
 	{
-		v19 = (int)C_FUNC_001818();
+		v19 = (int)C_FUNC_001818_ArrayRemoveFirstElement();
 		*(int *)(v6 + 8) = v19;
 		v30 = v19;
 		if ( *(int *)v6 == (int)Ac )
 		{
-			v20 = (int)C_FUNC_001820();
+			v20 = (int)C_FUNC_001820_ArrayCreateNewElement();
 			*(int *)(v6 + 4) = v20;
 			*(int *)v20 = (int)Ac;
-			v21 = (int)C_FUNC_001820();
+			v21 = (int)C_FUNC_001820_ArrayCreateNewElement();
 			*(int *)(v6 + 12) = v21;
 			*(int *)v21 = (int)A10;
 		}
 		else
 		{
-			v22 = (int)C_FUNC_001820();
+			v22 = (int)C_FUNC_001820_ArrayCreateNewElement();
 			*(int *)(v6 + 4) = v22;
 			*(int *)v22 = (int)A10;
-			v23 = (int)C_FUNC_001820();
+			v23 = (int)C_FUNC_001820_ArrayCreateNewElement();
 			*(int *)(v6 + 12) = v23;
 			*(int *)v23 = (int)Ac;
 		}
@@ -4901,9 +4726,9 @@ extern "C" int C_FUNC_001864(int* A8, ffeVertex* Ac, ffeVertex* A10, ffeVertex* 
 			v31 += 256;
 		}
 		while ( v14 < 2 );
-		*(int *)(v30 + 40) = C_FUNC_001521(*(int *)((int)A10 + 40) + *(int *)((int)Ac + 40), *(int*)(A18 * 4 + (int)DATA_007840));
-		*(int *)(v30 + 44) = C_FUNC_001521(*(int *)((int)A10 + 44) + *(int *)((int)Ac + 44), *(int*)(A18 * 4 + (int)DATA_007840));
-		*(int *)(v30 + 48) = C_FUNC_001521(*(int *)((int)A10 + 48) + *(int *)((int)Ac + 48), *(int*)(A18 * 4 + (int)DATA_007840));
+		*(int *)(v30 + 40) = C_FUNC_001521_MulWithNormalize(*(int *)((int)A10 + 40) + *(int *)((int)Ac + 40), *(int*)(A18 * 4 + (int)DATA_007840));
+		*(int *)(v30 + 44) = C_FUNC_001521_MulWithNormalize(*(int *)((int)A10 + 44) + *(int *)((int)Ac + 44), *(int*)(A18 * 4 + (int)DATA_007840));
+		*(int *)(v30 + 48) = C_FUNC_001521_MulWithNormalize(*(int *)((int)A10 + 48) + *(int *)((int)Ac + 48), *(int*)(A18 * 4 + (int)DATA_007840));
 		v32 = *(int*)(A18 * 4 + (int)DATA_007839);
 		if ( *(int *)((int)Ac + 68) >= A18 || *(int *)((int)A10 + 68) >= A18 )
 		{
@@ -4937,11 +4762,11 @@ extern "C" int C_FUNC_001864(int* A8, ffeVertex* Ac, ffeVertex* A10, ffeVertex* 
 			v27 = v32 + ((*(int *)(v30 + 60) - v17) >> 3);
 			v28 = v32 + ((*(int *)(v30 + 60) - v17) >> 3);
 			*(int *)(v30 + 4) = ((*(int *)((int)A10 + 4) + *(int *)((int)Ac + 4)) >> 1)
-				+ C_FUNC_001521(*(int *)(v30 + 40), v27);
+				+ C_FUNC_001521_MulWithNormalize(*(int *)(v30 + 40), v27);
 			*(int *)(v30 + 8) = ((*(int *)((int)A10 + 8) + *(int *)((int)Ac + 8)) >> 1)
-				+ C_FUNC_001521(*(int *)(v30 + 44), v28);
+				+ C_FUNC_001521_MulWithNormalize(*(int *)(v30 + 44), v28);
 			*(int *)(v30 + 12) = ((*(int *)((int)A10 + 12) + *(int *)((int)Ac + 12)) >> 1)
-				+ C_FUNC_001521(*(int *)(v30 + 48), v28);
+				+ C_FUNC_001521_MulWithNormalize(*(int *)(v30 + 48), v28);
 			shiftCall = (char *(*)(int)) *(int*)(DATA_009282);
 			shiftCall((int)v30);
 		}
@@ -4974,7 +4799,7 @@ extern "C" int C_FUNC_001864(int* A8, ffeVertex* Ac, ffeVertex* A10, ffeVertex* 
 				shiftCall(v30);
 			}
 		}
-		C_FUNC_001829((ffeVertex*)v30);
+		C_FUNC_001829_GetTriangulateDepth((ffeVertex*)v30);
 	}
 	return 0;
 }
@@ -5039,24 +4864,24 @@ extern "C" int C_FUNC_001865(int* A8, ffeVertex* Ac, ffeVertex* A10, ffeVertex* 
 	}
 	else
 	{
-		v21 = (int)C_FUNC_001818();
+		v21 = (int)C_FUNC_001818_ArrayRemoveFirstElement();
 		*(int *)(v6 + 8) = v21;
 		v11 = v21;
 		if ( *(int *)v6 == (int)Ac )
 		{
-			v22 = (int)C_FUNC_001820();
+			v22 = (int)C_FUNC_001820_ArrayCreateNewElement();
 			*(int *)(v6 + 4) = v22;
 			*(int *)v22 = (int)Ac;
-			v23 = (int)C_FUNC_001820();
+			v23 = (int)C_FUNC_001820_ArrayCreateNewElement();
 			*(int *)(v6 + 12) = v23;
 			*(int *)v23 = (int)A10;
 		}
 		else
 		{
-			v24 = (int)C_FUNC_001820();
+			v24 = (int)C_FUNC_001820_ArrayCreateNewElement();
 			*(int *)(v6 + 4) = v24;
 			*(int *)v24 = (int)A10;
-			v25 = (int)C_FUNC_001820();
+			v25 = (int)C_FUNC_001820_ArrayCreateNewElement();
 			*(int *)(v6 + 12) = v25;
 			*(int *)v25 = (int)Ac;
 		}
@@ -5079,9 +4904,9 @@ extern "C" int C_FUNC_001865(int* A8, ffeVertex* Ac, ffeVertex* A10, ffeVertex* 
 			v32 += 256;
 		}
 		while ( v14 < 2 );
-		*(int *)(v11 + 40) = C_FUNC_001521(*(int *)((int)A10 + 40) + *(int *)((int)Ac + 40), *(int*)(A18 * 4 + (int)DATA_007840));
-		*(int *)(v11 + 44) = C_FUNC_001521(*(int *)((int)A10 + 44) + *(int *)((int)Ac + 44), *(int*)(A18 * 4 + (int)DATA_007840));
-		*(int *)(v11 + 48) = C_FUNC_001521(*(int *)((int)A10 + 48) + *(int *)((int)Ac + 48), *(int*)(A18 * 4 + (int)DATA_007840));
+		*(int *)(v11 + 40) = C_FUNC_001521_MulWithNormalize(*(int *)((int)A10 + 40) + *(int *)((int)Ac + 40), *(int*)(A18 * 4 + (int)DATA_007840));
+		*(int *)(v11 + 44) = C_FUNC_001521_MulWithNormalize(*(int *)((int)A10 + 44) + *(int *)((int)Ac + 44), *(int*)(A18 * 4 + (int)DATA_007840));
+		*(int *)(v11 + 48) = C_FUNC_001521_MulWithNormalize(*(int *)((int)A10 + 48) + *(int *)((int)Ac + 48), *(int*)(A18 * 4 + (int)DATA_007840));
 		v33 = *(int*)(A18 * 4 + (int)DATA_007839);
 		if ( ((*(int *)((int)A10 + 60) - 1) ^ (*(int *)((int)Ac + 60) - 1)) >= 0 )
 			v15 = A18;
@@ -5123,13 +4948,13 @@ extern "C" int C_FUNC_001865(int* A8, ffeVertex* Ac, ffeVertex* A10, ffeVertex* 
 			*(int *)(v11 + 64) = v20;
 			v29 = v33 + ((v20 - ((*(int *)((int)A10 + 64) + *(int *)((int)Ac + 64)) >> 1)) >> 3);
 			*(int *)(v11 + 4) = ((*(int *)((int)A10 + 4) + *(int *)((int)Ac + 4)) >> 1)
-				+ C_FUNC_001521(
+				+ C_FUNC_001521_MulWithNormalize(
 				*(int *)(v11 + 40),
 				v33 + ((v20 - ((*(int *)((int)A10 + 64) + *(int *)((int)Ac + 64)) >> 1)) >> 3));
 			*(int *)(v11 + 8) = ((*(int *)((int)A10 + 8) + *(int *)((int)Ac + 8)) >> 1)
-				+ C_FUNC_001521(*(int *)(v11 + 44), v29);
+				+ C_FUNC_001521_MulWithNormalize(*(int *)(v11 + 44), v29);
 			*(int *)(v11 + 12) = ((*(int *)((int)A10 + 12) + *(int *)((int)Ac + 12)) >> 1)
-				+ C_FUNC_001521(*(int *)(v11 + 48), v29);
+				+ C_FUNC_001521_MulWithNormalize(*(int *)(v11 + 48), v29);
 			shiftCall = (char *(*)(int)) *(int*)(DATA_009282);
 			shiftCall((int)v11);
 		}
@@ -5173,7 +4998,7 @@ extern "C" int C_FUNC_001865(int* A8, ffeVertex* Ac, ffeVertex* A10, ffeVertex* 
 				shiftCall(v11);
 			}
 		}
-		C_FUNC_001829((ffeVertex*)v11);
+		C_FUNC_001829_GetTriangulateDepth((ffeVertex*)v11);
 	}
 	return 0;
 }
@@ -5190,7 +5015,6 @@ extern "C" int C_FUNC_001866(int* A8, ffeVertex* Ac, ffeVertex* A10, ffeVertex* 
 	int v12; // eax@4
 	int v13; // eax@4
 	bool v14; // eax@11
-	int v15; // edx@11
 	bool v16; // [sp+10h] [bp-4h]@11
 	bool v17; // [sp+Ch] [bp-8h]@11
 
@@ -5199,24 +5023,24 @@ extern "C" int C_FUNC_001866(int* A8, ffeVertex* Ac, ffeVertex* A10, ffeVertex* 
 	result = *(int *)((int)A8 + 8);
 	if ( !result )
 	{
-		v9 = C_FUNC_001818();
+		v9 = C_FUNC_001818_ArrayRemoveFirstElement();
 		*(int *)(v6 + 8) = v9;
 		v8 = v9;
 		if ( v7 == *(int *)v6 )
 		{
-			v10 = (int)C_FUNC_001820();
+			v10 = (int)C_FUNC_001820_ArrayCreateNewElement();
 			*(int *)(v6 + 4) = v10;
 			*(int *)v10 = v7;
-			v11 = (int)C_FUNC_001820();
+			v11 = (int)C_FUNC_001820_ArrayCreateNewElement();
 			*(int *)(v6 + 12) = v11;
 			*(int *)v11 = (int)A10;
 		}
 		else
 		{
-			v12 = (int)C_FUNC_001820();
+			v12 = (int)C_FUNC_001820_ArrayCreateNewElement();
 			*(int *)(v6 + 4) = v12;
 			*(int *)v12 = (int)A10;
-			v13 = (int)C_FUNC_001820();
+			v13 = (int)C_FUNC_001820_ArrayCreateNewElement();
 			*(int *)(v6 + 12) = v13;
 			*(int *)v13 = v7;
 		}
@@ -5226,9 +5050,9 @@ extern "C" int C_FUNC_001866(int* A8, ffeVertex* Ac, ffeVertex* A10, ffeVertex* 
 		if ( A18 <= *(int *)(v7 + 68) || A18 <= *(int *)((int)A10 + 68) )
 		{
 			*(int *)(v8 + 60) = (*(int *)((int)A10 + 60) + *(int *)(v7 + 60)) >> 1;
-			*(int *)(v8 + 4) = ((*(int *)((int)A10 + 4) + *(int *)(v7 + 4)) >> 1) + C_FUNC_001521(*(int *)(v8 + 40), 0);
-			*(int *)(v8 + 8) = ((*(int *)((int)A10 + 8) + *(int *)(v7 + 8)) >> 1) + C_FUNC_001521(*(int *)(v8 + 44), 0);
-			*(int *)(v8 + 12) = ((*(int *)((int)A10 + 12) + *(int *)(v7 + 12)) >> 1) + C_FUNC_001521(*(int *)(v8 + 48), 0);
+			*(int *)(v8 + 4) = ((*(int *)((int)A10 + 4) + *(int *)(v7 + 4)) >> 1) + C_FUNC_001521_MulWithNormalize(*(int *)(v8 + 40), 0);
+			*(int *)(v8 + 8) = ((*(int *)((int)A10 + 8) + *(int *)(v7 + 8)) >> 1) + C_FUNC_001521_MulWithNormalize(*(int *)(v8 + 44), 0);
+			*(int *)(v8 + 12) = ((*(int *)((int)A10 + 12) + *(int *)(v7 + 12)) >> 1) + C_FUNC_001521_MulWithNormalize(*(int *)(v8 + 48), 0);
 			shiftCall = (char *(*)(int)) *(int*)(DATA_009282);
 			shiftCall((int)v8);
 		}
@@ -5261,7 +5085,7 @@ extern "C" int C_FUNC_001866(int* A8, ffeVertex* Ac, ffeVertex* A10, ffeVertex* 
 				shiftCall(v8);
 			}
 		}
-		C_FUNC_001829((ffeVertex*)v8);
+		C_FUNC_001829_GetTriangulateDepth((ffeVertex*)v8);
 	}
 	return 0;
 }
@@ -5279,7 +5103,6 @@ extern "C" int C_FUNC_001867(int* A8, ffeVertex* Ac, ffeVertex* A10, ffeVertex* 
 	int v13; // eax@4
 	int v14; // eax@4
 	bool v15; // eax@11
-	int v16; // edx@11
 	bool v17; // [sp+10h] [bp-4h]@11
 	bool v18; // [sp+Ch] [bp-8h]@11
 
@@ -5288,38 +5111,38 @@ extern "C" int C_FUNC_001867(int* A8, ffeVertex* Ac, ffeVertex* A10, ffeVertex* 
 	result = *(int *)((int)A8 + 8);
 	if ( !result )
 	{
-		v10 = C_FUNC_001818();
+		v10 = C_FUNC_001818_ArrayRemoveFirstElement();
 		*(int *)(v6 + 8) = v10;
 		v8 = v10;
 		if ( v7 == *(int *)v6 )
 		{
-			v11 = (int)C_FUNC_001820();
+			v11 = (int)C_FUNC_001820_ArrayCreateNewElement();
 			*(int *)(v6 + 4) = v11;
 			*(int *)v11 = v7;
-			v12 = (int)C_FUNC_001820();
+			v12 = (int)C_FUNC_001820_ArrayCreateNewElement();
 			*(int *)(v6 + 12) = v12;
 			*(int *)v12 = (int)A10;
 		}
 		else
 		{
-			v13 = (int)C_FUNC_001820();
+			v13 = (int)C_FUNC_001820_ArrayCreateNewElement();
 			*(int *)(v6 + 4) = v13;
 			*(int *)v13 = (int)A10;
-			v14 = (int)C_FUNC_001820();
+			v14 = (int)C_FUNC_001820_ArrayCreateNewElement();
 			*(int *)(v6 + 12) = v14;
 			*(int *)v14 = v7;
 		}
-		*(int *)(v8 + 40) = C_FUNC_001521(*(int *)((int)A10 + 40) + *(int *)(v7 + 40), *(int*)(A18 * 4 + (int)DATA_007840));
-		*(int *)(v8 + 44) = C_FUNC_001521(*(int *)((int)A10 + 44) + *(int *)(v7 + 44), *(int*)(A18 * 4 + (int)DATA_007840));
-		*(int *)(v8 + 48) = C_FUNC_001521(*(int *)((int)A10 + 48) + *(int *)(v7 + 48), *(int*)(A18 * 4 + (int)DATA_007840));
+		*(int *)(v8 + 40) = C_FUNC_001521_MulWithNormalize(*(int *)((int)A10 + 40) + *(int *)(v7 + 40), *(int*)(A18 * 4 + (int)DATA_007840));
+		*(int *)(v8 + 44) = C_FUNC_001521_MulWithNormalize(*(int *)((int)A10 + 44) + *(int *)(v7 + 44), *(int*)(A18 * 4 + (int)DATA_007840));
+		*(int *)(v8 + 48) = C_FUNC_001521_MulWithNormalize(*(int *)((int)A10 + 48) + *(int *)(v7 + 48), *(int*)(A18 * 4 + (int)DATA_007840));
 		v9 = *(int*)(A18 * 4 + (int)DATA_007839);
 		if ( A18 <= *(int *)(v7 + 68) || A18 <= *(int *)((int)A10 + 68) )
 		{
 			*(int *)(v8 + 60) = (*(int *)((int)A10 + 60) + *(int *)(v7 + 60)) >> 1;
-			*(int *)(v8 + 4) = ((*(int *)((int)A10 + 4) + *(int *)(v7 + 4)) >> 1) + C_FUNC_001521(*(int *)(v8 + 40), v9);
-			*(int *)(v8 + 8) = ((*(int *)((int)A10 + 8) + *(int *)(v7 + 8)) >> 1) + C_FUNC_001521(*(int *)(v8 + 44), v9);
+			*(int *)(v8 + 4) = ((*(int *)((int)A10 + 4) + *(int *)(v7 + 4)) >> 1) + C_FUNC_001521_MulWithNormalize(*(int *)(v8 + 40), v9);
+			*(int *)(v8 + 8) = ((*(int *)((int)A10 + 8) + *(int *)(v7 + 8)) >> 1) + C_FUNC_001521_MulWithNormalize(*(int *)(v8 + 44), v9);
 			*(int *)(v8 + 12) = ((*(int *)((int)A10 + 12) + *(int *)(v7 + 12)) >> 1)
-				+ C_FUNC_001521(*(int *)(v8 + 48), v9);
+				+ C_FUNC_001521_MulWithNormalize(*(int *)(v8 + 48), v9);
 			shiftCall = (char *(*)(int)) *(int*)(DATA_009282);
 			shiftCall((int)v8);
 		}
@@ -5352,7 +5175,7 @@ extern "C" int C_FUNC_001867(int* A8, ffeVertex* Ac, ffeVertex* A10, ffeVertex* 
 				shiftCall(v8);
 			}
 		}
-		C_FUNC_001829((ffeVertex*)v8);
+		C_FUNC_001829_GetTriangulateDepth((ffeVertex*)v8);
 	}
 	return 0;
 }
@@ -5389,7 +5212,7 @@ FUNC_001829:			; Pos = 62a34
 
 */
 
-extern "C" inline void C_FUNC_001829_2(ffeVertex* AN, ffeVertex* A8, ffeVertex* Ac, ffeVertex* A10)
+extern "C" inline void C_FUNC_001829_GetTriangulateDepth_2(ffeVertex* AN, ffeVertex* A8, ffeVertex* Ac, ffeVertex* A10)
 {
     int  esi;
     int  edi;
@@ -5397,6 +5220,7 @@ extern "C" inline void C_FUNC_001829_2(ffeVertex* AN, ffeVertex* A8, ffeVertex* 
 	int m_d_deep;
 	int opt_c;
 
+	C_FUNC_001829_GetTriangulateDepth(AN);
 	/*
 	int scaleFactor = (mod->Scale + mod->Scale2 - 8);
 	int radius=(mod->field_2C-1);
@@ -5417,7 +5241,7 @@ extern "C" inline void C_FUNC_001829_2(ffeVertex* AN, ffeVertex* A8, ffeVertex* 
 	edi = *(int*)DATA_009269;
 
 	if (currentModel==447 || currentModel==449) {
-		C_FUNC_001829(AN);
+		C_FUNC_001829_GetTriangulateDepth(AN);
 	} else {
 		if (esi<c_dist) {
 			edi = edi;
@@ -5443,7 +5267,7 @@ extern "C" inline void C_FUNC_001829_2(ffeVertex* AN, ffeVertex* A8, ffeVertex* 
 			edi = 1;
 		}
 		if (smart_optimizer) {
-			edi -= C_FUNC_001656_FindMSB(*(int*)DATA_009276)/2-opt_c;
+			edi -= C_FUNC_001656_FindMSB(*(int*)DATA_009276_ArraySize)/2-opt_c;
 		}
 		AN->z_2 = edi;
 		edi--;
@@ -5455,12 +5279,11 @@ extern "C" inline void C_FUNC_001829_2(ffeVertex* AN, ffeVertex* A8, ffeVertex* 
 
 
 
-extern "C" inline void C_FUNC_001829(ffeVertex* A8)
+extern "C" inline void C_FUNC_001829_GetTriangulateDepth(ffeVertex* A8)
 {
 	int  eax;
     int  esi;
     int  edi;
-	int c;
 
 	esi = A8->nz;
 

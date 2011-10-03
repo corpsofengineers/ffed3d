@@ -94,6 +94,19 @@ int RenderSystem::EndScene()
 	return hr;
 }
 
+void* RenderSystem::LockVertexBuffer(sVertexBuffer &vb,int vertexNum, int size,bool readonly)
+{
+	void *p=0;
+	assert(size>0);
+	vb.vb->Lock(vertexNum*vb.vertexSize,size,&p,(readonly?D3DLOCK_READONLY:0));
+	return p;
+}
+
+void RenderSystem::UnlockVertexBuffer(sVertexBuffer &vb)
+{
+	vb.vb->Unlock();
+}
+
 HRESULT RenderSystem::SetRenderState(D3DRENDERSTATETYPE State,DWORD Value)
 {
 	if(renderStates[State]!=Value) 

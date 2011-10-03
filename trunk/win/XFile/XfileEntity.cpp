@@ -2,16 +2,18 @@
 #include "Utility.h"
 #include "MeshHierarchy.h"
 #include "../Macros.h"
+#include "../Render/RenderSystem.h"
 
 // The time to change from one animation set to another
 // To see how the merging works - increase this time value to slow it down
 const float kMoveTransitionTime=1.0f;
 
 // Constructor
-CXFileEntity::CXFileEntity(LPDIRECT3DDEVICE9 d3dDevice) : m_d3dDevice(d3dDevice),m_speedAdjust(1.0f),m_firstMesh(0),
+CXFileEntity::CXFileEntity() : m_speedAdjust(1.0f),m_firstMesh(0),
 	m_currentTrack(0),m_currentTime(0),m_numAnimationSets(0),m_currentAnimationSet(0),m_maxBones(0),m_sphereRadius(0),
 	m_sphereCentre(0,0,0),m_boneMatrices(0)
 {
+	m_d3dDevice = renderSystem->GetDevice();
 	effect=NULL;
 }
 
