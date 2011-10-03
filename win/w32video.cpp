@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <d3dx9.h>
 #include <sys/stat.h>
+#include <io.h>
 
 #include "../ffeapi.h"
 #include "../ffecfg.h"
@@ -620,7 +621,6 @@ CXFileEntity* atmoObj;
 LPDIRECT3DTEXTURE9 aviTex;
 LPDIRECT3DTEXTURE9 panelTex, battlepanel, navigatepanel, voidbutton;
 LPDIRECT3DTEXTURE9 panelIcons[4];
-LPDIRECT3DSURFACE9 texSurface, oldSurface;
 int panelnum=0;
 CXFileEntity* objectList[500];
 CXFileEntity* splineList[500];
@@ -730,51 +730,44 @@ void loadEffects() {
 			if ( FAILED(D3DXCreateEffectFromFileA(renderSystem->GetDevice(), (LPCSTR)buf, 0, 0, 0, 0, &effectList[i], &err))) {
 				effectList[i]=NULL;
 				if (err) {
-					MessageBox(0, (char*)err->GetBufferPointer(), 0, 0);
-					//CLEAR(err);
-					//data = new char[err->GetBufferSize()];
-					//memcpy( data, err->GetBufferPointer(), err->GetBufferSize() );
-					//printf(data);
+					char *tempString = (char*)err->GetBufferPointer();
+					if (tempString != NULL) {
+						printf("Modifier shader: %s",tempString);
+						MessageBox(0, tempString, 0, 0);
+					}
 				}
 			}
 	}
 }
 
-void loadDirectXModel() {
+CXFileEntity* LoadModel(const std::string &filename, CXFileEntity* obj)
+{
+	obj = NULL;
+	if (CUtility::DoesFileExist(CUtility::GetTheCurrentDirectory()+filename)) {
+		obj = new CXFileEntity();
+		if (!obj->LoadXFile(CUtility::GetTheCurrentDirectory()+filename,0)) {
+			SAFE_DELETE(obj);
+		}
+	}
+	return obj;
+}
+
+void loadModels() 
+{
 	char buf[1000];
 	CIniFile file;
 
-	panelObj = new CXFileEntity(renderSystem->GetDevice());
-	sprintf_s(buf,"/models/panel.x");
-	if (!panelObj->LoadXFile(CUtility::GetTheCurrentDirectory()+buf,0))
-		SAFE_DELETE(panelObj);
-
-	sphereObj = new CXFileEntity(renderSystem->GetDevice());
-	sprintf_s(buf,"/models/sphere.x");
-	if (!sphereObj->LoadXFile(CUtility::GetTheCurrentDirectory()+buf,0))
-		SAFE_DELETE(sphereObj);
-
-	atmoObj = new CXFileEntity(renderSystem->GetDevice());
-	sprintf_s(buf,"/models/atmo.x");
-	if (!atmoObj->LoadXFile(CUtility::GetTheCurrentDirectory()+buf,0))
-		SAFE_DELETE(atmoObj);
+	panelObj = LoadModel("/models/panel.x", panelObj);
+	sphereObj = LoadModel("/models/sphere.x", sphereObj);
+	atmoObj = LoadModel("/models/atmo.x", atmoObj);
 
 	for(int i=3;i<500;i++) {
 		sprintf_s(buf,"/models/%i/spline.x",i);
-		//splineList[i].Create(buf);
-		//make new
-		splineList[i] = new CXFileEntity(renderSystem->GetDevice());
-		//Load the new
-		if (!splineList[i]->LoadXFile(CUtility::GetTheCurrentDirectory()+buf,0))
-			SAFE_DELETE(splineList[i]);
-
+		splineList[i] = LoadModel(buf, splineList[i]);
+	
 		sprintf_s(buf,"/models/%i/model.x",i);
-		objectList[i] = new CXFileEntity(renderSystem->GetDevice());
-		if (objectList[i]->LoadXFile(CUtility::GetTheCurrentDirectory()+buf,0)) {			
-			if (i==38) {
-				//objectList[i]->ExportX(i);
-			}
-
+		objectList[i] = LoadModel(buf, objectList[i]);
+		if (objectList[i]) {			
 			sprintf_s(buf,"models\\%i\\tris.ini",i);
 			file.SetFileName (buf);
 			file.GetIntValue (modelconfig[i].skip,"MODEL", "skip");
@@ -830,8 +823,6 @@ void loadDirectXModel() {
 			sprintf_s(buf,"models\\%i\\tris.ini",i);
 			file.SetFileName (buf);
 			file.GetIntValue (modelconfig[i].skip,"MODEL", "skip");
-
-			SAFE_DELETE(objectList[i]);
 		}
 	}
 	
@@ -859,7 +850,7 @@ bool InitD3D(HWND hWnd)
 	textSprite->End();
 	renderSystem->EndScene();  
 
-	loadDirectXModel();
+	loadModels();
 
 	if (renderSystem->GetDevice()!=NULL)
 		renderSystem->GetDevice()->Clear(0,NULL,D3DCLEAR_TARGET|D3DCLEAR_ZBUFFER,D3DCOLOR_XRGB(0,0,0),1.0f,0);	
@@ -884,9 +875,6 @@ bool InitD3D(HWND hWnd)
 	loadEffects();
 
 	checkExport();
-
-	textSprite->End();
-	renderSystem->EndScene();    
 
 	if ((curheight-curwidth/1.6f)==0)
 		aspectfix=0;
@@ -1117,43 +1105,44 @@ extern float mPosZ;
 
 float xr, xg, xb;
 
-void setupLight(D3DXVECTOR3 lightPos, float r, float g, float b) {
+void setupLight(D3DXVECTOR3 lightPos, float r, float g, float b) 
+{
 
-xr=r;
-xg=g;
-xb=b;
+	xr=r;
+	xg=g;
+	xb=b;
 
-ZeroMemory(&d3dLight, sizeof(D3DLIGHT9));
+	ZeroMemory(&d3dLight, sizeof(D3DLIGHT9));
 
-d3dLight.Type = D3DLIGHT_POINT;
+	d3dLight.Type = D3DLIGHT_POINT;
 
-d3dLight.Diffuse.r = r;
-d3dLight.Diffuse.g = g;
-d3dLight.Diffuse.b = b;
+	d3dLight.Diffuse.r = r;
+	d3dLight.Diffuse.g = g;
+	d3dLight.Diffuse.b = b;
 
-d3dLight.Ambient.r = 0.0f;
-d3dLight.Ambient.g = 0.0f;
-d3dLight.Ambient.b = 0.0f;
+	d3dLight.Ambient.r = 0.0f;
+	d3dLight.Ambient.g = 0.0f;
+	d3dLight.Ambient.b = 0.0f;
 
-d3dLight.Specular.r = r;
-d3dLight.Specular.g = g;
-d3dLight.Specular.b = b;
+	d3dLight.Specular.r = r;
+	d3dLight.Specular.g = g;
+	d3dLight.Specular.b = b;
 
-d3dLight.Direction.x = 0;
-d3dLight.Direction.y = 0;
-d3dLight.Direction.z = 0;
+	d3dLight.Direction.x = 0;
+	d3dLight.Direction.y = 0;
+	d3dLight.Direction.z = 0;
 
-d3dLight.Position.x = lightPos.x;
-d3dLight.Position.y = lightPos.y;
-d3dLight.Position.z = lightPos.z;
+	d3dLight.Position.x = lightPos.x;
+	d3dLight.Position.y = lightPos.y;
+	d3dLight.Position.z = lightPos.z;
 
-d3dLight.Attenuation0 = 1.0f; 
-d3dLight.Attenuation1 = 0.0f; 
-d3dLight.Attenuation2 = 0.0f; 
-d3dLight.Range = 2147483647.0f;
+	d3dLight.Attenuation0 = 1.0f; 
+	d3dLight.Attenuation1 = 0.0f; 
+	d3dLight.Attenuation2 = 0.0f; 
+	d3dLight.Range = 2147483647.0f;
 
-renderSystem->GetDevice()->SetLight(0, &d3dLight);
-renderSystem->GetDevice()->LightEnable(0, TRUE);
+	renderSystem->GetDevice()->SetLight(0, &d3dLight);
+	renderSystem->GetDevice()->LightEnable(0, TRUE);
 }
 
 void setupModelLight(int num, D3DXVECTOR3 lightPos, float dist, float r, float g, float b, bool specular) {
@@ -1597,6 +1586,7 @@ bool panellight[20];
 
 void PreparePanel(void)
 {
+	LPDIRECT3DSURFACE9 texSurface, oldSurface, zSurface;
 	D3DXMATRIX mat;
 	char *instance;
 	Model_t *model;
@@ -1611,17 +1601,21 @@ void PreparePanel(void)
 		return;
 
 	renderSystem->SetRenderState(D3DRS_ZENABLE, false);
+	renderSystem->SetRenderState(D3DRS_ZWRITEENABLE, false);
 
+	renderSystem->GetDevice()->GetDepthStencilSurface(&zSurface);
 	renderSystem->GetDevice()->GetRenderTarget(0, &oldSurface);
 	panelTex->GetSurfaceLevel(0,&texSurface);
 	renderSystem->GetDevice()->SetRenderTarget(0, texSurface);
-	//doOrtoRT(1024, 1024);
+	renderSystem->GetDevice()->SetDepthStencilSurface(0);
+
+	doOrtoRT(1024, 1024);
 	D3DVIEWPORT9 viewport;
 
 	viewport.X = 0;
 	viewport.Y = 0;
-	viewport.Width = 1024;
-	viewport.Height = 1024; 
+	viewport.Width = 1024-1;
+	viewport.Height = 1024-1; 
 	viewport.MinZ = 0; 
 	viewport.MaxZ = 1; 
 	renderSystem->GetDevice()->SetViewport( &viewport ); 	
@@ -1679,7 +1673,7 @@ void PreparePanel(void)
 	textSprite->End();
 
 	renderSystem->GetDevice()->SetRenderTarget(0, oldSurface);
-
+	renderSystem->GetDevice()->SetDepthStencilSurface(zSurface);
 }
 
 
@@ -1790,10 +1784,9 @@ void Render()
 		renderSystem->GetDevice()->Clear(1,(D3DRECT *)&rect,D3DCLEAR_TARGET|D3DCLEAR_ZBUFFER,D3DCOLOR_XRGB(0,0,0),1.0f,0);	
 	}
 
+    renderSystem->BeginScene();
 
 	PreparePanel();
-
-    renderSystem->BeginScene();
 
 	//SetupPixelFog(0xffffff, D3DFOG_LINEAR);
 
@@ -2138,7 +2131,7 @@ void Render()
 			currModIndex=modelList[m].index;
 			D3DXMatrixInverse(&WorldInverse,NULL, &modelList[m].world);
 
-			if (Planet(modelList[m].index)==true || Rings(modelList[m].index)==true) {
+			if (Planet(currModIndex)==true || Rings(currModIndex)==true) {
 				doPerspectiveFar();
 			} else {
 				doPerspectiveNear();
@@ -2173,7 +2166,7 @@ void Render()
 			renderSystem->SetRenderState(D3DRS_LIGHTING, TRUE);
 			renderSystem->SetRenderState(D3DRS_ZWRITEENABLE, modelList[m].zwrite);
 			renderSystem->SetRenderState(D3DRS_ZENABLE, modelList[m].zenable);
-			renderSystem->SetRenderState(D3DRS_CULLMODE, modelList[modelList[m].index].cull);
+			renderSystem->SetRenderState(D3DRS_CULLMODE, modelList[m].cull);
 			selectMaterial(modelList[m].material, modelList[m].ambientR, modelList[m].ambientG, modelList[m].ambientB);
 			renderSystem->GetDevice()->SetMaterial(&m_matMaterial);
 
@@ -2190,8 +2183,8 @@ void Render()
 				selectMaterial(SPLINE, modelList[m].splineR, modelList[m].splineG, modelList[m].splineB);
 				renderSystem->GetDevice()->SetMaterial(&m_matMaterial);
 				renderSystem->GetDevice()->SetTexture(0, 0);
-				splineList[modelList[m].index]->FrameMove(0,0,&modelList[m].world);
-				splineList[modelList[m].index]->Render();
+				splineList[currModIndex]->FrameMove(0,0,&modelList[m].world);
+				splineList[currModIndex]->Render();
 				selectMaterial(modelList[m].material, modelList[m].ambientR, modelList[m].ambientG, modelList[m].ambientB);
 				renderSystem->GetDevice()->SetMaterial(&m_matMaterial);
 
@@ -2231,7 +2224,7 @@ void Render()
 				//find the time difference
 				QueryPerformanceCounter(&nowtime);
 				dtime = ((nowtime.QuadPart - starttime)/ticks);
-				if ((modelList[m].index > 14 && modelList[m].index < 70) || modelList[m].index==227 || modelList[m].index==234 || modelList[m].index==236) {
+				if ((currModIndex > 14 && currModIndex < 70) || currModIndex==227 || currModIndex==234 || currModIndex==236) {
 					if (modelList[m].landingGear>0 || objectList[modelList[m].index]->GetNumAnimationSets()==1) {
 						objectList[modelList[m].index]->SetAnimationSet(0);
 						if (modelList[m].index==227) {
@@ -2242,10 +2235,10 @@ void Render()
 						}
 						else
 							lG = (float)modelList[m].landingGear/65536*objectList[modelList[m].index]->GetAnimationSetLength(0);
-						objectList[modelList[m].index]->FrameMove(0, lG,&mdworld);
+						objectList[currModIndex]->FrameMove(0, lG,&mdworld);
 					} else {
-						objectList[modelList[m].index]->SetAnimationSet(1);
-						objectList[modelList[m].index]->FrameMove(1, dtime,&mdworld);
+						objectList[currModIndex]->SetAnimationSet(1);
+						objectList[currModIndex]->FrameMove(1, dtime,&mdworld);
 					}
 				} else {
 					objectList[modelList[m].index]->SetAnimationSet(0);
@@ -2257,20 +2250,24 @@ void Render()
 					effectList[currModIndex]->SetTexture("skin",skin[modelList[m].index][0]);
 				}
 				
-				objectList[modelList[m].index]->SetEffect(effectList[currModIndex]);
-				objectList[modelList[m].index]->Render();
+				objectList[currModIndex]->SetEffect(effectList[currModIndex]);
+				objectList[currModIndex]->Render();
+			} 
+			//else 
+			{
+
+				// Отрисовываем внутренние модели
+				doMatrixes(modelList[m].world);
+				if (effectList[currModIndex]) {
+					effectList[currModIndex]->SetMatrix("worldmat",&modelList[m].world);
+					effectList[currModIndex]->Begin(&pass,0);
+				}
+				drawModelPrimitives(modelList[m].vertStart, modelList[m].vertEnd);
+				if (effectList[currModIndex]) {
+					effectList[currModIndex]->End();
+				}
 			}
 
-			// Отрисовываем внутренние модели
-			doMatrixes(modelList[m].world);
-			if (effectList[currModIndex]) {
-				effectList[currModIndex]->SetMatrix("worldmat",&modelList[m].world);
-				effectList[currModIndex]->Begin(&pass,0);
-			}
-			drawModelPrimitives(modelList[m].vertStart, modelList[m].vertEnd);
-			if (effectList[currModIndex]) {
-				effectList[currModIndex]->End();
-			}
 			if (modelList[m].zclear==true)
 				renderSystem->GetDevice()->Clear(0,NULL,D3DCLEAR_ZBUFFER,D3DCOLOR_XRGB(0,0,0),1.0f,0);	
 			for(int ii=0;ii<10 && !modelList[m].subObject;ii++) {

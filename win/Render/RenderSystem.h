@@ -52,16 +52,9 @@ public:
 	int GetSizeFromDeclaration(IDirect3DVertexDeclaration9* declaration);
 	static void RegisterVertexDeclaration(IDirect3DVertexDeclaration9*& declaration, D3DVERTEXELEMENT9* elements);
 
-	void* LockVertexBuffer(sVertexBuffer &vb,int vertexNum=0, int size=0,bool readonly=false)
-	{
-		void *p=0;
-		vb.vb->Lock(vertexNum*vb.vertexSize,size,&p,(readonly?D3DLOCK_READONLY:0));
-		return p;
-	}
-	void UnlockVertexBuffer(sVertexBuffer &vb)
-	{
-		vb.vb->Unlock();
-	}
+	void* RenderSystem::LockVertexBuffer(sVertexBuffer &vb,int vertexNum=0, int size=0,bool readonly=false);
+	void RenderSystem::UnlockVertexBuffer(sVertexBuffer &vb);
+
 	LPDIRECT3DDEVICE9 GetDevice(){return lpD3DDevice;}
 protected:
 	LPDIRECT3D9					lpD3D;

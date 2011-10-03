@@ -53,7 +53,7 @@ private:
 	void SetupBoneMatrices(D3DXFRAME_EXTENDED *pFrame, LPD3DXMATRIX pParentMatrix);	
 public:
 
-	CXFileEntity(LPDIRECT3DDEVICE9 d3dDevice);
+	CXFileEntity(void);
 	~CXFileEntity(void);
 
 	bool LoadXFile(const std::string &filename,int startAnimation);
