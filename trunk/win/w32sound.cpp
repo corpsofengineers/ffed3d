@@ -223,12 +223,12 @@ void DMStopSong()
 
 int DMSongDone()
 {
-	HRESULT result;
+	//HRESULT result;
 	//if (!pDMSegment) return 1;
 	if (timeout > TimerGetTimeStamp()) return 0;
 
 	//result = pDMPerf->IsPlaying (pDMSegment, NULL);
-	if (result == S_OK) return 0;
+	//if (result == S_OK) return 0;
 	DMStopSong ();
 	return 1;
 }
