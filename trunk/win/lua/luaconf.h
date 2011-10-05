@@ -399,8 +399,8 @@
 
 
 /*
-@@ LUAI_UINT32 is an unsigned integer with at least 32 bits.
-@@ LUAI_INT32 is an signed integer with at least 32 bits.
+@@ LUAI_Uint is an unsigned integer with at least 32 bits.
+@@ LUAI_int is an signed integer with at least 32 bits.
 @@ LUAI_UMEM is an unsigned integer big enough to count the total
 @* memory used by Lua.
 @@ LUAI_MEM is a signed integer big enough to count the total memory
@@ -411,16 +411,16 @@
 ** longs.) Probably you do not need to change this.
 */
 #if LUAI_BITSINT >= 32
-#define LUAI_UINT32	unsigned int
-#define LUAI_INT32	int
-#define LUAI_MAXINT32	INT_MAX
+#define LUAI_Uint	unsigned int
+#define LUAI_int	int
+#define LUAI_MAXint	INT_MAX
 #define LUAI_UMEM	size_t
 #define LUAI_MEM	ptrdiff_t
 #else
 /* 16-bit ints */
-#define LUAI_UINT32	unsigned long
-#define LUAI_INT32	long
-#define LUAI_MAXINT32	LONG_MAX
+#define LUAI_Uint	unsigned long
+#define LUAI_int	long
+#define LUAI_MAXint	LONG_MAX
 #define LUAI_UMEM	unsigned long
 #define LUAI_MEM	long
 #endif
