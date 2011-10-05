@@ -212,27 +212,27 @@ else fprintf (pLog, "\tType: User softsynth\n");
 
 	return 1;
 }
-
+*/
 void DMStopSong()
 {
-	if (!pDMSegment) return;
-	pDMPerf->Stop (NULL, NULL, 0, 0);
-	pDMSegment->Release();
-	pDMSegment = NULL;
+	//if (!pDMSegment) return;
+	//pDMPerf->Stop (NULL, NULL, 0, 0);
+	//pDMSegment->Release();
+	//pDMSegment = NULL;
 }
 
 int DMSongDone()
 {
 	HRESULT result;
-	if (!pDMSegment) return 1;
+	//if (!pDMSegment) return 1;
 	if (timeout > TimerGetTimeStamp()) return 0;
 
-	result = pDMPerf->IsPlaying (pDMSegment, NULL);
+	//result = pDMPerf->IsPlaying (pDMSegment, NULL);
 	if (result == S_OK) return 0;
 	DMStopSong ();
 	return 1;
 }
-*/
+
 
 extern "C" void *load_hmp (void *buf, unsigned long insize, unsigned long *outsize);
 
@@ -399,7 +399,8 @@ extern "C" void SoundPlaySong (long index)
 	char pBuf[256], pBuf2[255], pBuf3[255];
 	int rval;
 
-	//if (pDMusic) { DMPlaySong (index); return; }
+	//if (pDMusic) 
+		{ DMPlaySong (index); return; }
 
 	MCI_OPEN_PARMS mciOpenParms;
 	MCI_PLAY_PARMS mciPlayParms;
@@ -437,7 +438,8 @@ extern "C" void SoundStopSong (void)
 {
 	BASS_ChannelStop(music_chan);
 
-	//if (pDMusic) { DMStopSong (); return; }
+	//if (pDMusic) 
+		{ DMStopSong (); return; }
 
 	if (midiDeviceID == -1) return;
 	mciSendCommand (midiDeviceID, MCI_CLOSE, MCI_WAIT, NULL);
@@ -449,7 +451,8 @@ extern "C" long SoundSongDone (void)
 
 	MCI_STATUS_PARMS mciStatusParms;
 
-	//if (pDMusic) { return DMSongDone (); }
+	//if (pDMusic) 
+		{ return DMSongDone (); }
 
 	if (midiDeviceID == -1) return 1;
 	mciStatusParms.dwItem = MCI_STATUS_MODE;
