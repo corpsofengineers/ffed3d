@@ -106,58 +106,42 @@ HRESULT CMeshHierarchy::CreateMeshContainer(
 	meshData->pMesh->GetDevice(&pd3dDevice);
 
 
-// -----------------------------------------------------------------------------
-LPD3DXMESH pMeshSysMem2 = NULL;
+	D3DVERTEXELEMENT9 decl[MAX_FVF_DECL_SIZE];
+	meshData->pMesh->GetDeclaration(decl);
 
-// dcl_position 
-// dcl_normal
-// dcl_texcoord
-// dcl_tangent
+	HRESULT res;
 
-D3DVERTEXELEMENT9 decl[]=
-{
-//stream, offset, type, method, semantic type
-{0,0, D3DDECLTYPE_FLOAT3,D3DDECLMETHOD_DEFAULT,D3DDECLUSAGE_POSITION,0},
-{0,12,D3DDECLTYPE_FLOAT3,D3DDECLMETHOD_DEFAULT,D3DDECLUSAGE_NORMAL,  0},
-{0,24,D3DDECLTYPE_FLOAT3,D3DDECLMETHOD_DEFAULT,D3DDECLUSAGE_TEXCOORD,0},
-{0,36,D3DDECLTYPE_FLOAT3,D3DDECLMETHOD_DEFAULT,D3DDECLUSAGE_TANGENT, 0},
-D3DDECL_END()
-};
+	DWORD dwVertexStride = meshData->pMesh->GetNumBytesPerVertex ();
+	DWORD dwNumDeclarations = 0;
 
-//m_pd3dDevice->CreateVertexDeclaration(decl,&m_pDecl);
+	for (int i=0; (i < MAX_FVF_DECL_SIZE) && (decl[i].Stream != 0xFF); i++)	{
+		if (decl[dwNumDeclarations].Usage == D3DDECLUSAGE_TANGENT) {
+			dwNumDeclarations = 0;
+			break;
+		}
+		dwNumDeclarations++;
+	}
 
-// Clone SysMesh #1 into SesMesh #2.
-meshData->pMesh->CloneMesh(D3DXMESH_MANAGED,decl,pd3dDevice,&pMeshSysMem2); 
+	if (dwNumDeclarations) {
+		// tangent	
+		decl[dwNumDeclarations].Stream = 0;	
+		decl[dwNumDeclarations].Offset = (WORD)dwVertexStride;	
+		decl[dwNumDeclarations].Type = D3DDECLTYPE_FLOAT3;	
+		decl[dwNumDeclarations].Method = D3DDECLMETHOD_DEFAULT;	
+		decl[dwNumDeclarations].Usage = D3DDECLUSAGE_TANGENT;	
+		decl[dwNumDeclarations].UsageIndex = 0;	
 
-//D3DXComputeNormals(pMeshSysMem2,NULL); // compute the normals
-D3DXComputeTangent(pMeshSysMem2,0,0,0,TRUE,NULL); // compute tangent(u)
-                                                  // and later binormal (v)
+		// ending element	
+		memset (&decl[dwNumDeclarations + 1], 0, sizeof(D3DVERTEXELEMENT9));	
+		decl[dwNumDeclarations + 1].Stream = 0xFF;	
+		decl[dwNumDeclarations + 1].Type = D3DDECLTYPE_UNUSED;
+	}
 
-// New vertex declaration
-// dcl_position 
-// dcl_normal
-// dcl_texcoord
-// dcl_tangent
+	res = meshData->pMesh->CloneMesh(meshData->pMesh->GetOptions(),decl,pd3dDevice,&newMeshContainer->MeshData.pMesh); 
+	assert(res == D3D_OK);
 
-D3DVERTEXELEMENT9 decl2[]=
-{
-{0,0, D3DDECLTYPE_FLOAT3,D3DDECLMETHOD_DEFAULT,D3DDECLUSAGE_POSITION,0},
-{0,12,D3DDECLTYPE_FLOAT3,D3DDECLMETHOD_DEFAULT,D3DDECLUSAGE_NORMAL,   0},
-{0,24,D3DDECLTYPE_FLOAT3,D3DDECLMETHOD_DEFAULT,D3DDECLUSAGE_TEXCOORD, 0},
-{0,36,D3DDECLTYPE_FLOAT3,D3DDECLMETHOD_DEFAULT,D3DDECLUSAGE_TANGENT,  0},
-D3DDECL_END()
-};
-
-// Clone SysMesh into ResultMesh.
-pMeshSysMem2->CloneMesh(D3DXMESH_MANAGED,decl2,pd3dDevice,&newMeshContainer->MeshData.pMesh); 
-    
-//delete(pMeshSysMem2);pMeshSysMem2 = NULL;
-// -----------------------------------------------------------------------------
-
-//  if(FAILED(h))
-//     {
-//      MessageBox(0, "D3DXComputeTangentFrame failed", 0, 0);
-//     }
+	res = D3DXComputeTangent(newMeshContainer->MeshData.pMesh,0,0,1,TRUE,NULL); // compute tangent(u)                                       
+	assert(res == D3D_OK);
 
 	//newMeshContainer->MeshData.pMesh=meshData->pMesh;
 	newMeshContainer->MeshData.pMesh->AddRef();
