@@ -14,14 +14,8 @@
     <Filter Include="Source Files\win\Render">
       <UniqueIdentifier>{708a9955-5f4d-43a0-a7be-bc4749aed52e}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\win\CModel">
-      <UniqueIdentifier>{ef16ebaf-9dcf-4eeb-8f2b-474f56f91f4a}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\win\lua">
       <UniqueIdentifier>{b89b131b-9cbe-4c87-a6cb-c7c6dff7efc0}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Source Files\win\Object3D">
-      <UniqueIdentifier>{09ccac9d-4861-4c63-bdca-97f4dd2f1d5a}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source Files\win\Xfile">
       <UniqueIdentifier>{15241b44-3e4d-42d2-9c68-93a954978f73}</UniqueIdentifier>
@@ -77,18 +71,6 @@
     <ClInclude Include="win\Render\VertexFormat.h">
       <Filter>Source Files\win\Render</Filter>
     </ClInclude>
-    <ClInclude Include="win\CModel\CAllocateHierarchy.h">
-      <Filter>Source Files\win\CModel</Filter>
-    </ClInclude>
-    <ClInclude Include="win\CModel\CModel.h">
-      <Filter>Source Files\win\CModel</Filter>
-    </ClInclude>
-    <ClInclude Include="win\CModel\DerivedStructs.h">
-      <Filter>Source Files\win\CModel</Filter>
-    </ClInclude>
-    <ClInclude Include="win\CModel\Macros.h">
-      <Filter>Source Files\win\CModel</Filter>
-    </ClInclude>
     <ClInclude Include="win\lua\lauxlib.h">
       <Filter>Source Files\win\lua</Filter>
     </ClInclude>
@@ -103,12 +85,6 @@
     </ClInclude>
     <ClInclude Include="win\lua\lualib.h">
       <Filter>Source Files\win\lua</Filter>
-    </ClInclude>
-    <ClInclude Include="win\Object3D\Defines.h">
-      <Filter>Source Files\win\Object3D</Filter>
-    </ClInclude>
-    <ClInclude Include="win\Object3D\Object3D.h">
-      <Filter>Source Files\win\Object3D</Filter>
     </ClInclude>
     <ClInclude Include="win\XFile\MeshHierarchy.h">
       <Filter>Source Files\win\Xfile</Filter>
@@ -168,15 +144,6 @@
     </ClCompile>
     <ClCompile Include="win\Render\VertexDeclaration.cpp">
       <Filter>Source Files\win\Render</Filter>
-    </ClCompile>
-    <ClCompile Include="win\CModel\CAllocateHierarchy.cpp">
-      <Filter>Source Files\win\CModel</Filter>
-    </ClCompile>
-    <ClCompile Include="win\CModel\CModel.cpp">
-      <Filter>Source Files\win\CModel</Filter>
-    </ClCompile>
-    <ClCompile Include="win\Object3D\Object3D.cpp">
-      <Filter>Source Files\win\Object3D</Filter>
     </ClCompile>
     <ClCompile Include="win\XFile\MeshHierarchy.cpp">
       <Filter>Source Files\win\Xfile</Filter>

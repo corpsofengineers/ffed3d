@@ -147,9 +147,9 @@ char *Commands[256] = {
 	"KEY_APOSTROPHE", "KEY_GRAVE", "KEY_LSHIFT", "KEY_BACKSLASH", "Ship_PitchUp", "Ship_Catapult", "Ship_Decoys", "KEY_V",
 	"Ship_EnergyBomb", "Ship_LandTarget", "Ship_launchMissile", "Ship_RollLef", "Ship_RollRight", "Ship_HyperCloudAnalysis", "Ship_Inhibition", "KEY_MULTIPLY",
 	"KEY_LMENU", "Ship_Fire", "KEY_CAPITAL", "Int_SwitchView", "Int_ShowShipInfo", "Int_StarMap", "Int_Comm", "Ship_SwitchTobMode",
-	"KEY_F6", "KEY_F7", "KEY_F8", "KEY_F9", "KEY_F1""", "KEY_NUMLOCK", "KEY_SCROLL", "Eng_StrafeLeft",
+	"KEY_F6", "KEY_F7", "KEY_F8", "KEY_F9", "KEY_F10", "KEY_NUMLOCK", "KEY_SCROLL", "Eng_StrafeLeft",
 	"Eng_Main", "Eng_StrafeRight", "KEY_SUBTRACT", "KEY_NUMPAD4", "Eng_Retro", "KEY_NUMPAD6", "KEY_ADD", "KEY_NUMPAD1",
-	"KEY_NUMPAD2", "KEY_NUMPAD3", "KEY_NUMPAD0", "KEY_DECIMAL", "", "", "", "KEY_F11,"
+	"KEY_NUMPAD2", "KEY_NUMPAD3", "KEY_NUMPAD0", "KEY_DECIMAL", "", "", "", "KEY_F11",
 	"KEY_F12", "", "", "", "", "", "", "",
 	"", "", "", "", "", "", "", "",			// ""x6""-""x67
 	"", "", "", "", "", "", "", "",			// ""x68-""x6f
@@ -183,9 +183,9 @@ char *keyTOdig [256] =
 	"KEY_APOSTROPHE", "KEY_GRAVE", "KEY_LSHIFT", "KEY_BACKSLASH", "KEY_Z", "KEY_X", "KEY_C", "KEY_V",
 	"KEY_B", "KEY_N", "KEY_M", "KEY_COMMA", "KEY_PERIOD", "KEY_SLASH", "KEY_RSHIFT", "KEY_MULTIPLY",
 	"KEY_LMENU", "KEY_SPACE", "KEY_CAPITAL", "KEY_F1", "KEY_F2", "KEY_F3", "KEY_F4", "KEY_F5",
-	"KEY_F6", "KEY_F7", "KEY_F8", "KEY_F9", "KEY_F1""", "KEY_NUMLOCK", "KEY_SCROLL", "KEY_NUMPAD7",
+	"KEY_F6", "KEY_F7", "KEY_F8", "KEY_F9", "KEY_F10", "KEY_NUMLOCK", "KEY_SCROLL", "KEY_NUMPAD7",
 	"KEY_NUMPAD8", "KEY_NUMPAD9", "KEY_SUBTRACT", "KEY_NUMPAD4", "KEY_NUMPAD5", "KEY_NUMPAD6", "KEY_ADD", "KEY_NUMPAD1",
-	"KEY_NUMPAD2", "KEY_NUMPAD3", "KEY_NUMPAD0", "KEY_DECIMAL", "", "", "", "KEY_F11,"
+	"KEY_NUMPAD2", "KEY_NUMPAD3", "KEY_NUMPAD0", "KEY_DECIMAL", "", "", "", "KEY_F11",
 	"KEY_F12", "", "", "", "", "", "", "",
 	"", "", "", "", "", "", "", "",			// ""x6""-""x67
 	"", "", "", "", "", "", "", "",			// ""x68-""x6f
