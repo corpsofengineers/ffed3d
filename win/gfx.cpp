@@ -10,8 +10,6 @@
 #include "../ffecfg.h"
 #include "win32api.h"
 #include "ffe3d.h"
-#include "md2/md2model.h"
-#include "Object3D/Object3D.h"
 #include "Xfile/XFileEntity.h"
 #include "Render/RenderSystem.h"
 #include <GL/glu.h>

@@ -186,17 +186,11 @@
     <ClInclude Include="win\ini\INI.H" />
     <ClInclude Include="win\Render\RenderSystem.h" />
     <ClInclude Include="win\Render\VertexFormat.h" />
-    <ClInclude Include="win\CModel\CAllocateHierarchy.h" />
-    <ClInclude Include="win\CModel\CModel.h" />
-    <ClInclude Include="win\CModel\DerivedStructs.h" />
-    <ClInclude Include="win\CModel\Macros.h" />
     <ClInclude Include="win\lua\lauxlib.h" />
     <ClInclude Include="win\lua\lua.h" />
     <ClInclude Include="win\lua\lua.hpp" />
     <ClInclude Include="win\lua\luaconf.h" />
     <ClInclude Include="win\lua\lualib.h" />
-    <ClInclude Include="win\Object3D\Defines.h" />
-    <ClInclude Include="win\Object3D\Object3D.h" />
     <ClInclude Include="win\XFile\MeshHierarchy.h" />
     <ClInclude Include="win\XFile\MeshStructures.h" />
     <ClInclude Include="win\XFile\Utility.h" />
@@ -259,9 +253,6 @@
     </ClCompile>
     <ClCompile Include="win\Render\RenderSystem.cpp" />
     <ClCompile Include="win\Render\VertexDeclaration.cpp" />
-    <ClCompile Include="win\CModel\CAllocateHierarchy.cpp" />
-    <ClCompile Include="win\CModel\CModel.cpp" />
-    <ClCompile Include="win\Object3D\Object3D.cpp" />
     <ClCompile Include="win\XFile\MeshHierarchy.cpp" />
     <ClCompile Include="win\XFile\Utility.cpp" />
     <ClCompile Include="win\XFile\XfileEntity.cpp" />
