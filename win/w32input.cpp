@@ -102,7 +102,8 @@ extern "C" void InputMouseReadMickeys (long *pXMick, long *pYMick)
 }
 
 
-unsigned char pKeybConvTable[256] = {
+unsigned char pKeybConvTable[256];
+unsigned char pKeybConvTableDef[256] = {
 	0, DIK_ESCAPE, DIK_1, DIK_2, DIK_3, DIK_4, DIK_5, DIK_6, 
 	DIK_7, DIK_8, DIK_9, DIK_0, DIK_MINUS, DIK_EQUALS, DIK_BACK, DIK_TAB,
 	DIK_Q, DIK_W, DIK_E, DIK_R, DIK_T, DIK_Y, DIK_U, DIK_I,
@@ -137,6 +138,76 @@ unsigned char pKeybConvTable[256] = {
 	0, 0, 0, 0, 0, 0, 0, 0,			// 0xf8-0xff
 };
 
+char *Commands[256] = {
+	"", "Int_Pause", "KEY_1", "KEY_2", "KEY_3", "KEY_4", "KEY_5", "KEY_6", 
+	"KEY_7", "KEY_8", "KEY_9", "KEY_0", "KEY_MINUS", "KEY_EQUALS", "KEY_BACK", "Ship_EngineControl",
+	"KEY_Q", "KEY_W", "KEY_E", "Map_ShowSystemScheme", "Ship_Target", "KEY_Y","Ship_Gear", "KEY_I",
+	"KEY_O", "KEY_P", "Ship_YawLeft", "Ship_YawRight", "Ship_Acceleration", "KEY_LCONTROL", "Ship_PitchDown", "KEY_S",
+	"Ship_MiningCraft", "KEY_F", "KEY_G", "Ship_HyperJump", "KEY_J", "KEY_K", "Int_ShowMarkers", "KEY_SEMICOLON",
+	"KEY_APOSTROPHE", "KEY_GRAVE", "KEY_LSHIFT", "KEY_BACKSLASH", "Ship_PitchUp", "Ship_Catapult", "Ship_Decoys", "KEY_V",
+	"Ship_EnergyBomb", "Ship_LandTarget", "Ship_launchMissile", "Ship_RollLef", "Ship_RollRight", "Ship_HyperCloudAnalysis", "Ship_Inhibition", "KEY_MULTIPLY",
+	"KEY_LMENU", "Ship_Fire", "KEY_CAPITAL", "Int_SwitchView", "Int_ShowShipInfo", "Int_StarMap", "Int_Comm", "Ship_SwitchTobMode",
+	"KEY_F6", "KEY_F7", "KEY_F8", "KEY_F9", "KEY_F1""", "KEY_NUMLOCK", "KEY_SCROLL", "Eng_StrafeLeft",
+	"Eng_Main", "Eng_StrafeRight", "KEY_SUBTRACT", "KEY_NUMPAD4", "Eng_Retro", "KEY_NUMPAD6", "KEY_ADD", "KEY_NUMPAD1",
+	"KEY_NUMPAD2", "KEY_NUMPAD3", "KEY_NUMPAD0", "KEY_DECIMAL", "", "", "", "KEY_F11,"
+	"KEY_F12", "", "", "", "", "", "", "",
+	"", "", "", "", "", "", "", "",			// ""x6""-""x67
+	"", "", "", "", "", "", "", "",			// ""x68-""x6f
+	"", "", "", "", "", "", "", "",			// ""x7""-""x77
+	"", "", "", "", "", "", "", "",			// ""x78-""x7f
+	"", "", "", "", "", "", "", "",			// ""x8""-""x87
+	"", "", "", "", "", "", "", "",			// ""x88-""x8f
+	"", "", "", "", "", "", "", "",			// ""x9""-""x97
+	"", "", "", "", "KEY_NUMPADENTER", "KEY_RCONTROL", "", "",			// ""x98-""x9f
+	"", "", "", "", "", "", "", "",			// ""xa""-""xa7
+	"", "", "", "", "", "", "", "",			// ""xa8-""xaf
+	"", "", "", "", "", "KEY_DIVIDE", "", "KEY_SYSRQ",			// ""xb""-""xb7
+	"KEY_RMENU", "", "", "", "", "", "", "",			// ""xb8-""xbf
+	"", "", "", "", "", "", "", "KEY_HOME",			// ""xc""-""xc7
+	"KEY_UP", "Int_MessageUp", "", "KEY_LEFT", "", "KEY_RIGHT", "", "KEY_END",			// ""xc8-""xcf
+	"KEY_DOWN", "Int_MessageDown", "KEY_INSERT", "KEY_DELETE", "", "", "", "",			// ""xd""-""xd7
+	"", "", "", "KEY_LWIN", "KEY_RWIN", "KEY_APPS", "", "",			// ""xd8-""xdf
+	"", "", "", "", "", "", "", "",			// ""xe""-""xe7
+	"", "", "", "", "", "", "", "",			// ""xe8-""xef
+	"", "", "", "", "", "", "", "",			// ""xf""-""xf7
+	"", "", "", "", "", "", "", ""			// ""xf8-""xff
+};
+
+char *keyTOdig [256] = 
+{
+	"", "KEY_ESCAPE", "KEY_1", "KEY_2", "KEY_3", "KEY_4", "KEY_5", "KEY_6", 
+	"KEY_7", "KEY_8", "KEY_9", "KEY_0", "KEY_MINUS", "KEY_EQUALS", "KEY_BACK", "KEY_TAB",
+	"KEY_Q", "KEY_W", "KEY_E", "KEY_R", "KEY_T", "KEY_Y","KEY_U", "KEY_I",
+	"KEY_O", "KEY_P", "KEY_LBRACKET", "KEY_RBRACKET", "KEY_RETURN", "KEY_LCONTROL", "KEY_A", "KEY_S",
+	"KEY_D", "KEY_F", "KEY_G", "KEY_H", "KEY_J", "KEY_K", "KEY_L", "KEY_SEMICOLON",
+	"KEY_APOSTROPHE", "KEY_GRAVE", "KEY_LSHIFT", "KEY_BACKSLASH", "KEY_Z", "KEY_X", "KEY_C", "KEY_V",
+	"KEY_B", "KEY_N", "KEY_M", "KEY_COMMA", "KEY_PERIOD", "KEY_SLASH", "KEY_RSHIFT", "KEY_MULTIPLY",
+	"KEY_LMENU", "KEY_SPACE", "KEY_CAPITAL", "KEY_F1", "KEY_F2", "KEY_F3", "KEY_F4", "KEY_F5",
+	"KEY_F6", "KEY_F7", "KEY_F8", "KEY_F9", "KEY_F1""", "KEY_NUMLOCK", "KEY_SCROLL", "KEY_NUMPAD7",
+	"KEY_NUMPAD8", "KEY_NUMPAD9", "KEY_SUBTRACT", "KEY_NUMPAD4", "KEY_NUMPAD5", "KEY_NUMPAD6", "KEY_ADD", "KEY_NUMPAD1",
+	"KEY_NUMPAD2", "KEY_NUMPAD3", "KEY_NUMPAD0", "KEY_DECIMAL", "", "", "", "KEY_F11,"
+	"KEY_F12", "", "", "", "", "", "", "",
+	"", "", "", "", "", "", "", "",			// ""x6""-""x67
+	"", "", "", "", "", "", "", "",			// ""x68-""x6f
+	"", "", "", "", "", "", "", "",			// ""x7""-""x77
+	"", "", "", "", "", "", "", "",			// ""x78-""x7f
+	"", "", "", "", "", "", "", "",			// ""x8""-""x87
+	"", "", "", "", "", "", "", "",			// ""x88-""x8f
+	"", "", "", "", "", "", "", "",			// ""x9""-""x97
+	"", "", "", "", "KEY_NUMPADENTER", "KEY_RCONTROL", "", "",			// ""x98-""x9f
+	"", "", "", "", "", "", "", "",			// ""xa""-""xa7
+	"", "", "", "", "", "", "", "",			// ""xa8-""xaf
+	"", "", "", "", "", "KEY_DIVIDE", "", "KEY_SYSRQ",			// ""xb""-""xb7
+	"KEY_RMENU", "", "", "", "", "", "", "",			// ""xb8-""xbf
+	"", "", "", "", "", "", "", "KEY_HOME",			// ""xc""-""xc7
+	"KEY_UP", "KEY_PRIOR", "", "KEY_LEFT", "", "KEY_RIGHT", "", "KEY_END",			// ""xc8-""xcf
+	"KEY_DOWN", "KEY_NEXT", "KEY_INSERT", "KEY_DELETE", "", "", "", "",			// ""xd""-""xd7
+	"", "", "", "KEY_LWIN", "KEY_RWIN", "KEY_APPS", "", "",			// ""xd8-""xdf
+	"", "", "", "", "", "", "", "",			// ""xe""-""xe7
+	"", "", "", "", "", "", "", "",			// ""xe8-""xef
+	"", "", "", "", "", "", "", "",			// ""xf""-""xf7
+	"", "", "", "", "", "", "", ""			// ""xf8-""xff
+};
 
 
 static UCHAR pKeybStates[256];
@@ -199,6 +270,44 @@ static BOOL CALLBACK JoyEnumFunc (LPCDIDEVICEINSTANCE lpddi, LPVOID pGuid)
 	return DIENUM_STOP;
 }
 
+void KeyBinds (CfgStruct *cfg)
+{
+	bool bind = false;
+	char key[256];
+	char *tok;
+
+	CfgFindSection (cfg, "BINDS");
+
+	for (int i=0;i<256;i++)
+	{
+		
+		if (CfgGetKeyStr (cfg, Commands[i], key, 255) != 0)
+		{
+			tok = strtok (key, " \n\t");
+			strcpy (key, tok);
+			for (int kc=0;kc<256;kc++)
+			{
+
+				if (strcmp (keyTOdig[kc], key) == 0)
+				{
+					pKeybConvTable[i]=kc;
+					bind=true;
+					break;
+				}
+
+			}
+		}
+
+		if (!bind)
+		{
+			pKeybConvTable[i]=pKeybConvTableDef[i];
+		}
+		bind=false;
+	
+	}
+
+}
+
 void InputInit (void)
 {
 	int rval, i;
@@ -218,6 +327,9 @@ void InputInit (void)
 	CfgFindSection (&cfg, "KEYBOARD");
 	CfgGetKeyVal (&cfg, "repeatrate", &repeatrate);
 	CfgGetKeyVal (&cfg, "repeatdelay", &repeatdelay);
+
+	//Reading Key Binds
+	KeyBinds(&cfg);
 	CfgClose (&cfg);
 
 	if (pDIMouse == NULL) {
