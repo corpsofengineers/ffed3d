@@ -113,8 +113,11 @@ HRESULT CMeshHierarchy::CreateMeshContainer(
 
 	DWORD dwVertexStride = meshData->pMesh->GetNumBytesPerVertex ();
 	DWORD dwNumDeclarations = 0;
+	bool haveNormals = false;
 
 	for (int i=0; (i < MAX_FVF_DECL_SIZE) && (decl[i].Stream != 0xFF); i++)	{
+		if (decl[dwNumDeclarations].Usage == D3DDECLUSAGE_NORMAL) 
+			haveNormals = true;
 		if (decl[dwNumDeclarations].Usage == D3DDECLUSAGE_TANGENT) {
 			dwNumDeclarations = 0;
 			break;
@@ -123,22 +126,43 @@ HRESULT CMeshHierarchy::CreateMeshContainer(
 	}
 
 	if (dwNumDeclarations) {
+		if (!haveNormals) {
+			// normals	
+			decl[dwNumDeclarations].Stream = 0;	
+			decl[dwNumDeclarations].Offset = (WORD)dwVertexStride;	
+			decl[dwNumDeclarations].Type = D3DDECLTYPE_FLOAT3;	
+			decl[dwNumDeclarations].Method = D3DDECLMETHOD_DEFAULT;	
+			decl[dwNumDeclarations].Usage = D3DDECLUSAGE_NORMAL;	
+			decl[dwNumDeclarations].UsageIndex = 0;
+
+			dwVertexStride += sizeof(float)*3;
+			dwNumDeclarations++;
+
+		}
+
 		// tangent	
 		decl[dwNumDeclarations].Stream = 0;	
 		decl[dwNumDeclarations].Offset = (WORD)dwVertexStride;	
 		decl[dwNumDeclarations].Type = D3DDECLTYPE_FLOAT3;	
 		decl[dwNumDeclarations].Method = D3DDECLMETHOD_DEFAULT;	
 		decl[dwNumDeclarations].Usage = D3DDECLUSAGE_TANGENT;	
-		decl[dwNumDeclarations].UsageIndex = 0;	
+		decl[dwNumDeclarations].UsageIndex = 0;
+
+		dwNumDeclarations++;
 
 		// ending element	
-		memset (&decl[dwNumDeclarations + 1], 0, sizeof(D3DVERTEXELEMENT9));	
-		decl[dwNumDeclarations + 1].Stream = 0xFF;	
-		decl[dwNumDeclarations + 1].Type = D3DDECLTYPE_UNUSED;
+		memset (&decl[dwNumDeclarations], 0, sizeof(D3DVERTEXELEMENT9));	
+		decl[dwNumDeclarations].Stream = 0xFF;	
+		decl[dwNumDeclarations].Type = D3DDECLTYPE_UNUSED;
 	}
 
 	res = meshData->pMesh->CloneMesh(meshData->pMesh->GetOptions(),decl,pd3dDevice,&newMeshContainer->MeshData.pMesh); 
 	assert(res == D3D_OK);
+
+	if (!haveNormals) {
+		res = D3DXComputeNormals(newMeshContainer->MeshData.pMesh,newMeshContainer->pAdjacency); // compute normals                                      
+		assert(res == D3D_OK);
+	}
 
 	res = D3DXComputeTangent(newMeshContainer->MeshData.pMesh,0,0,1,TRUE,NULL); // compute tangent(u)                                       
 	assert(res == D3D_OK);
