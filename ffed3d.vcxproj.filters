@@ -37,6 +37,9 @@
       <UniqueIdentifier>{433717e6-8918-4ffc-906a-c0fa06a68130}</UniqueIdentifier>
       <Extensions>ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe</Extensions>
     </Filter>
+    <Filter Include="Source Files\win\logic">
+      <UniqueIdentifier>{afdc412f-d13e-4eb8-936d-31616dda0961}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="ffedat.asm">
@@ -122,12 +125,12 @@
     <ClInclude Include="Utils\xmath.h">
       <Filter>Source Files\win\Utils</Filter>
     </ClInclude>
+    <ClInclude Include="win\misc.h">
+      <Filter>Source Files\win\logic</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ffecfg.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ffemisc.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="hmp.cpp">
@@ -183,6 +186,24 @@
     </ClCompile>
     <ClCompile Include="win\XFile\XfileEntity.cpp">
       <Filter>Source Files\win\Xfile</Filter>
+    </ClCompile>
+    <ClCompile Include="win\bbs.cpp">
+      <Filter>Source Files\win\logic</Filter>
+    </ClCompile>
+    <ClCompile Include="win\market.cpp">
+      <Filter>Source Files\win\logic</Filter>
+    </ClCompile>
+    <ClCompile Include="win\missions.cpp">
+      <Filter>Source Files\win\logic</Filter>
+    </ClCompile>
+    <ClCompile Include="win\ships.cpp">
+      <Filter>Source Files\win\logic</Filter>
+    </ClCompile>
+    <ClCompile Include="win\sysgen.cpp">
+      <Filter>Source Files\win\logic</Filter>
+    </ClCompile>
+    <ClCompile Include="win\ffemisc.cpp">
+      <Filter>Source Files\win\logic</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

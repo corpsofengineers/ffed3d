@@ -17,9 +17,9 @@ void SpawnPirates(int pirateLevel, int bInitial)
 {/*
 	float piratePct, maxGroup, groupSize;
 	float playerCargoValue, avgPrice;
-	INT8 numPirates, numSpawned;
-	INT8 i, j;
-	INT32 numFreeSlots;
+	char numPirates, numSpawned;
+	char i, j;
+	int numFreeSlots;
 
 	numFreeSlots = GetNumFreeSlots();
 
@@ -71,7 +71,7 @@ void SpawnPirates(int pirateLevel, int bInitial)
 			groupSize = numPirates;
 
 		numSpawned = SpawnHostileGroup(groupSize, 0, 0, 0xa, 0xfb);
-		if (numSpawned < (INT8)groupSize)
+		if (numSpawned < (char)groupSize)
 			return;	// no more object handles
 
 		numPirates -= numSpawned;

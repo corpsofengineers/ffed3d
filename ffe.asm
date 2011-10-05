@@ -40,7 +40,7 @@ GLOBAL FUNC_000030
 GLOBAL FUNC_000031
 GLOBAL FUNC_000032
 GLOBAL FUNC_000033
-GLOBAL FUNC_000034
+GLOBAL _FUNC_000034_Unknown
 GLOBAL _FUNC_000035_GetSpecialShips
 GLOBAL FUNC_000036
 GLOBAL FUNC_000037
@@ -54,7 +54,7 @@ GLOBAL FUNC_000044
 GLOBAL FUNC_000045
 GLOBAL FUNC_000046
 GLOBAL FUNC_000047
-GLOBAL FUNC_000048
+GLOBAL _FUNC_000048_Unknown
 GLOBAL FUNC_000049
 GLOBAL FUNC_000050
 GLOBAL FUNC_000051
@@ -154,7 +154,7 @@ GLOBAL FUNC_000144
 GLOBAL FUNC_000145
 GLOBAL FUNC_000146
 GLOBAL FUNC_000147
-GLOBAL FUNC_000148
+GLOBAL _FUNC_000148_Unknown
 GLOBAL FUNC_000149
 GLOBAL FUNC_000150
 GLOBAL FUNC_000151
@@ -693,7 +693,7 @@ GLOBAL FUNC_000698
 GLOBAL _FUNC_000699_SpawnAuxTrader
 GLOBAL FUNC_000700
 GLOBAL FUNC_000701
-GLOBAL FUNC_000702
+GLOBAL _FUNC_000702_Unknown
 GLOBAL FUNC_000703
 GLOBAL FUNC_000704
 GLOBAL FUNC_000705
@@ -1679,6 +1679,13 @@ GLOBAL _BufferBlit
 GLOBAL _BufferMaskedBlit
 GLOBAL _BufferReverseBlit
 
+GLOBAL _FUNC_001907_SoundPlaySampleLogVol
+GLOBAL _FUNC_001908_SoundPlaySampleLinVol
+GLOBAL FUNC_ShipHit
+GLOBAL _GetStarRange
+GLOBAL _FUNC_GetSysGenParams
+GLOBAL _FUNC_000869_NoOverride
+
 GLOBAL _asmmain
 
 GLOBAL _FUNC_GraphNull
@@ -2032,7 +2039,46 @@ EXTERN _CfgGetKeyVal
 
 EXTERN _BlitClipWrapper
 
-
+; MODIFIED - added C functions
+EXTERN _DoShipDamage
+EXTERN _DebugBreak
+EXTERN _DoSpawnCargo
+EXTERN _AIChooseEquipment
+EXTERN _StringBreak
+EXTERN _GetShipWorth
+EXTERN _CanBribe
+EXTERN _MakeCargoString
+EXTERN _RegenerateHull
+EXTERN _AIGetMissileToFire
+EXTERN _RegenerateShields
+EXTERN _GetMarketItemData
+EXTERN _IsCloseToStarport
+EXTERN _SpawnPirates
+EXTERN _ShouldCatchSmuggler
+EXTERN _MilitaryBaseTick
+EXTERN _OnSystemInit
+EXTERN _ShouldAllowAcceleration
+EXTERN _ItemAtMaxStock
+EXTERN _SpawnAssassins
+EXTERN _GetTurningRate
+EXTERN _RefreshSystemData
+EXTERN _PushDoublePriceAds
+EXTERN _CreateSystemData
+EXTERN _ModifyEquipmentPrice
+EXTERN _GetPackageRankRequired
+EXTERN _RadarCargoDisplay
+EXTERN _GetBounty
+EXTERN _CreateMilitaryData
+EXTERN _FinishMissions
+EXTERN _SystemTick
+EXTERN _DoNukeDamage
+EXTERN _IsStarportLocked
+EXTERN _PlayerDocked
+EXTERN _Override_F869
+EXTERN _Override_F870
+EXTERN _Override_F871
+EXTERN _MilitaryBaseInit
+EXTERN _FillSystemData
 
 %include "ffedat.asm"
 
@@ -3242,7 +3288,7 @@ SECTION .text
 		push eax
 		mov eax,[ebp-0x4]
 		push eax
-		call _FUNC_000871_GetSystemDataExt2
+		call FUNC_000871
 		add esp,byte +0x1c
 		jmp JUMP_000309
 	JUMP_000286:			; Pos = 12018
@@ -3566,7 +3612,7 @@ SECTION .text
 		push eax
 		mov eax,[ebp-0x4]
 		push eax
-		call _FUNC_000870_GetSystemDataExt
+		call FUNC_000870
 		add esp,byte +0x14
 		mov eax,[ebp-0x1c]
 		mov [ebp-0x8],eax
@@ -3750,8 +3796,8 @@ FUNC_000033:			; Pos = 124c0
 		ret
 
 
-
-FUNC_000034:			; Pos = 124f8
+FUNC_000034:
+_FUNC_000034_Unknown:			; Pos = 124f8
 
 		push ebp
 		mov ebp,esp
@@ -4846,7 +4892,7 @@ SECTION .text
 		mov [ebp-0x14],eax
 		mov eax,[ebp-0x14]
 		push eax
-		call _FUNC_000772_AIShipSpawn
+		call FUNC_000772
 		pop ecx
 		mov [ebp-0x8],eax
 		cmp dword [ebp-0x8],byte +0x0
@@ -4888,6 +4934,7 @@ SECTION .text
 		call FUNC_000031
 		add esp,byte +0x8
 		mov [ebp-0x1c],eax
+		push byte +0x0	; not continuous
 		mov eax,[ebp-0x1c]
 		push eax
 		mov eax,[ebp-0x18]
@@ -4899,8 +4946,8 @@ SECTION .text
 		call near [DATA_007754]    ; FUNC_001532_GetModelInstancePtr
 		add esp,byte +0x8
 		push eax
-		call _FUNC_000953_TakeDamage
-		add esp,byte +0xc
+		call FUNC_000953
+		add esp,byte +0x10
 		jmp JUMP_000450
 	JUMP_000387:			; Pos = 13178
 		mov dword [ebp-0x70],0xffffffff
@@ -5658,6 +5705,7 @@ SECTION .text
 		mov [ebp-0x8],eax
 		cmp dword [ebp-0x8],byte +0x0
 		jz JUMP_000430
+		push dword 0x1
 		mov eax,[ebp-0x8]
 		push eax
 		mov eax,[ebp-0x14]
@@ -5706,9 +5754,10 @@ SECTION .text
 		push eax
 		lea eax,[ebp-0x4]
 		push eax
+		xor eax,eax
 		mov al,[ebp-0x18]
 		push eax
-		call _FUNC_000305_AddImperialRank
+		call F305_Wrapper
 		add esp,byte +0xc
 		jmp JUMP_000450
 	JUMP_000435:			; Pos = 13a38
@@ -5718,9 +5767,10 @@ SECTION .text
 		push eax
 		lea eax,[ebp-0x4]
 		push eax
+		xor eax,eax
 		mov al,[ebp-0x18]
 		push eax
-		call _FUNC_000304_AddFederalRank
+		call F304_Wrapper
 		add esp,byte +0xc
 		jmp JUMP_000450
 	JUMP_000436:			; Pos = 13a5b
@@ -6383,7 +6433,7 @@ FUNC_000047:			; Pos = 14018
 		ret
 
 
-
+_FUNC_000048_Unknown:
 FUNC_000048:			; Pos = 14070
 
 		push ebp
@@ -8672,9 +8722,10 @@ FUNC_000076:			; Pos = 15010
 		push byte -0x1
 		lea eax,[ebp+0xffffff64]
 		push eax
+		xor eax,eax
 		mov al,[ebp+0xffffff6b]
 		push eax
-		call _FUNC_000305_AddImperialRank
+		call F305_Wrapper
 		add esp,byte +0xc
 		lea eax,[ebp+0xffffeda4]
 		push eax
@@ -8732,7 +8783,7 @@ FUNC_000076:			; Pos = 15010
 		push eax
 		mov al,[ebp+0xffffff5b]
 		push eax
-		call _FUNC_000304_AddFederalRank
+		call F304_Wrapper
 		add esp,byte +0xc
 		lea eax,[ebp+0xffffed90]
 		push eax
@@ -15079,6 +15130,15 @@ FUNC_000144:			; Pos = 1934c
 		push ebp
 		mov ebp,esp
 		mov eax,[ebp+0x8]
+
+		; ANISO - rip out missions from the source if playing frontiersman 
+		cmp eax,19
+		jl .MissionsOK
+		cmp byte [_DATA_ExtendedUniverse],0x0
+		jz .MissionsOK
+		jmp short JUMP_001170
+	.MissionsOK:
+
 		mov eax,[eax*4+DATA_004892]
 		mov edx,[ebp+0xc]
 		mov eax,[eax+edx*4]
@@ -15157,7 +15217,7 @@ FUNC_000146:			; Pos = 193a8
 		ret
 
 
-
+; ANISO - called to bring player into the world
 FUNC_000147:			; Pos = 193f0
 
 		push ebp
@@ -15204,7 +15264,7 @@ FUNC_000147:			; Pos = 193f0
 		ret
 
 
-
+_FUNC_000148_Unknown:
 FUNC_000148:			; Pos = 19470
 
 		push ebp
@@ -16519,6 +16579,10 @@ FUNC_000185_SysMenuLoadCdrFile:			; Pos = 1a3c8
 		mov esi,[ebp+0x8]
 		mov edi,DATA_008804
 		mov eax,[esi+0x14]
+
+		xor ecx,ecx
+		mov [DATA_ConfiscatedAmount],ecx
+
 		cmp eax,[DATA_008670]
 		ja JUMP_001276
 		cmp eax,0x258
@@ -17299,10 +17363,12 @@ FUNC_000207_SysMenuUpdateAccel:			; Pos = 1ac38
 
 		push ebp
 		mov ebp,esp
+		;call _TimerCli
 		mov eax,[DATA_009012]
 		mov [DATA_007706],eax
 		mov eax,[DATA_009013]
 		mov [DATA_009123],eax
+		;call _TimerSti
 		pop ebp
 		ret
 
@@ -17319,11 +17385,7 @@ FUNC_000208_SysMenuProcessAccel:			; Pos = 1ac54
 		push ebx
 		push esi
 		xor esi,esi
-		test byte [DATA_008835],0x0
-		jz JUMP_001327
-		xor eax,eax
-		jmp JUMP_001339
-	JUMP_001327:			; Pos = 1ac6b
+		
 		call near [DATA_007672]    ; FUNC_001414_GuiGetLastAction
 		mov ebx,eax
 		test bl,bl
@@ -17369,6 +17431,19 @@ FUNC_000208_SysMenuProcessAccel:			; Pos = 1ac54
 		add eax,0xffffffca		; was ffffff3f
 		cmp eax,byte +0x4
 		ja near JUMP_001337
+
+		; ANISO - Added... see ffemisc.c
+		push eax
+		push eax
+		call _ShouldAllowAcceleration
+		pop ecx
+		test eax,eax
+		jnz JUMP_001327
+		pop eax
+		xor eax,eax
+		jmp JUMP_001339
+	JUMP_001327:			; Pos = 1ac6b
+		pop eax
 		jmp near [eax*4+DATA_000016]
 
 
@@ -18372,14 +18447,16 @@ FUNC_000218_SysMenuReset_Event0:			; Pos = 1b74c
 		push dword DATA_004916
 		call FUNC_000211_SysMenuUpdateCmmdrName
 		pop ecx
+		
+		; ANISO - shifted load dialog stuff
 		cmp bl,0x5
 		jnz JUMP_001415
 		call near [DATA_004923]    ; FUNC_000222_SysMenuLoadDialogHotkey
 		jmp short JUMP_001416
 	JUMP_001415:			; Pos = 1b7ce
-		cmp bl,0x6
-		jnz JUMP_001416
-		call near [DATA_004922]    ; FUNC_000221_SysMenuLoadLastHotkey
+;		cmp bl,0x7
+;		jnz JUMP_001416
+;		call near [DATA_004922]    ; FUNC_000221_SysMenuLoadLastHotkey
 	JUMP_001416:			; Pos = 1b7d9
 
 		pop edi
@@ -18419,6 +18496,7 @@ FUNC_000219_SysMenuInit:			; Pos = 1b7e0
 		mov byte [DATA_008804+0x3f88], 4
 
 		call near [DATA_004926]    ; FUNC_000228_SysMenuUpdateGfxDetail
+		;call _TimerCli
 		mov dword [ebx+0x3f44],0x3e2
 		push byte +0x1
 		push byte +0x27
@@ -18429,6 +18507,7 @@ FUNC_000219_SysMenuInit:			; Pos = 1b7e0
 		mov edx,[ebx+0x3f44]
 		mov [DATA_007706],edx
 		mov [DATA_009123],eax
+		;call _TimerSti
 
 		call _DirResetCmmdrPath
 
@@ -18727,9 +18806,11 @@ FUNC_000227_SysMenuSwitchOff_Event8:			; Pos = 1bb50
 		push ebp
 		mov ebp,esp
 		mov byte [DATA_009044],0x0
+		;call _TimerCli
 		mov dword [DATA_009012],0x3e2
 		xor eax,eax
 		mov [DATA_009013],eax
+		;call _TimerSti
 		push byte +0x1
 		call FUNC_000207_SysMenuUpdateAccel
 		pop ecx
@@ -18841,13 +18922,23 @@ FUNC_000232_SysMenuUpdateSong_Event10:			; Pos = 1c010
 		jz JUMP_001452
 		cmp dword [DATA_007901],byte +0x0
 		jz JUMP_001452
+
+		; ANISO - rearranged
 		cmp byte [DATA_009037],0x0
-		jz JUMP_001452
+		jz .SongQuit
+
 		cmp dword [DATA_009116],byte -0x1
 		jz JUMP_001451
+		
+	.SongQuit:
 		call FUNC_001904_SoundSongDone
 		dec eax
 		jnz JUMP_001452
+
+		; ANISO - rearranged
+		cmp byte [DATA_009037],0x0
+		jz JUMP_001452
+
 	JUMP_001451:			; Pos = 1c03f
 		push byte -0x1
 		call FUNC_001902_SoundPlaySong
@@ -18858,10 +18949,16 @@ FUNC_000232_SysMenuUpdateSong_Event10:			; Pos = 1c010
 
 
 
+
+; ANISO - Checks you for illegal goods and maybe fines you
+; also related to other fines
 FUNC_000233:			; Pos = 1c04c
 
 		push ebp
 		mov ebp,esp
+		add esp,byte -0x30
+		push ebx
+
 		mov eax,[ebp+0x8]
 		mov eax,[eax]
 		dec eax
@@ -18869,43 +18966,116 @@ FUNC_000233:			; Pos = 1c04c
 		sub eax,byte +0x4
 		jz JUMP_001454
 		sub eax,byte +0xc
-		jnz JUMP_001457
+		jnz near JUMP_001457
+
 		push byte +0x0
-		push byte +0x8
+		push byte +0x8	; fine for unlawful dumping?
 		call FUNC_000237
 		add esp,byte +0x8
+		
+		pop ebx
+		mov esp,ebp
 		pop ebp
 		ret
 	JUMP_001453:			; Pos = 1c06f
 		mov byte [DATA_008647],0x0
 		and byte [DATA_008646],0xfe
+		pop ebx
+		mov esp,ebp
 		pop ebp
 		ret
 	JUMP_001454:			; Pos = 1c07f
-		call near [DATA_007752]    ; FUNC_001530
-		and eax,byte +0x7
-		cmp eax,[DATA_009010]
-		jnc JUMP_001457
+		
+		call _ShouldCatchSmuggler
+		
+		test eax,eax
+		jz near JUMP_001457
+
+;		call near [DATA_007752]    ; FUNC_001530
+;		and eax,byte +0x7
+		
+;		movzx ecx,byte [DATA_008993]
+;		add al,[ecx+DATA_DangerSmugglingBonus]
+		
+;		mov cl,[DATA_009010]
+;		add cl,0x8
+;		cmp al,cl	; if eax < ecx, check for illegal goods
+
+;		jnl near JUMP_001457
+
+		push dword 0x30
+		push dword 0x0
+		lea ecx,[ebp-0x30]
+		push ecx
+		call _memset	; zero out some storage space for window
+		
+		push dword 0x40
+		push dword 0x0
+		push dword DATA_ConfiscatedCargo
+		call _memset
+
 		xor edx,edx
-		mov eax,0x20
+		xor ebx,ebx
+		mov eax,0x20	; 32 goods to check, go in reverse
+
 	JUMP_001455:			; Pos = 1c097
-		test byte [eax+DATA_008989],0x80
+
+		test byte [eax+DATA_008989],0x80	; illegal?
 		jz JUMP_001456
-		movzx ecx,word [eax*2+DATA_008896]
-		add edx,ecx
+		movzx ecx,word [eax*2+DATA_008896]	; cargo array
+		add edx,ecx	; add to quantity of illegal cargo... hmm
+
+		; ANISO - added new functionality (confiscation).
+
+		mov [eax*2+DATA_ConfiscatedCargo],cx
+		
+		imul ecx,[eax*4+DATA_CargoFines]
+		add ebx,ecx	; ebx = fine
+
+		xor ecx,ecx
+		mov [eax*2+DATA_008896],cx	; take it away
+
 	JUMP_001456:			; Pos = 1c0aa
 		dec eax
 		test eax,eax
 		jnl JUMP_001455
-		test edx,edx
+		test edx,edx	; amount of illegal goods > 0?
 		jz JUMP_001457
+		
+		mov [DATA_SmugglingFine],ebx
+		mov ebx,edx
+
 		push dword [DATA_008862]
 		push byte +0x7
 		call FUNC_000237
 		add esp,byte +0x8
+
+		sub dword [DATA_008891],ebx
+
+		; I don't really understand how the GUI code works, 
+		; so this is a bit of a hack
+
+		lea ecx,[ebp-0x30]
+		mov word [ecx],0x9852
+
+		push ecx
+		call FUNC_000360	; bring up services window!
+		pop ecx
+
+		mov word [ecx],0x9810
+
+		push ecx
+		call FUNC_000360	; bring up police window!
+		pop ecx
+
+		mov [DATA_ConfiscatedAmount],ebx
+
 	JUMP_001457:			; Pos = 1c0c3
+		pop ebx
+		mov esp,ebp
 		pop ebp
 		ret
+
 
 
 
@@ -19039,9 +19209,13 @@ FUNC_000236:			; Pos = 1c1f3
 		sub eax,edi
 		mov eax,[ebp+eax*2+0xffffff68]
 		mov [ebp+0xffffff54],eax
+		
+		; eax * 7
 		mov eax,edi
 		shl eax,0x3
 		sub eax,edi
+		
+		; indexed by edi*14
 		mov al,[ebp+eax*2+0xffffff70]
 		mov [ebp+0xffffff5f],al
 		mov eax,edi
@@ -19054,11 +19228,16 @@ FUNC_000236:			; Pos = 1c1f3
 		jnz JUMP_001466
 		test byte [ebp+0xffffff5f],0x4
 		jz JUMP_001466
-		mov al,[ebp+0xffffff50]
-		add al,[esi+0x3f3a]
-		push eax
-		call FUNC_000234
+;		mov al,[ebp+0xffffff50]
+;		add al,[esi+0x3f3a]
+;		push eax
+;		call FUNC_000234
+;		pop ecx
+
+		push dword [ebp+0xc]
+		call _IsCloseToStarport
 		pop ecx
+		
 		mov [ebp+0xffffff4c],eax
 		test eax,eax
 		jz near JUMP_001474
@@ -19071,6 +19250,22 @@ FUNC_000236:			; Pos = 1c1f3
 		mov eax,[ebp+0x10]
 		mov [esi+0x50dc],eax
 	JUMP_001467:			; Pos = 1c2c4
+		; ANISO - uncomment to make anarchic systems lawless
+		
+;		cmp byte [_DATA_CurrentDanger],0x2
+;		jge near JUMP_001473
+
+		mov eax,[ebp+0xc]
+		cmp eax,0x3
+		jnz .NotDischarge
+		or word [DATA_008860],0x4
+	.NotDischarge:
+
+;		cmp eax,0xa
+;		jnz .NotPiracy
+;		or word [DATA_008860],0x200
+;	.NotPiracy:
+		
 		mov eax,[esi+ebx*4+0x50f8]
 		mov [ebp+0xffffff58],eax
 		mov eax,[ebp+0xffffff54]
@@ -19145,6 +19340,8 @@ FUNC_000236:			; Pos = 1c1f3
 		call FUNC_001906_SoundPlaySample
 		pop ecx
 	JUMP_001472:			; Pos = 1c402
+		; ANISO - see if you should send out the cops
+		
 		test byte [ebp+0xffffff5f],0x1
 		jz JUMP_001474
 		mov eax,[esi+0x50dc]
@@ -19157,7 +19354,7 @@ FUNC_000236:			; Pos = 1c1f3
 		cmp byte [esi+0x3f63],0x0
 		jz JUMP_001473
 		push byte +0xe
-		call FUNC_001902_SoundPlaySong
+		call FUNC_001902_SoundPlaySong	; start playing fight music
 		pop ecx
 		jmp short JUMP_001474
 	JUMP_001473:			; Pos = 1c443
@@ -21633,14 +21830,23 @@ FUNC_000275:			; Pos = 1dfb0
 		jz JUMP_001632
 		mov edx,[eax+0x38]
 		mov dx,[edx+0x6]
-		cmp dx,0x12c
-		jnl JUMP_001632
+		cmp dx,1500	; used to be 0x12c (300)
+		jnl JUMP_001632	; hull >= 1500, colored white?
 		test dx,dx
 		jl JUMP_001632
-		movsx eax,dx
-		sar eax,0x4
-		mov eax,[eax*4+DATA_008683]
-		mov [ebp-0x4],eax
+		cmp dx,1
+		jg .ActualMass
+		mov dword [ebp-0x4],0x43
+		jmp short JUMP_001632
+	.ActualMass:
+		
+		; ANISO - revised
+		mov eax,[ebx+0x82]
+		cmp eax,0x47
+		jg JUMP_001632
+
+		mov eax,[eax*4+DATA_ShipColors]
+		mov dword [ebp-0x4],eax
 	JUMP_001632:			; Pos = 1e0c5
 		cmp esi,0x50000
 		jg near JUMP_001640
@@ -21873,6 +22079,7 @@ FUNC_000277:			; Pos = 1e2d8
 
 
 
+; ANISO - called for photo bases?
 FUNC_000278:			; Pos = 1e2fc
 
 		push ebp
@@ -21881,44 +22088,61 @@ FUNC_000278:			; Pos = 1e2fc
 		push ebx
 		push esi
 		push edi
+		
+
 		mov eax,[ebp+0x8]
 		mov esi,[eax]
-		cmp byte [esi+0x88],0x11
-		jnl near JUMP_001653
-		cmp dword [esi+0x82],byte +0x68
+
+		push esi
+		call _MilitaryBaseTick
+		pop ecx
+
+		mov ebx,eax
+
+		; must have returned a valid ship array
+		test ebx,ebx
+		jz near JUMP_001653
+
+		cmp dword [esi+0x82],byte +0x68	; can't be these models
 		jz near JUMP_001653
 		cmp dword [esi+0x82],byte +0x69
 		jz near JUMP_001653
 		call near [DATA_007752]    ; FUNC_001530
 		cmp eax,0x1000
 		jnc near JUMP_001653
+		
+		and eax,0xf
+		movzx eax,byte [eax+ebx]
+		mov [_DATA_CustomShipIndex],eax
+
 		push byte +0x4
 		call near [DATA_007217]    ; FUNC_000922
 		pop ecx
-		mov bl,0x1
+		mov bl,0x1	; initial 0xff value
 		lea edx,[ebp-0x18]
-		push edx
-		push eax
-		push esi
-		call FUNC_000659
+		push edx	; pointer to a struct
+		push eax	; 0-3
+		push esi	; parent object?
+		call FUNC_000659	; spawn something?
 		add esp,byte +0xc
-		cmp byte [esi+0x124],0x2a
+		cmp byte [esi+0x124],0x2a	; asterisk beginning of name?
 		jnz JUMP_001651
-		lea eax,[ebp-0x18]
+		lea eax,[ebp-0x18]	; that struct again
 		push eax
-		call FUNC_000662
+		call FUNC_000662	; spawn something	
 		pop ecx
-		mov edi,eax
+		mov edi,eax	
 		jmp short JUMP_001652
 	JUMP_001651:			; Pos = 1e372
 		lea eax,[ebp-0x18]
 		push eax
-		call FUNC_000663
+		call FUNC_000663	; spawn something in a different way
 		pop ecx
 		mov edi,eax
 	JUMP_001652:			; Pos = 1e37e
-		test edi,edi
-		jz JUMP_001653
+		test edi,edi	
+		jz JUMP_001653	; ship didn't spawn...
+		
 		mov [edi+0xff],bl
 		lea eax,[esi+0x3e]
 		push eax
@@ -21954,6 +22178,9 @@ FUNC_000278:			; Pos = 1e2fc
 		sar edx,0x15
 		add eax,edx
 		mov [edi+0x94],eax
+		
+		; ANISO - mark as a base-spawned ship
+		mov byte [edi+0x118],0xf5
 	JUMP_001653:			; Pos = 1e3eb
 		pop edi
 		pop esi
@@ -21982,6 +22209,7 @@ FUNC_000279:			; Pos = 1e3f4
 
 
 
+; ANISO - initialize function for military bases?
 FUNC_000280:			; Pos = 1e414
 
 		push ebp
@@ -22842,107 +23070,84 @@ FUNC_000289:			; Pos = 1eccc
 
 
 
+; ANISO - code for generating assassins
 FUNC_000290:			; Pos = 1ee28
 
 		push ebp
 		mov ebp,esp
-		push ebx
-		push esi
-		push edi
+		
 		mov edi,[ebp+0x18]
+
+		call near [_DATA_RandomizerFunc]
+		mov edx,eax
+
+		mov eax,[ebp+0x8]	; two parts: # of passengers (low byte) and difficulty (high byte of low word)
+							; high word contains # of ships
+	
+		and eax,0xffffbfff
+		cmp eax,0x2200
+		jnz .NotHighPackage
+		mov ecx,3
+		and edx,0x3
+		add ecx,edx
+		jmp short .SomeShips
+	.NotHighPackage:
+		cmp eax,0x2100
+		jnz .NotLowPackage
+		mov ecx,1
+		and edx,0x1
+		add ecx,edx
+		jmp short .SomeShips
+	.NotLowPackage:
+		mov ecx,0
+		jmp short .EndMilPackage
+	.SomeShips:
+		test ecx,0x4000
+		jnz .NotFederal
+		
+		; 25% more ships in the Federation
+		lea ecx,[ecx+ecx*4]
+		shr ecx,0x2
+	.NotFederal:
+		shl ecx,16
+	.EndMilPackage:
 		mov eax,[ebp+0x8]
-		mov esi,DATA_008804
+		or eax,ecx
+		
+		; add passenger to listing
+		mov esi,DATA_008804	
+		mov edx,[esi+0x4a18]	; number of passengers/packages
+		lea edx,[edx+edx*4]	; passengers * 5, each struct is 20 bytes
+		mov [esi+edx*4+0x4a3e],eax	; D9080+psr*20: store info dword
 		mov edx,[esi+0x4a18]
 		lea edx,[edx+edx*4]
-		mov [esi+edx*4+0x4a3e],eax
+		mov ecx,[ebp+0xc]	; cash value
+		mov [esi+edx*4+0x4a3a],ecx	; store at D9079+psr*20: cash?
 		mov edx,[esi+0x4a18]
 		lea edx,[edx+edx*4]
-		mov ecx,[ebp+0xc]
-		mov [esi+edx*4+0x4a3a],ecx
-		mov edx,[esi+0x4a18]
-		lea edx,[edx+edx*4]
-		mov ecx,[ebp+0x10]
-		mov [esi+edx*4+0x4a42],ecx
+		mov ecx,[ebp+0x10]	; destination system!
+		mov [esi+edx*4+0x4a42],ecx	; store at D9080+0x4+psr*20
 		mov edx,[esi+0x4a18]
 		lea edx,[edx+edx*4]
 		mov ecx,[ebp+0x14]
-		mov [esi+edx*4+0x4a46],ecx
+		mov [esi+edx*4+0x4a46],ecx	; store at D9080+0x8+psr*20
 		mov edx,[esi+0x4a18]
 		lea edx,[edx+edx*4]
-		mov [esi+edx*4+0x4a4a],edi
-		inc dword [esi+0x4a18]
-		mov ebx,eax
-		sar ebx,0x9
-		and ebx,byte +0xf
-		lea eax,[ebx+ebx*2]
-		cmp dword [eax*2+DATA_005123],byte +0x0
-		jz near JUMP_001699
-		call near [DATA_007752]    ; FUNC_001530
-		lea edx,[ebx+ebx*2]
-		cmp eax,[edx*2+DATA_005123]
-		ja near JUMP_001699
-		lea eax,[ebx+ebx*2]
-		mov al,[eax*2+DATA_005124]
-		sub al,0x1
-		jc JUMP_001695
-		jz JUMP_001698
-		dec al
-		jz JUMP_001696
-		dec al
-		jz JUMP_001697
-		jmp short JUMP_001699
-	JUMP_001695:			; Pos = 1eee1
-		push edi
-		mov eax,[esi+0xc0]
-		push eax
-		call FUNC_000665
-		add esp,byte +0x8
-		jmp short JUMP_001699
-	JUMP_001696:			; Pos = 1eef3
-		push edi
-		mov eax,[esi+0xc0]
-		push eax
-		call FUNC_000668
-		add esp,byte +0x8
-		push edi
-		mov eax,[esi+0xc0]
-		push eax
-		call FUNC_000668
-		add esp,byte +0x8
-		jmp short JUMP_001699
-	JUMP_001697:			; Pos = 1ef15
-		push edi
-		mov eax,[esi+0xc0]
-		push eax
-		call FUNC_000666
-		add esp,byte +0x8
-		push edi
-		mov eax,[esi+0xc0]
-		push eax
-		call FUNC_000666
-		add esp,byte +0x8
-		push edi
-		mov eax,[esi+0xc0]
-		push eax
-		call FUNC_000666
-		add esp,byte +0x8
-		jmp short JUMP_001699
-	JUMP_001698:			; Pos = 1ef47
-		push edi
-		mov eax,[esi+0xc0]
-		push eax
-		call FUNC_000667
-		add esp,byte +0x8
-	JUMP_001699:			; Pos = 1ef57
-		pop edi
-		pop esi
-		pop ebx
+		mov [esi+edx*4+0x4a4a],edi	; store at D9081+psr*20
+		inc dword [esi+0x4a18]	; more passengers
+
+;		push eax
+;		call _SpawnAssassinShips	; see ffemisc.c
+;		pop ecx
+		
+	JUMP_001699:
 		pop ebp
 		ret
 
 
 
-FUNC_000291:			; Pos = 1ef5c
+; ANISO - Jettison cargo
+FUNC_000291:			; Pos = 1ef5c.	JETTISON CODE
 
 		push ebp
 		mov ebp,esp
@@ -22973,6 +23178,8 @@ FUNC_000291:			; Pos = 1ef5c
 		add esp,byte +0x8
 		cmp word [ebx*2+DATA_008896],byte +0x0
 		jz JUMP_001701
+		mov [_DATA_LastJettisonedCargoIndex],bl
+
 		add word [ebx*2+DATA_008896],0xffff
 		dec dword [DATA_008891]
 		jmp short JUMP_001702
@@ -22981,7 +23188,7 @@ FUNC_000291:			; Pos = 1ef5c
 		jmp JUMP_001705
 	JUMP_001702:			; Pos = 1efc7
 		mov dword [ebp-0x34],0x9c2f
-		lea eax,[ebx+0x8e00]
+		lea eax,[ebx+0x8e00]	; eax = cargo idx + 0x8e00
 		mov [ebp-0x30],eax
 		mov dword [ebp-0x1c],0xffffffff
 		lea eax,[ebp-0x34]
@@ -23003,13 +23210,13 @@ FUNC_000291:			; Pos = 1ef5c
 		mov ebx,eax
 		test ebx,ebx
 		jz near JUMP_001704
-		mov [ebx+0x9e],di
+		mov [ebx+0x9e], di	; cargo index
 		lea eax,[ebp-0x48]
 		push eax
 		add edi,0x8e00
 		push edi
 		push dword DATA_009124
-		call near [DATA_007639]    ; _FUNC_001344_StringExpandFFCode
+		call near [DATA_007639]    ; FUNC_001344_StringExpandFFCode
 		add esp,byte +0xc
 		lea eax,[ebx+0x124]
 		push esi
@@ -23031,6 +23238,14 @@ FUNC_000291:			; Pos = 1ef5c
 		pop esi
 		mov byte [ebx+0x87],0xb
 		mov byte [ebx+0xff],0x16
+		
+		; added - player jettisons in 1-tonne increments
+		mov word [ebx+0x116],0x1
+
+		push ebx
+		call _MakeCargoString
+		pop ecx
+
 		mov eax,[esi+0xc]
 		mov [ebp-0x54],eax
 		mov eax,[esi+0x10]
@@ -23135,6 +23350,10 @@ FUNC_000292:			; Pos = 1f15c
 	JUMP_001706:			; Pos = 1f185
 		cmp ebx,0xf5
 		jnz JUMP_001707
+		; journals - don't bring them up if starting in 3500
+		cmp byte [_DATA_ExtendedUniverse],0
+		jnz near JUMP_001734
+		
 		push byte +0x0
 		call FUNC_000083
 		pop ecx
@@ -23650,6 +23869,7 @@ FUNC_000295:			; Pos = 1f6d4
 
 
 
+; ANISO - new system function for milbases
 FUNC_000296:			; Pos = 1f7c4
 
 		push ebp
@@ -23758,7 +23978,7 @@ SECTION .text
 		nop
 
 
-
+; ANISO - creates military bases
 FUNC_000297:			; Pos = 1f8f4
 
 		push ebp
@@ -23808,6 +24028,7 @@ FUNC_000297:			; Pos = 1f8f4
 		call _C_PlaceStation
 		;call FUNC_000879
 		add esp,byte +0x10
+		
 		mov eax,ebx
 	JUMP_001764:			; Pos = 1f983
 		pop esi
@@ -23815,7 +24036,6 @@ FUNC_000297:			; Pos = 1f8f4
 		pop ecx
 		pop ebp
 		ret
-
 
 
 FUNC_000298:			; Pos = 1f988
@@ -23925,6 +24145,15 @@ FUNC_000298:			; Pos = 1f988
 		push eax
 		call FUNC_000297
 		add esp,byte +0x14
+
+		push eax
+		lea ecx,[ebx-0x6]
+		push ecx	; mission ptr
+		push eax	; base ptr
+		call _MilitaryBaseInit
+		add esp,byte +0x8
+		pop eax
+
 		mov al,[eax+0x86]
 		mov [ebx+0x14],al
 		mov byte [ebx+0x15],0xff
@@ -23984,11 +24213,12 @@ FUNC_000299:			; Pos = 1faf8
 
 
 
-FUNC_000300:			; Pos = 1fb3c
+; ANISO - award points for most military missions
+FUNC_000300:			; Pos = 1fb3c.  Mission related?
 
 		push ebp
 		mov ebp,esp
-		add esp,byte -0x5c
+		add esp,byte -0x61
 		push ebx
 		push esi
 		push edi
@@ -24003,45 +24233,58 @@ FUNC_000300:			; Pos = 1fb3c
 		cmp dword [ebp-0x10],byte +0x0
 		jl near JUMP_001795
 	JUMP_001775:			; Pos = 1fb67
+
+;		cmp byte [esi+0x5],0x0
+;		jnz .MissionSuccess
 		mov eax,[esi+0x30]
 		cmp eax,[DATA_008885]
 		jnz near JUMP_001794
+;	.MissionSuccess:
+
 		mov bl,[esi+0x4]
 		and bl,0xf
 		mov eax,ebx
 		sub al,0x3
-		jc JUMP_001776
+		jc JUMP_001776	; Military Assassinations
 		sub al,0x4
-		jc near JUMP_001780
-		jz near JUMP_001794
-		jmp JUMP_001785
-	JUMP_001776:			; Pos = 1fb95
+		jc near JUMP_001780	; photos/bombings
+		jz near JUMP_001794	; nothing?
+		jmp JUMP_001785	; civ. assassinations?
+	; Military Assassinations
+	JUMP_001776:			; Pos = 1fb95	
+		
+		; store allegiance
+		mov al,bl
+		mov [ebp-0x61],al
+
 		cmp byte [esi+0x5],0x0
-		jnz JUMP_001778
+		jnz JUMP_001778	; mission has been completed
 		mov eax,[DATA_008804]
 		mov edx,[DATA_008807]
 		mov [ebp-0x14],edx
 		mov edx,[ebp-0x14]
 		cmp edx,[esi+0xe]
-		jg JUMP_001777
+		jg JUMP_001777	; appointed day has passed
 		mov edx,[ebp-0x14]
 		cmp edx,[esi+0xe]
-		jnz near JUMP_001794
+		jnz near JUMP_001794	; if not the same day, ignore
 		cmp eax,[esi+0xa]
 		jng near JUMP_001794
 	JUMP_001777:			; Pos = 1fbc6
 		mov edi,0xfffffc00
-		mov byte [ebp-0x1],0xfb
-		mov dword [ebp-0x8],0x9c29
+		mov dword [ebp-0x60],-5
+		mov dword [ebp-0x8],0x9c29	; failure?
 		jmp JUMP_001785
 	JUMP_001778:			; Pos = 1fbdb
 		cmp byte [esi+0x5],0x0
-		jng JUMP_001779
+		jnz JUMP_001779
 		mov edi,0xfffffe00
-		mov byte [ebp-0x1],0xff
-		mov dword [ebp-0x8],0x9c2b
+		mov dword [ebp-0x60],-1
+		mov dword [ebp-0x8],0x9c2b	; destroyed before target was on board
 		jmp JUMP_001785
 	JUMP_001779:			; Pos = 1fbf6
+		; Assassination was a success.
+
 		mov eax,[esi+0x12]
 		add eax,eax
 		lea eax,[eax+eax*4]
@@ -24049,10 +24292,39 @@ FUNC_000300:			; Pos = 1fb3c
 		mov eax,[ebp-0x18]
 		add [DATA_008888],eax
 		mov edi,0x200
-		mov byte [ebp-0x1],0xc
+		
+		movzx eax,byte [esi+0x4]
+		shr eax,0x4
+
+		sub eax,0x3
+		jnc .HigherMission
+		mov dword [ebp-0x60],60	; low assassination payout
+		jmp short .EndMissionCond
+	.HigherMission:
+		sub eax,0x3
+		jnc .HigherMission2
+		mov dword [ebp-0x60],100 ; medium assassination
+		jmp short .EndMissionCond
+	.HigherMission2:
+		mov dword [ebp-0x60],215 ; tough (battleship) killin'
+	.EndMissionCond:
+
 		mov dword [ebp-0x8],0x9c2a
 		jmp JUMP_001785
 	JUMP_001780:			; Pos = 1fc1f
+		
+		; store allegiance
+		mov al,bl
+		sub al,0x2
+		mov [ebp-0x61],al
+		
+		; must have landed in a system of the same allegiance
+;		mov al,bl
+;		sub al,0x3
+;		cmp al,[DATA_008996]
+
+;		jnz near JUMP_001794
+
 		mov eax,[DATA_008807]
 		mov [ebp-0x14],eax
 		mov eax,[ebp-0x14]
@@ -24061,14 +24333,14 @@ FUNC_000300:			; Pos = 1fb3c
 		cmp byte [esi+0x5],0x0
 		jnz JUMP_001781
 		mov edi,0xfffffc00
-		mov byte [ebp-0x1],0xfb
+		mov dword [ebp-0x60],-5
 		mov dword [ebp-0x8],0x9c29
-		jmp short JUMP_001785
+		jmp JUMP_001785
 	JUMP_001781:			; Pos = 1fc47
 		mov edi,0xfffffc00
-		mov byte [ebp-0x1],0xff
-		mov dword [ebp-0x8],0x9c2c
-		jmp short JUMP_001785
+		mov dword [ebp-0x60],-1
+		mov dword [ebp-0x8],0x9c2c	; returned too late
+		jmp JUMP_001785
 	JUMP_001782:			; Pos = 1fc59
 		cmp byte [esi+0x5],0x0
 		jz near JUMP_001794
@@ -24080,25 +24352,77 @@ FUNC_000300:			; Pos = 1fb3c
 		mov [ebp-0x18],eax
 		mov eax,[ebp-0x18]
 		add [DATA_008888],eax
-		cmp byte [esi+0x1b],0xa
+		
+		; get mission value here
+
+		movzx eax,byte [esi+0x4]
+		shr eax,0x4
+
+		sub eax,0x3
+		jnc .HigherMission
+		mov edx,360	; low photo payout
+		jmp short .EndMissionCond
+	.HigherMission:
+		sub eax,0x3
+		jnc .HigherMission2
+		mov edx,600 ; medium photo
+		jmp short .EndMissionCond
+	.HigherMission2:
+		mov edx,1000 ; high-level photo
+	.EndMissionCond:
+
+		cmp byte [esi+0x1b],8	; min photo range (km) for excellent
 		jng JUMP_001783
-		mov byte [ebp-0x1],0x10
+		
+		; 3/4 points for OK photo
+		sar edx,0x2
+		lea edx,[edx+edx*2]
+		mov [ebp-0x60],edx	; payout for OK photo
+
 		mov dword [ebp-0x8],0x9c2d
 		jmp short JUMP_001785
 	JUMP_001783:			; Pos = 1fc8f
-		mov byte [ebp-0x1],0x14
+		mov [ebp-0x60],edx	; payout for excellent photo
 		mov dword [ebp-0x8],0x9c2e
 		jmp short JUMP_001785
 	JUMP_001784:			; Pos = 1fc9c
+		; store allegiance
+		mov al,bl
+		sub al,0x4
+		mov [ebp-0x61],al
+		
 		mov eax,[esi+0x12]
 		add eax,eax
 		lea eax,[eax+eax*4]
 		mov [ebp-0x18],eax
 		mov eax,[ebp-0x18]
 		add [DATA_008888],eax
-		mov byte [ebp-0x1],0x12
+
+		; get mission value here
+
+		movzx eax,byte [esi+0x4]
+		shr eax,0x4
+
+		sub eax,0x3
+		jnc .HigherMission
+		mov edx,800	; low bomb payout
+		jmp short .EndMissionCond
+	.HigherMission:
+		sub eax,0x3
+		jnc .HigherMission2
+		mov edx,1600 ; medium bombing
+		jmp short .EndMissionCond
+	.HigherMission2:
+		mov edx,4000 ; high-level bombing
+	.EndMissionCond:
+
+		mov dword [ebp-0x60],edx	; payout for bomb mission
 		mov dword [ebp-0x8],0x9c2a
 	JUMP_001785:			; Pos = 1fcbb
+;		cmp byte [esi+0x8],0x4
+;		jnz SkipAdded
+;		add dword [ebp-0x60],50	; add 50 points for classified mission
+;	SkipAdded:
 		dec dword [DATA_009084]
 		cmp dword [ebp-0x10],byte +0x0
 		jz JUMP_001786
@@ -24120,19 +24444,19 @@ FUNC_000300:			; Pos = 1fb3c
 		mov eax,[eax*4+DATA_005118]
 		push eax
 		push dword DATA_009148
-		call near [DATA_007639]    ; _FUNC_001344_StringExpandFFCode
+		call near [DATA_007639]    ; FUNC_001344_StringExpandFFCode
 		add esp,byte +0xc
 		mov eax,[ebp-0x8]
-		mov [ebp-0x5c],eax
+		mov [ebp-0x5c],eax	; [winData] = [strData+0x24]
 		mov eax,[ebp-0x18]
-		mov [ebp-0x58],eax
+		mov [ebp-0x58],eax	; [winData+4] = [strData+0x14]
 		mov eax,[ebp-0x14]
-		mov [ebp-0x54],eax
+		mov [ebp-0x54],eax	; [winData+8] = [strData+0x18]
 		movsx eax,bl
 		movsx eax,byte [eax+DATA_005119]
-		mov [ebp-0x44],eax
+		mov [ebp-0x44],eax	; [winData+0x18] = weirddata
 		xor eax,eax
-		mov [ebp-0x40],eax
+		mov [ebp-0x40],eax	; [winData+0x1c] = 0
 		lea eax,[ebp-0x5c]
 		push eax
 		call _FUNC_000349_ShowCommMessage
@@ -24164,32 +24488,40 @@ FUNC_000300:			; Pos = 1fb3c
 		add esp,byte +0x8
 		jmp short JUMP_001794
 	JUMP_001790:			; Pos = 1fd76
+		
+		; What the hell has this been doing?  Begone!
 		or eax,byte -0x1
-		cmp byte [ebp-0x1],0x0
+		cmp dword [ebp-0x60],0x0
 		jl JUMP_001791
 		movsx eax,bl
-		mov dl,[eax+DATA_005119]
-		mov [ebp-0x1],dl
-		movsx eax,byte [eax+DATA_005120]
-		cmp byte [ebp-0x1],0x14
-		jnz JUMP_001791
-		inc eax
+;		movsx edx,byte [eax+DATA_005119]
+;		mov [ebp-0x60],edx
+;		movsx eax,byte [eax+DATA_005120]
+;		cmp dword [ebp-0x60],120	; highest level
+;		jnz JUMP_001791
+;		inc eax
 	JUMP_001791:			; Pos = 1fd99
-		cmp byte [ebp-0x1],0xa
-		jnz JUMP_001792
+;		cmp dword [ebp-0x60],0xa
+;		jnz JUMP_001792
+
+		mov al,[ebp-0x61]
+		dec al
+		jc JUMP_001793
+		jz JUMP_001792
+
 		push eax
 		lea eax,[ebp-0xc]
 		push eax
-		mov al,[ebp-0x1]
+		mov eax,[ebp-0x60]
 		push eax
-		call _FUNC_000304_AddFederalRank
+		call FUNC_000304
 		add esp,byte +0xc
 		jmp short JUMP_001793
 	JUMP_001792:			; Pos = 1fdb2
 		push eax
 		lea eax,[ebp-0xc]
 		push eax
-		mov al,[ebp-0x1]
+		mov eax,[ebp-0x60]
 		push eax
 		call _FUNC_000305_AddImperialRank
 		add esp,byte +0xc
@@ -24228,7 +24560,7 @@ FUNC_000301:			; Pos = 1fdf0
 		mov esi,DATA_008804
 		cmp byte [esi+0xe8],0x4
 		jz near JUMP_001802
-		and word [esi+0xc6],0xfff3
+		and word [esi+0xc6],0xfdf3	; ANISO - eliminate 0x4 illegal shooting flag
 		cmp dword [esi+0x4a18],byte +0x0
 		jg JUMP_001797
 		push byte +0x0
@@ -24302,7 +24634,7 @@ FUNC_000301:			; Pos = 1fdf0
 		nop
 
 
-
+; ANISO - called to complete missions
 FUNC_000302:			; Pos = 1fedc
 
 		push ebp
@@ -24353,7 +24685,7 @@ FUNC_000302:			; Pos = 1fedc
 		lea eax,[ebp-0x4]
 		push eax
 		push edx
-		call _FUNC_000305_AddImperialRank
+		call F305_Wrapper
 		add esp,byte +0xc
 		mov edi,0xb
 		mov eax,0x9c68
@@ -24363,7 +24695,7 @@ FUNC_000302:			; Pos = 1fedc
 		lea eax,[ebp-0x4]
 		push eax
 		push edx
-		call _FUNC_000304_AddFederalRank
+		call F304_Wrapper
 		add esp,byte +0xc
 		mov eax,0x9c69
 		mov edi,0xa
@@ -24372,7 +24704,7 @@ FUNC_000302:			; Pos = 1fedc
 		push edx
 		push eax
 		push dword DATA_009148
-		call near [DATA_007639]    ; _FUNC_001344_StringExpandFFCode
+		call near [DATA_007639]    ; FUNC_001344_StringExpandFFCode
 		add esp,byte +0xc
 		mov eax,0x9c38
 		mov [ebp-0x48],eax
@@ -24471,7 +24803,7 @@ FUNC_000302:			; Pos = 1fedc
 		ret
 
 
-
+; ANISO - called to complete delivery missions...?
 FUNC_000303:			; Pos = 200b8
 
 		push ebp
@@ -24543,10 +24875,28 @@ FUNC_000303:			; Pos = 200b8
 		mov eax,[ebp-0x14]
 		add [DATA_008888],eax
 		cmp dword [ebp-0x10],byte +0x0
-		jnz JUMP_001819
+		jnz near JUMP_001819
 		mov edx,[ebp-0x18]
 		and edx,byte +0x3
-		mov al,0x2
+		
+		; ANISO - get point award for delivery mission
+		mov eax,[ebp+0x8]
+		mov eax,[eax+0x4]
+		and eax,0xbfff
+
+		cmp eax,0x2200
+		jnz .NotHighPackage
+		mov eax,12	; highest award
+		jmp short .EndPackageCond
+	.NotHighPackage:
+		cmp eax,0x2100
+		jnz .NotMediumPackage
+		mov eax,5	; medium award
+		jmp short .EndPackageCond
+	.NotMediumPackage:
+		mov eax,2	; regular award
+	.EndPackageCond:
+		
 		test byte [ebp-0x18],0x40
 		jz JUMP_001817
 		movsx edx,byte [edx+DATA_005116]
@@ -24554,7 +24904,7 @@ FUNC_000303:			; Pos = 200b8
 		lea edx,[ebp-0x4]
 		push edx
 		push eax
-		call _FUNC_000305_AddImperialRank
+		call F305_Wrapper
 		add esp,byte +0xc
 		mov bl,0xb
 		mov esi,0x9c68
@@ -24565,7 +24915,7 @@ FUNC_000303:			; Pos = 200b8
 		lea edx,[ebp-0x4]
 		push edx
 		push eax
-		call _FUNC_000304_AddFederalRank
+		call F304_Wrapper
 		add esp,byte +0xc
 		mov bl,0xa
 		mov esi,0x9c69
@@ -24574,7 +24924,7 @@ FUNC_000303:			; Pos = 200b8
 		push eax
 		push esi
 		push dword DATA_009148
-		call near [DATA_007639]    ; _FUNC_001344_StringExpandFFCode
+		call near [DATA_007639]    ; FUNC_001344_StringExpandFFCode
 		add esp,byte +0xc
 		mov esi,0x9c33
 		jmp short JUMP_001825
@@ -24645,8 +24995,8 @@ FUNC_000303:			; Pos = 200b8
 		ret
 
 
-
-_FUNC_000304_AddFederalRank:			; Pos = 20290
+_FUNC_000304_AddFederalRank:
+FUNC_000304:			; Pos = 20290
 
 		push ebp
 		mov ebp,esp
@@ -24675,6 +25025,32 @@ _FUNC_000304_AddFederalRank:			; Pos = 20290
 		nop
 		nop
 		nop
+
+F304_Wrapper:
+		push ebp
+		mov ebp,esp
+
+		push dword [ebp+0x10]
+		push dword [ebp+0xc]
+		movsx eax,byte [ebp+0x8]
+		push eax
+		call FUNC_000304
+		add esp,byte +0xc
+		pop ebp
+		ret
+
+F305_Wrapper:
+		push ebp
+		mov ebp,esp
+
+		push dword [ebp+0x10]
+		push dword [ebp+0xc]
+		movsx eax,byte [ebp+0x8]
+		push eax
+		call _FUNC_000305_AddImperialRank
+		add esp,byte +0xc
+		pop ebp
+		ret
 
 
 
@@ -24795,6 +25171,10 @@ FUNC_000306:			; Pos = 20318
 		push byte +0x7
 		call FUNC_001902_SoundPlaySong
 		pop ecx
+		
+		call _FillSystemData
+		call _CreateMilitaryData
+
 		mov al,0x1
 		jmp short JUMP_001837
 	JUMP_001835:			; Pos = 203e7
@@ -25082,13 +25462,13 @@ FUNC_000312:			; Pos = 205e8
 		lea eax,[ebp-0x3c]
 		push eax
 		push ebx
-		call _FUNC_000305_AddImperialRank
+		call F305_Wrapper
 		add esp,byte +0xc
 		push byte -0x1
 		lea eax,[ebp-0x40]
 		push eax
 		push ebx
-		call _FUNC_000304_AddFederalRank
+		call F304_Wrapper
 		add esp,byte +0xc
 		push byte +0x0
 		push byte +0x1e
@@ -25531,6 +25911,7 @@ FUNC_000315:			; Pos = 20aec
 
 
 
+; ANISO - Displays mission data
 FUNC_000316:			; Pos = 20b84
 
 		push ebp
@@ -25622,6 +26003,7 @@ FUNC_000316:			; Pos = 20b84
 		mov edx,[ebx+0xe]
 		mov [ebp-0x28],edx
 		mov edx,[ebx+0x12]
+		
 		mov [ebp-0x24],edx
 		mov edx,DATA_009148
 		mov [ebp-0x20],edx
@@ -27865,6 +28247,7 @@ FUNC_000359:			; Pos = 222dc
 
 
 
+; ANISO - Called when button opens new window?
 FUNC_000360:			; Pos = 22310
 
 		push ebp
@@ -27886,7 +28269,7 @@ FUNC_000360:			; Pos = 22310
 		call near [DATA_004920]    ; FUNC_000217_SysMenuPlayTime
 	JUMP_002036:			; Pos = 22345
 		mov eax,[ebx]
-		add eax,0xffff6800
+		add eax,0xffff6800	; subtract 0x9800
 		test eax,eax
 		jl JUMP_002037
 		cmp eax,byte +0x74
@@ -27894,6 +28277,7 @@ FUNC_000360:			; Pos = 22310
 		cmp dword [eax*4+DATA_005288],byte +0x0
 		jz JUMP_002037
 		push ebx
+		
 		mov eax,[eax*4+DATA_005288]
 		call eax
 		pop ecx
@@ -27928,9 +28312,10 @@ FUNC_000360:			; Pos = 22310
 		pop ebx
 		pop ebp
 		ret
+		nop
 
 
-
+; ANISO - calls a window constructor
 FUNC_000361:			; Pos = 223b4
 
 		push ebp
@@ -27965,6 +28350,8 @@ FUNC_000361:			; Pos = 223b4
 		mov esp,ebp
 		pop ebp
 		ret
+		nop
+		nop
 
 
 
@@ -28603,7 +28990,10 @@ FUNC_000381:			; Pos = 22988
 	JUMP_002064:			; Pos = 229b8
 		mov eax,[edi+0x5030]
 		cmp eax,[edi+0x502c]
-		jz JUMP_002065
+
+		; ANISO - allow player to launch with excess crew
+		jnl JUMP_002065	; was jz
+
 		mov eax,0x9938
 		jmp JUMP_002069
 	JUMP_002065:			; Pos = 229d0
@@ -28812,6 +29202,8 @@ FUNC_000382:			; Pos = 22ac4
 
 
 
+; ANISO - sets prices for items based on tech level.
+; from 12x (lowest tech) to 9x (highest tech)
 FUNC_000383:			; Pos = 22c6c
 
 		push ebp
@@ -28825,10 +29217,10 @@ FUNC_000383:			; Pos = 22c6c
 
 ; FIX: incorrect tech prices
 		mov dword [DATA_009064],0xc
-		cmp word [DATA_008995],0xcc
+		cmp word [DATA_008995],0xb3
 		jc JUMP_002079
 		mov dword [DATA_009064],0xb
-		cmp word [DATA_008995],0xb3
+		cmp word [DATA_008995],0xcc
 		jc JUMP_002079
 		mov dword [DATA_009064],0xa
 		cmp word [DATA_008995],byte +0x17
@@ -28856,31 +29248,53 @@ FUNC_000383:			; Pos = 22c6c
 		xor edi,edi
 		mov ebx,DATA_005292
 	JUMP_002080:			; Pos = 22d03
-		movzx eax,word [DATA_008995]
+		movzx eax,word [DATA_008995]	; ANISO - tech level of the system?
 		xor edx,edx
-		mov dl,[ebx]
+		mov dl,[ebx]	; tech level of item required
+		
 		cmp eax,edx
-		jl JUMP_002083
-		cmp byte [ebx+0x1],0x0
+		jl JUMP_002083	; can sell this
+		cmp byte [ebx+0x1],0x0	; dunno what this is...
 		jz JUMP_002081
 		mov eax,[ebx-0x13]
-		imul dword [ebp-0x4]
+;		imul dword [ebp-0x4]
+		
+		push eax
+		call _ModifyEquipmentPrice
+		pop ecx
+
 		mov [esi+0x4],eax
 		mov eax,[ebx-0xf]
-		imul dword [ebp-0x4]
+;		imul dword [ebp-0x4]
+
+		push eax
+		call _ModifyEquipmentPrice
+		pop ecx
+
 		mov [esi+0x8],eax
 		jmp short JUMP_002082
 	JUMP_002081:			; Pos = 22d2c
 		mov eax,[ebx-0x13]
-		imul dword [DATA_009064]
+		
+		push eax
+		call _ModifyEquipmentPrice
+		pop ecx
+
+;		imul dword [DATA_009064]
+
 		mov [esi+0x4],eax
 		mov eax,[ebx-0xf]
-		imul dword [DATA_009064]
+;		imul dword [DATA_009064]
+
+		push eax
+		call _ModifyEquipmentPrice
+		pop ecx
+
 		mov [esi+0x8],eax
 	JUMP_002082:			; Pos = 22d44
 		mov eax,[ebx-0xb]
 		mov [esi+0xc],eax
-		lea eax,[edi+0x9875]
+		lea eax,[edi+0x9875]	; 0x9875: start of equipment strings?
 		mov [esi+0x24],eax
 		mov [esi+0x10],edi
 		push edi
@@ -30689,6 +31103,7 @@ FUNC_000436:			; Pos = 23b70
 
 
 
+; ANISO - sets ship prices
 FUNC_000437:			; Pos = 23b80
 
 		push ebp
@@ -30716,40 +31131,27 @@ FUNC_000437:			; Pos = 23b80
 		push byte +0x5
 		call FUNC_000331
 		add esp,byte +0x18
-		mov eax,[DATA_008862]
+		mov eax,[DATA_008862]	; current starport
 		movzx eax,byte [eax+0x86]
 		push eax
 		call FUNC_000649
 		pop ecx
 		mov esi,eax
-		mov [DATA_009058],esi
+		mov [DATA_009058],esi	; missions?
 		mov eax,[esi+0x31e]
 		dec eax
 		mov [ebx+0x18],eax
 		test eax,eax
-		jl near JUMP_002174
+		jl near JUMP_002174	; has passengers?
+
+		
 		mov eax,[DATA_008861]
-		movsx edx,byte [eax+0xd0]
-		mov edi,[edx*4+DATA_005300]
-		mov eax,[eax+0x82]
 		push eax
-		call near [DATA_007756]    ; FUNC_001538_GetModelPtr
+		call _GetShipWorth	; see ffemisc.c
 		pop ecx
-		mov eax,[eax+0x38]
-		movsx edx,word [eax+0xa]
-		add edi,edx
-		mov ax,[eax+0x14]
-		and eax,0xff
-		sub edi,[eax*4+DATA_005300]
-		mov eax,edi
-		shl eax,0x4
-		sub eax,edi
-		shl eax,0x3
-		sub eax,edi
-		shl eax,0x2
-		sub eax,edi
-		add eax,eax
+
 		mov edi,eax
+		
 		mov dword [ebx],0x9811
 		xor eax,eax
 		mov [ebp-0x4],eax
@@ -30763,10 +31165,13 @@ FUNC_000437:			; Pos = 23b80
 		pop ecx
 		mov eax,[eax+0x38]
 		movsx edx,word [eax+0xa]
+		
+		; ANISO - multiplies ship price by 1,000
 		shl edx,0x3
 		lea edx,[edx+edx*4]
 		lea edx,[edx+edx*4]
 		lea edx,[edx+edx*4]
+		
 		mov [ebx+0x4],edx
 		sub edx,edi
 		mov [ebx+0x8],edx
@@ -31920,6 +32325,9 @@ FUNC_000453:			; Pos = 2489c
 		cmp edi,[ebp-0x4]
 		jl JUMP_002215
 	JUMP_002217:			; Pos = 249c1
+		; mission BBS entries?
+		cmp byte [_DATA_ExtendedUniverse],0x0
+		jnz .SkipMissionBBS
 		push byte +0x1
 		push byte +0x0
 		call FUNC_000034
@@ -31928,6 +32336,8 @@ FUNC_000453:			; Pos = 2489c
 		push byte +0x0
 		call FUNC_000034
 		add esp,byte +0x8
+
+	.SkipMissionBBS:
 		cmp dword [DATA_009051],byte +0x0
 		jng JUMP_002218
 		mov dword [esi],0x98dd
@@ -32121,7 +32531,27 @@ FUNC_000458:			; Pos = 24b94
 		pop ebp
 		ret
 
+FUNC_DoublePrice_AcceptNoMore:			; Pos = 24c04
 
+		push ebp
+		mov ebp,esp
+		push ebx
+		
+		mov dword [DATA_009051],0x0
+
+		mov ebx,[ebp+0x8]
+		mov dword [ebx],0x99eb
+		push ebx
+		call FUNC_000352
+		pop ecx
+		mov dword [ebx],0x983f
+		push ebx
+		call FUNC_000345
+		pop ecx
+		call FUNC_000523
+		pop ebx
+		pop ebp
+		ret
 
 FUNC_000459:			; Pos = 24c04
 
@@ -32144,17 +32574,27 @@ FUNC_000459:			; Pos = 24c04
 
 
 
+; ANISO - called when assassination button is pressed...
 FUNC_000460:			; Pos = 24c30
 
 		push ebp
 		mov ebp,esp
-		push ecx
+		add esp,byte -0x4
 		push ebx
 		push esi
 		push edi
+
+		; NOTE: [ebx+0x4] is the cash award
+		; [ebx+0x8] is the date, I think
+		; [ebx] is a random seed, with table idx as high byte
+
 		mov ebx,[ebp+0x8]
 		add dword [ebx+0x8],0x121cf7
+		
 		mov eax,[ebx+0x24]
+		mov [ebp-0x4],eax	; store old data
+		shl eax,0x10	; make information loss less evident
+		mov [ebx+0x24],eax
 		mov [DATA_009056],eax
 		mov eax,[ebx]
 		mov [DATA_009059],eax
@@ -32168,12 +32608,34 @@ FUNC_000460:			; Pos = 24c30
 		push byte +0x1
 		call FUNC_000331
 		add esp,byte +0x18
-		mov esi,[ebx+0x24]
-		shl esi,0x6
-		shl esi,0x8
-		sar esi,0x10
-		add esi,0x1000
-		cmp esi,[DATA_008911]
+		
+		; test to see if the player has a good enough
+		; combat rating to take the assassination mission
+		
+		mov eax,[ebp-0x4]	; rank requirement
+		shr eax,0x18
+
+		mov ecx,[DATA_009056]	; time, random high word
+		
+		; shift requirement up or down randomly (very clunky)
+		test ecx,0x2000
+		jz JUMP_EndShift
+		test ecx,0x1000
+		jz JUMP_NegShift
+		cmp eax,0x9
+		jz JUMP_EndShift
+		inc eax
+		jmp short JUMP_EndShift
+	JUMP_NegShift:
+		cmp eax,0x0
+		jz JUMP_EndShift
+		dec eax
+	JUMP_EndShift:
+		
+		neg eax
+		mov esi,[eax*4+DATA_005111]	; elite ranking pts required
+		
+		cmp esi,[DATA_008911]	; elite ranking
 		jg JUMP_002226
 		push ebx
 		call FUNC_000466
@@ -32186,14 +32648,11 @@ FUNC_000460:			; Pos = 24c30
 		pop ecx
 		jmp JUMP_002228
 	JUMP_002227:			; Pos = 24ca2
-		mov ax,[ebx+0x24]
-		mov [ebp-0x2],ax
-		lea eax,[ebp-0x2]
-		push eax
-		push byte +0x10
-		call FUNC_000658
-		add esp,byte +0x8
-		mov [DATA_009066],eax
+	
+		mov eax,[ebp-0x4]	; over-ride ship!
+		shr eax,0x10
+		and eax,0xff
+		mov [DATA_009066],eax	; target ship
 		mov dword [ebx],0x9861
 		push ebx
 		call FUNC_000345
@@ -32209,7 +32668,7 @@ FUNC_000460:			; Pos = 24c30
 		pop ecx
 		mov [ebx+0x4],edi
 		mov [ebx+0x8],esi
-		mov dword [ebx],0x9863
+		mov dword [ebx],0x9863	; what ship is he traveling on?
 		push ebx
 		call FUNC_000345
 		pop ecx
@@ -32230,7 +32689,7 @@ FUNC_000460:			; Pos = 24c30
 		pop edi
 		pop esi
 		pop ebx
-		pop ecx
+		mov esp,ebp
 		pop ebp
 		ret
 
@@ -32463,6 +32922,7 @@ FUNC_000466:			; Pos = 24e48
 
 
 
+; ANISO - called for assassination acceptance
 FUNC_000467:			; Pos = 24ed8
 
 		push ebp
@@ -32476,13 +32936,13 @@ FUNC_000467:			; Pos = 24ed8
 		jl JUMP_002249
 		mov dword [ebx],0x99cb
 		push ebx
-		call FUNC_000352
+		call FUNC_000352	; no more room on contract list
 		pop ecx
 		jmp JUMP_002251
 	JUMP_002249:			; Pos = 24f06
 		mov dword [ebx],0x99ca
 		push ebx
-		call FUNC_000352
+		call FUNC_000352	; excellent!
 		pop ecx
 		mov eax,[ebx+0xc]
 		mov [ebp-0x4],eax
@@ -32494,7 +32954,9 @@ FUNC_000467:			; Pos = 24ed8
 		add esp,byte +0x8
 		cmp dword [esi+0x48fc],0x9857
 		jnz JUMP_002250
-		mov eax,[esi+0x10a]
+		
+		; accept a military assassination.
+		mov eax,[esi+0x10a]	; current system
 		push eax
 		movsx eax,byte [esi+0x492a]
 		mov edx,eax
@@ -32517,18 +32979,19 @@ FUNC_000467:			; Pos = 24ed8
 		mov eax,[ebx+0xc]
 		push eax
 		push byte +0x0
-		mov al,[ebx+0x2c]
+		mov al,[ebx+0x2c]	; string
 		add al,0x44
 		shl eax,0x4
-		add al,[esi+0x43c]
+		add al,[esi+0x43c]	; allegiance
 		push eax
-		call FUNC_000314
+		call FUNC_000314	; copy into D9085 mission structs
 		add esp,byte +0x2c
 		push ebx
 		call FUNC_000507
 		pop ecx
 		jmp short JUMP_002251
 	JUMP_002250:			; Pos = 24f96
+		; ANISO - accept a civvie assassination.
 		mov eax,[esi+0x10a]
 		push eax
 		movsx eax,byte [esi+0x492a]
@@ -32612,6 +33075,7 @@ FUNC_000468:			; Pos = 2500c
 
 
 
+; ANISO - they will be leaving at...
 FUNC_000469:			; Pos = 25068
 
 		push ebp
@@ -32905,13 +33369,14 @@ FUNC_000477:			; Pos = 2531c
 
 
 
+; ANISO - next functions called for crew offers (either accept or decline the job)
 FUNC_000478:			; Pos = 25380
 
 		push ebp
 		mov ebp,esp
 		mov eax,[ebp+0x8]
 		mov dword [eax+0x8],0x4000
-		mov dword [eax+0xc],0x32
+		mov dword [eax+0xc],2500
 		push eax
 		call FUNC_000482
 		pop ecx
@@ -32929,7 +33394,7 @@ FUNC_000479:			; Pos = 253a0
 		mov ebp,esp
 		mov eax,[ebp+0x8]
 		mov dword [eax+0x8],0x6000
-		mov dword [eax+0xc],0x64
+		mov dword [eax+0xc],5000
 		push eax
 		call FUNC_000482
 		pop ecx
@@ -32947,7 +33412,7 @@ FUNC_000480:			; Pos = 253c0
 		mov ebp,esp
 		mov eax,[ebp+0x8]
 		mov dword [eax+0x8],0xe000
-		mov dword [eax+0xc],0x96
+		mov dword [eax+0xc],7500
 		push eax
 		call FUNC_000482
 		pop ecx
@@ -32965,7 +33430,7 @@ FUNC_000481:			; Pos = 253e0
 		mov ebp,esp
 		mov eax,[ebp+0x8]
 		mov dword [eax+0x8],0xffff
-		mov dword [eax+0xc],0xc8
+		mov dword [eax+0xc],10000
 		push eax
 		call FUNC_000482
 		pop ecx
@@ -32977,6 +33442,7 @@ FUNC_000481:			; Pos = 253e0
 
 
 
+; ANISO - Accepts or declines job, also checks for free crew places
 FUNC_000482:			; Pos = 25400
 
 		push ebp
@@ -32996,7 +33462,10 @@ FUNC_000482:			; Pos = 25400
 		mov eax,[esi+0x4914]
 		mov [ebx+0x2c],eax
 		mov eax,[esi+0x5030]
-		cmp eax,[esi+0x502c]
+		
+		; MODIFIED - allow crew to join even without a free "slot"
+		cmp eax,14 ; [esi+0x502c] 
+		
 		jl JUMP_002257
 		mov dword [ebx],0x9937
 		push ebx
@@ -33470,6 +33939,10 @@ FUNC_000493:			; Pos = 258d0
 		mov eax,[ebx]
 		test eax,eax
 		jnz JUMP_002272
+		
+		; ANISO - no hand-coded missions in 3500
+		cmp byte [_DATA_ExtendedUniverse],0
+		jnz .NoMissions
 		push byte +0x3
 		push byte +0x0
 		call FUNC_000034
@@ -33478,6 +33951,8 @@ FUNC_000493:			; Pos = 258d0
 		push byte +0x0
 		call FUNC_000034
 		add esp,byte +0x8
+
+	.NoMissions:
 		cmp dword [DATA_009051],byte +0x0
 		jnz JUMP_002274
 		mov dword [esi],0x990b
@@ -33664,6 +34139,7 @@ FUNC_000497:			; Pos = 25ab4
 
 
 
+; ANISO - called to accept a bombing mission.
 FUNC_000498:			; Pos = 25ad0
 
 		push ebp
@@ -33692,9 +34168,9 @@ FUNC_000498:			; Pos = 25ad0
 		mov eax,[eax+0x38]
 		movsx eax,word [eax+0x12]
 		dec eax
-		mov edx,[esi+0x120]
-		cmp edx,[esi+0x118]
-		jnl JUMP_002286
+;		mov edx,[esi+0x120]
+;		cmp edx,[esi+0x118]
+;		jnl JUMP_002286
 		test eax,eax
 		jnl JUMP_002288
 	JUMP_002286:			; Pos = 25b39
@@ -33715,7 +34191,8 @@ FUNC_000498:			; Pos = 25ad0
 		mov edx,[esi+0xc8]
 		cmp byte [edx+eax+0xd6],0x0
 		jnz JUMP_002287
-		dec dword [esi+0x118]
+		; ANISO - caught it!  Missiles no longer take up space
+		; dec dword [esi+0x118] 
 		mov edx,[esi+0xc8]
 		mov byte [edx+eax+0xd6],0x89
 		jmp short JUMP_002290
@@ -33968,6 +34445,7 @@ FUNC_000505:			; Pos = 25d58
 
 
 
+; ANISO - military assassination function.
 FUNC_000506:			; Pos = 25d8c
 
 		push ebp
@@ -33977,6 +34455,7 @@ FUNC_000506:			; Pos = 25d8c
 		push esi
 		push edi
 		mov ebx,[ebp+0x8]
+		
 		mov eax,[ebx]
 		mov [DATA_009059],eax
 		xor eax,eax
@@ -33998,11 +34477,27 @@ FUNC_000506:			; Pos = 25d8c
 		pop ecx
 		mov ax,[ebx+0x24]
 		mov [ebp-0x2],ax
-		lea eax,[ebp-0x2]
-		push eax
-		push byte +0x10
-		call FUNC_000658
-		add esp,byte +0x8
+;		lea eax,[ebp-0x2]
+;		push eax
+;		push byte +0x10
+;		call FUNC_000658
+;		add esp,byte +0x8
+		
+		mov eax,[ebx+0x2c]	; id string (i.e., "traitorous merchant")
+		sub eax,0x99bc
+		shl eax,0x2
+		cmp word [DATA_008996],0x1
+	
+		jnz .NotImperial
+		add eax,2
+	.NotImperial:
+
+		test dword [ebx+0xc],0x1
+		jz .FirstShip
+		inc eax
+	.FirstShip:
+
+		movzx eax,byte [eax+DATA_MilitaryTargets]
 		mov [DATA_009066],eax
 		mov dword [ebx],0x9861
 		push ebx
@@ -34136,22 +34631,27 @@ FUNC_000509:			; Pos = 25ed4
 		pop ebp
 		ret
 	JUMP_002304:			; Pos = 25f0a
+		mov eax,[ebx+0x2c]
+
+		push eax
 		push ebx
-		call FUNC_000516
+		call FUNC_000516	; delete this entry!
 		pop ecx
+		pop eax
+
 		mov dword [ebx+0x10],0x2000
-		cmp dword [DATA_009059],0x9976
+		cmp eax,0x9976
 		jl JUMP_002305
 		add dword [ebx+0x10],0x100
 	JUMP_002305:			; Pos = 25f2b
-		cmp dword [DATA_009059],0x997a
+		cmp eax,0x997a
 		jl JUMP_002306
 		add dword [ebx+0x10],0x100
 	JUMP_002306:			; Pos = 25f3e
 		cmp byte [DATA_009063],0x2
 		jz JUMP_002307
 		or dword [ebx+0x10],0x4000
-	JUMP_002307:			; Pos = 25f4e
+	JUMP_002307:			; Pos = 25f4e.  Generate assassins
 		push byte +0x0
 		mov eax,[ebx+0x8]
 		push eax
@@ -34266,15 +34766,36 @@ FUNC_000514:			; Pos = 26004
 		jz JUMP_002311
 		jmp short JUMP_002312
 	JUMP_002309:			; Pos = 26027
-		mov dword [eax+0x2c],0x9910
-		jmp short JUMP_002313
+		mov dword [eax+0x2c],0x9910	; some - but you should be able to handle it.
+		jmp JUMP_002313
 	JUMP_002310:			; Pos = 26030
-		mov dword [eax+0x2c],0x9911
-		jmp short JUMP_002313
+		mov ecx,[eax+0x2c]
+		cmp ecx,0x996c
+		jnl .SuperDanger
+
+		cmp dword [DATA_009059],0x9856
+		jz .SuperDanger
+
+		mov dword [eax+0x2c],0x9911	; dangerous
+		jmp JUMP_002313
+	.SuperDanger:
+		mov dword [eax+0x2c],0x9912	; very dangerous
+		jmp JUMP_002313
 	JUMP_002311:			; Pos = 26039
+		mov dword [eax+0x2c],0x9910	; some
+		jmp JUMP_002313
+	JUMP_002312:			; Pos = 26042
+		mov ecx,[eax+0x2c]
+		cmp ecx,0x997a	; highest danger?
+		jl .NotHighDanger
 		mov dword [eax+0x2c],0x9910
 		jmp short JUMP_002313
-	JUMP_002312:			; Pos = 26042
+	.NotHighDanger:
+		cmp ecx,0x9976	; dangerous?
+		jl .NotDangerous
+		mov dword [eax+0x2c],0x9910
+		jmp short JUMP_002313
+	.NotDangerous:
 		mov dword [eax+0x2c],0x990f
 	JUMP_002313:			; Pos = 26049
 		push eax
@@ -34366,14 +34887,19 @@ FUNC_000517:			; Pos = 260a4
 
 
 
+; ANISO - create double-price window
 FUNC_000518:			; Pos = 260d0
 
 		push ebp
 		mov ebp,esp
+		add esp,byte -0x4
 		push ebx
 		push esi
+		push edi
+
 		mov ebx,[ebp+0x8]
 		mov esi,DATA_008804
+		
 		call FUNC_000342
 		mov dword [esi+0x48de],0x98d8
 		mov eax,[ebx+0x1c]
@@ -34384,24 +34910,67 @@ FUNC_000518:			; Pos = 260d0
 		mov dword [ebx],0x9840
 		mov eax,[ebx+0x8]
 		add eax,0xffff7200
+		
 		mov [ebx+0x10],eax
 		movzx eax,word [esi+eax*2+0x134]
 		mov [ebx+0x4],eax
 		push ebx
 		call FUNC_000345
 		pop ecx
+		
+		; sell whatever's smaller: your cargo or what will be accepted
+		mov eax,[ebx+0x8]
+		add eax,0xffff7200
+		movzx ecx,word [esi+eax*2+0x134]	; cargo amount
+		mov eax,[ebx+0x2c]	; max. sell
+		mov edi,eax	; store
+		cmp eax,ecx
+		jng .CanSellAll
+		mov eax,ecx
+	.CanSellAll:
+
+		cmp eax,0x1
+		jng .NoSellAllButton
+
+		; new button - sell all you can
+		mov dword [ebx],0x99ec
+		
+		mov [ebx+0x2c],eax
+		
+		mov ecx,[ebx+0xc]	; cash paid
+		mov [ebp-0x4],ecx
+
+		imul ecx		
+		mov [ebx+0xc],eax
+
+		push ebx
+		call FUNC_000345
+		pop ecx
+		
+		mov [ebx+0x2c],edi
+		mov eax,[ebp-0x4]
+		mov [ebx+0xc],eax
+
+	.NoSellAllButton:
 		mov dword [ebx],0x983f
 		push ebx
 		call FUNC_000345
 		pop ecx
 		mov dword [ebx],0x992e
-		mov eax,[esi+0x48f0]
-		mov [ebx+0x24],eax
+
+;		mov eax,[esi+0x48f0]
+
+;		mov [ebx+0x24],eax
 		push ebx
-		call FUNC_000334
+		call FUNC_000352 ; call FUNC_000334
 		pop ecx
+
+		call FUNC_000523
+
+		pop edi
 		pop esi
 		pop ebx
+		mov esp,ebp
 		pop ebp
 		ret
 		nop
@@ -34409,47 +34978,158 @@ FUNC_000518:			; Pos = 260d0
 		nop
 
 
-
+; ANISO - sell for double-price ads
 FUNC_000519:			; Pos = 26154
 
 		push ebp
 		mov ebp,esp
-		mov eax,[ebp+0x8]
-		mov edx,DATA_008804
-		mov ecx,[eax+0x8]
-		mov [eax+0x4],ecx
-		mov dword [eax],0x98e5
-		mov ecx,[eax+0x10]
-		cmp word [edx+ecx*2+0x134],byte +0x0
+		push edi
+		push esi
+		push ebx
+
+		mov ebx,[ebp+0x8]
+		
+
+		mov edi,DATA_008804
+
+		cmp dword [ebx],0x99ec
+		jz .IsSellAll
+		mov dword [ebx+0x2c],0x1
+		jmp .EndSellAllCond
+	.IsSellAll:
+		mov eax,[ebx+0x10]
+		movzx eax,word [edi+eax*2+0x134]
+		mov ecx,[ebx+0x2c]
+		cmp eax,ecx
+		jge .EndSellAllCond
+		; less cargo than the button says, correct
+
+		mov [ebx+0x2c],eax
+		mov ecx,[DATA_009048+0xc]
+		imul ecx
+		mov [ebx+0xc],eax
+
+	.EndSellAllCond:
+
+		mov ecx,[ebx+0x8]
+		mov [ebx+0x4],ecx
+		mov dword [ebx],0x98e5
+		mov ecx,[ebx+0x10]
+		cmp word [edi+ecx*2+0x134],byte +0x0
 		jnz JUMP_002319
-		push eax
-		call FUNC_000352
+		push ebx
+		call FUNC_000352	; You have no %s to sell.
 		pop ecx
+		
+		pop ebx
+		pop esi
+		pop edi
 		pop ebp
 		ret
 	JUMP_002319:			; Pos = 26182
-		mov byte [edx+0x4920],0xff
-		mov ecx,[eax+0xc]
-		add [edx+0x114],ecx
-		mov ecx,[eax+0x10]
-		dec word [edx+ecx*2+0x134]
-		dec dword [edx+0x120]
-		mov ecx,[eax+0x20]
-		dec dword [ecx+0x4]
-		cmp dword [edx+0x48e4],byte +0x0
-		jnz JUMP_002320
-		mov dword [eax],0x98e7
+		mov byte [edi+0x4920],0xff
+		mov ecx,[ebx+0xc]
+		add [edi+0x114],ecx
+		mov ecx,[ebx+0x10]
+
+		mov eax,[ebx+0x2c]
+		sub [edi+ecx*2+0x134],ax
+		sub [edi+0x120],eax
+		
+		; get the appropriate starport in esi
+		mov eax,[DATA_008862]
+		movzx eax,byte [eax+0x86]
 		push eax
-		call FUNC_000334
+		call FUNC_000649
+		pop ecx
+		mov esi,eax
+		mov eax,[ebx+0x14]
+
+		lea eax,[eax+eax*2]
+		lea edx,[eax*8+esi+0x132]
+		lea esi,[edx+0xc]
+		mov ecx,[ebx+0x2c]
+		sub [esi],ecx	; will accept less
+		jnz .StillSomeLeft
+		
+		; get rid of the advert
+		mov dword [edx],0x0
+
+		push ebx
+		call FUNC_DoublePrice_AcceptNoMore
+		pop ecx
+	.StillSomeLeft:
+		mov eax,[ebx+0x2c]
+		mov ecx,[ebx+0x20]
+		sub [ecx+0x4],eax
+		cmp dword [edi+0x48e4],byte +0x0
+		jnz JUMP_002320
+		mov dword [ebx],0x98e7
+		push ebx
+		call FUNC_000352 ; call FUNC_000334
 		pop ecx
 		jmp short JUMP_002321
 	JUMP_002320:			; Pos = 261c1
-		call FUNC_000335
+		; call FUNC_000335
+
+		cmp dword [esi],0x0
+		jz JUMP_002321
+
+		; update the message to reflect new limit
+		mov dword [ebx],0x992e
+		mov eax,[esi]
+		mov [ebx+0x2c],eax
+		push ebx
+		mov eax,[DATA_009048+0xc]
+		mov [ebx+0xc],eax
+		call FUNC_000352 ; call FUNC_000334
+		pop ecx
+
+		; update 'sell all' button if it's there
+		
+		cmp dword [DATA_009048+0x30],0x99ec
+		jnz JUMP_002321
+
+		mov eax,[ebx+0x10]
+		movzx ecx,word [edi+eax*2+0x134]
+		
+		mov eax,[esi]
+
+		cmp eax,ecx
+		jng .CanSellAll
+		mov eax,ecx
+	.CanSellAll:
+
+		; if can sell 1t or less, forget about the 'sell all' button
+		cmp eax,0x1
+		jg .KeepSellAllButton
+		mov dword [DATA_009051],0x1
+		
+		mov dword [ebx],0x983f
+		push ebx
+		call FUNC_000345
+		pop ecx
+		
+		jmp JUMP_002321
+	.KeepSellAllButton:
+
+		mov [DATA_009048+0x5c],eax
+
+		mov ecx,[DATA_009048+0xc]	; cash
+		imul ecx
+		mov [DATA_009048+0x3c],eax
+
 	JUMP_002321:			; Pos = 261c6
 		push byte +0x0
 		push byte +0x12
 		call FUNC_000148
 		add esp,byte +0x8
+		
+		call FUNC_000523
+
+		pop ebx
+		pop esi
+		pop edi
 		pop ebp
 		ret
 
@@ -34477,20 +35157,23 @@ FUNC_000520:			; Pos = 261d4
 
 
 
+; ANISO - constructs passenger/package mission window.
 FUNC_000521:			; Pos = 26204
 
 		push ebp
 		mov ebp,esp
 		push ebx
+		push esi
+
 		mov ebx,[ebp+0x8]
 		xor eax,eax
 		mov [DATA_009059],eax
-		mov eax,[ebx+0x4]
+		mov eax,[ebx+0x4]	; cash amount
 		mov [DATA_009060],eax
 		mov dword [ebx],0x991d
 		push dword 0x8000
 		push byte +0x0
-		mov eax,[ebx+0x24]
+		mov eax,[ebx+0x24]	; name ID?
 		push eax
 		push ebx
 		mov eax,[DATA_009052]
@@ -34502,23 +35185,78 @@ FUNC_000521:			; Pos = 26204
 		call near [DATA_007217]    ; FUNC_000922
 		pop ecx
 		neg eax
-		cmp eax,[DATA_008922]
-		jng JUMP_002322
+		cmp eax,[DATA_008922]	; reputation?
+		jng near JUMP_002322
+		
 		push ebx
 		call FUNC_000520
 		pop ecx
+		
+		pop esi
 		pop ebx
 		pop ebp
 		ret
 	JUMP_002322:			; Pos = 26259
+
+		; ANISO - added new block of code here
+
+		movzx ecx,byte [ebx+0x11]	; top byte of low info word (mission index)
+
+		shr ecx,0x1
+
+		push ecx
+		call _GetPackageRankRequired
+		pop ecx
+		
+		mov esi,eax
+		mov ecx,[DATA_009056]	; random seed supplied
+		
+		; shift requirement up or down randomly (very clunky)
+		test ecx,0x2
+		jz JUMP_EndShift2
+		test ecx,0x1
+		jz JUMP_NegShift2
+		cmp esi,0x9
+		jz JUMP_EndShift2
+		inc esi
+		jmp short JUMP_EndShift2
+	JUMP_NegShift2:
+		cmp esi,0x0
+		jz JUMP_EndShift2
+		dec esi
+	JUMP_EndShift2:
+		
+		neg esi
+		mov esi,[esi*4+DATA_005111]	; elite ranking pts required
+		
+		cmp esi,[DATA_008911]	; elite ranking
+		jg JUMP_BadRanking
+		push ebx
+		call FUNC_000466
+		pop ecx
+		test eax,eax
+		jz JUMP_OKRanking
+	JUMP_BadRanking:			; Pos = 24c96
+		push ebx
+		call FUNC_000459
+		pop ecx
+		jmp short JUMP_EndPackageConstruct
+	JUMP_OKRanking:			; Pos = 24ca2
+
 		mov dword [ebx],0x9833
 		push byte +0xd
 		push ebx
 		call FUNC_000522
 		add esp,byte +0x8
+		
+	JUMP_EndPackageConstruct:
+		pop esi
 		pop ebx
 		pop ebp
 		ret
+		nop
+		nop
+		nop
 
 
 
@@ -34744,6 +35482,8 @@ FUNC_000531:			; Pos = 2640c
 		mov eax,[ebx+0x10]
 		sar eax,0x8
 		and eax,byte +0x1e
+		
+		; if it's a police mission, say "I can't pay any now"
 		cmp eax,byte +0x14
 		jnz JUMP_002334
 		mov dword [ebx+0x2c],0x9922
@@ -34751,7 +35491,7 @@ FUNC_000531:			; Pos = 2640c
 	JUMP_002334:			; Pos = 2642b
 		test byte [DATA_009059],0x80
 		jz JUMP_002335
-		mov dword [ebx+0x2c],0x9926
+		mov dword [ebx+0x2c],0x9926	; we've agreed on payment.
 		jmp short JUMP_002337
 	JUMP_002335:			; Pos = 2643d
 		mov esi,0x2
@@ -34767,11 +35507,11 @@ FUNC_000531:			; Pos = 2640c
 		add esp,byte +0xc
 		test eax,eax
 		jz JUMP_002336
-		mov dword [ebx+0x2c],0x9925
+		mov dword [ebx+0x2c],0x9925	; what kind of fool...
 		jmp short JUMP_002337
 	JUMP_002336:			; Pos = 2646b
 		or dword [DATA_009059],0x80
-		mov dword [ebx+0x2c],0x9923
+		mov dword [ebx+0x2c],0x9923	; OK.  I'll pay half
 	JUMP_002337:			; Pos = 2647c
 		push ebx
 		call FUNC_000353
@@ -34784,6 +35524,7 @@ FUNC_000531:			; Pos = 2640c
 
 
 
+; ANISO - called when "I want all the money now" is pressed
 FUNC_000532:			; Pos = 26488
 
 		push ebp
@@ -34801,7 +35542,7 @@ FUNC_000532:			; Pos = 26488
 	JUMP_002338:			; Pos = 264a7
 		test byte [DATA_009059],0x80
 		jz JUMP_002339
-		mov dword [ebx+0x2c],0x9926
+		mov dword [ebx+0x2c],0x9926	; we've agreed on payment.
 		jmp short JUMP_002341
 	JUMP_002339:			; Pos = 264b9
 		mov esi,0xa
@@ -34820,7 +35561,7 @@ FUNC_000532:			; Pos = 26488
 		mov dword [ebx+0x2c],0x9925
 		jmp short JUMP_002341
 	JUMP_002340:			; Pos = 264e7
-		or dword [DATA_009059],byte +0x40
+		or dword [DATA_009059],0xc0	; bugfix
 		mov dword [ebx+0x2c],0x9924
 	JUMP_002341:			; Pos = 264f5
 		push ebx
@@ -35197,7 +35938,7 @@ FUNC_000542:			; Pos = 26900
 		mov [ebx+0x20],eax
 		mov dword [ebx],0x984b
 		mov dword [ebx+0x4],0x9949
-		mov dword [ebx+0xc],0x1388
+		mov dword [ebx+0xc],40000
 		push ebx
 		push byte +0x6
 		call FUNC_000543
@@ -35217,6 +35958,10 @@ FUNC_000543:			; Pos = 269c4
 		mov ebp,esp
 		push ebx
 		push esi
+
+		xor eax,eax
+		mov [DATA_ConfiscatedAmount],eax	; zero it out
+
 		mov ebx,[ebp+0xc]
 		mov esi,DATA_008804
 		mov eax,[esi+0xcc]
@@ -35399,14 +36144,15 @@ FUNC_000547:			; Pos = 26ba8
 
 
 
+; ANISO - the following functions are called for bribery
 FUNC_000548:			; Pos = 26bc0
 
 		push ebp
 		mov ebp,esp
 		mov eax,[ebp+0x8]
 		push eax
-		push byte +0x64
-		push byte +0x14
+		push dword 5000		; bribe cost
+		push dword 160000	; max fine 
 		call FUNC_000551
 		add esp,byte +0xc
 		pop ebp
@@ -35423,8 +36169,8 @@ FUNC_000549:			; Pos = 26bd8
 		mov ebp,esp
 		mov eax,[ebp+0x8]
 		push eax
-		push dword 0x1f4
-		push byte +0x6
+		push dword 25000
+		push dword 600000
 		call FUNC_000551
 		add esp,byte +0xc
 		pop ebp
@@ -35438,8 +36184,8 @@ FUNC_000550:			; Pos = 26bf0
 		mov ebp,esp
 		mov eax,[ebp+0x8]
 		push eax
-		push dword 0x9c4
-		push byte +0x2
+		push dword 100000
+		push dword 1350000
 		call FUNC_000551
 		add esp,byte +0xc
 		pop ebp
@@ -35447,6 +36193,7 @@ FUNC_000550:			; Pos = 26bf0
 
 
 
+; Decide whether a bribe will be accepted.
 FUNC_000551:			; Pos = 26c08
 
 		push ebp
@@ -35458,7 +36205,7 @@ FUNC_000551:			; Pos = 26c08
 		mov esi,[ebp+0xc]
 		mov edi,DATA_008804
 		mov eax,[edi+0xcc]
-		mov eax,[eax+0xa0]
+		mov eax,[eax+0xa0]	; starport random seed
 		mov edx,eax
 		shl edx,0xc
 		shr eax,0x14
@@ -35469,19 +36216,36 @@ FUNC_000551:			; Pos = 26c08
 		mov eax,[edi+0x48f0]
 		mov [ebx+0x8],eax
 		mov [ebx+0x4],eax
+		
 		lea eax,[ebx+0x8]
 		push eax
 		lea eax,[ebx+0x4]
 		push eax
-		mov eax,[ebp+0x8]
-		push eax
+		push dword 0x10000
 		call near [DATA_007216]    ; FUNC_000921
 		add esp,byte +0xc
+
+		push eax ; bribability (?) of police officer
+		
+		movzx eax,word [edi+0x43c]
+		mov eax,[edi+eax*4+0x50f8]
+
+		push eax	; fine amount
+		
+		mov eax,[ebp+0x8]
+		push eax	; max fine amount
+		
+		call _CanBribe
+		add esp,byte +0xc
+
 		test eax,eax
-		jz JUMP_002365
+		jnz JUMP_002365	; bribe accepted?
 		movzx eax,word [edi+0x43c]
 		mov esi,[edi+eax*4+0x50f8]
-		add esi,0x4e20
+		
+		; ANISO - fine for attempted bribery
+		add esi,50000	; from 20000
+		
 		test esi,esi
 		jng near JUMP_002367
 		mov [ebx+0xc],esi
@@ -35499,17 +36263,43 @@ FUNC_000551:			; Pos = 26c08
 		pop ecx
 		mov eax,[edi+0xcc]
 		push eax
-		push byte +0x6
+		push byte +0x6	; attempted bribery
 		call FUNC_000237
 		add esp,byte +0x8
-		jmp short JUMP_002367
+		jmp JUMP_002367
 	JUMP_002365:			; Pos = 26cc5
+
+		; has enough money?
 		cmp esi,[edi+0x114]
 		jg JUMP_002366
+		
+		; bribery successful!
+
+		; ADDED - give cargo back if still available
+
+		cmp dword [DATA_ConfiscatedAmount],0x0
+		jz EndCargoReturn
+
+		mov eax,0x20
+	
+	ContinueCargoReturn:
+		mov cx,[eax*2+DATA_ConfiscatedCargo]
+		add [eax*2+DATA_008896],cx
+		
+		dec eax
+		jnz ContinueCargoReturn
+		
+		mov eax,[DATA_ConfiscatedAmount]
+		add [DATA_008891],eax
+
+		xor eax,eax
+		mov [DATA_ConfiscatedAmount],eax
+	EndCargoReturn:
+
 		sub [edi+0x114],esi
 		movzx eax,word [edi+0x43c]
 		xor edx,edx
-		mov [edi+eax*4+0x50f8],edx
+		mov [edi+eax*4+0x50f8],edx	; police fine?
 		movzx eax,word [edi+0x43c]
 		push eax
 		push byte +0x0
@@ -35541,7 +36331,7 @@ FUNC_000551:			; Pos = 26c08
 		nop
 
 
-
+; ANISO - called to open police window
 FUNC_000552:			; Pos = 26d2c
 
 		push ebp
@@ -35552,7 +36342,7 @@ FUNC_000552:			; Pos = 26d2c
 		push byte +0x32
 		call FUNC_000262_ConsoleSetButtonImage
 		add esp,byte +0x8
-		movzx eax,word [DATA_008996]
+		movzx eax,word [DATA_008996]	; allegiance
 		cmp dword [eax*4+DATA_009095],byte +0x0
 		jz JUMP_002368
 		mov dword [ebx],0x984b
@@ -35582,7 +36372,7 @@ FUNC_000552:			; Pos = 26d2c
 		ret
 
 
-
+; ANISO - opens BBS shipyard window (police, upgrades, etc)
 FUNC_000553:			; Pos = 26da4
 
 		push ebp
@@ -35595,7 +36385,7 @@ FUNC_000553:			; Pos = 26da4
 		ret
 
 
-
+; ANISO - called for stockmarket transaction
 FUNC_000554:			; Pos = 26db4
 
 		push ebp
@@ -35613,7 +36403,8 @@ FUNC_000554:			; Pos = 26db4
 		mov edx,[eax+0x1c]
 		mov [eax+0x4],edx
 		mov edx,[eax+0x24]
-		add edx,0xffff7200
+		add edx,0xffff7200	; nope =(
+
 		mov [eax+0x14],edx
 		mov [eax+0x10],edx
 		mov ecx,[DATA_009058]
@@ -35638,7 +36429,7 @@ FUNC_000554:			; Pos = 26db4
 		ret
 
 
-
+; ANISO - buy 1t of an item...
 FUNC_000555:			; Pos = 26e1c
 
 		push ebp
@@ -35647,15 +36438,15 @@ FUNC_000555:			; Pos = 26e1c
 		push esi
 		mov eax,[ebp+0x8]
 		mov ecx,DATA_008804
-		mov esi,[ecx+0x48e4]
+		mov esi,[ecx+0x48e4]	; D9053+1
 		sar esi,0x6
 	JUMP_002372:			; Pos = 26e32
-		mov edx,[ecx+0x120]
-		cmp edx,[ecx+0x118]
+		mov edx,[ecx+0x120]	; cargo space used
+		cmp edx,[ecx+0x118]	; cargoAvail
 		jl JUMP_002373
 		mov dword [eax],0x98e3
 		push eax
-		call FUNC_000557
+		call FUNC_000557	; cargoAvail = CargoUsed, can't buy
 		pop ecx
 		jmp JUMP_002377
 	JUMP_002373:			; Pos = 26e52
@@ -35685,8 +36476,8 @@ FUNC_000555:			; Pos = 26e1c
 		mov ebx,[eax+0x14]
 		dec dword [edx+ebx*8]
 		mov edx,[eax+0x10]
-		inc word [ecx+edx*2+0x134]
-		inc dword [ecx+0x120]
+		inc word [ecx+edx*2+0x134]	; add to cargo (buying)
+		inc dword [ecx+0x120]	; add to cargo space used
 		mov edx,[eax+0x20]
 		dec dword [edx+0x8]
 		mov edx,[eax+0x20]
@@ -35710,7 +36501,7 @@ FUNC_000555:			; Pos = 26e1c
 		ret
 
 
-
+; ANISO - sell 1t of an item
 FUNC_000556:			; Pos = 26ee8
 
 		push ebp
@@ -35728,10 +36519,31 @@ FUNC_000556:			; Pos = 26ee8
 		jnz JUMP_002379
 		mov dword [eax],0x98e5
 		push eax
+		call FUNC_000557	; You don't have any
+		pop ecx
+		jmp JUMP_002382
+	JUMP_002379:			; Pos = 26f21
+		push eax
+		mov ecx,[esi+0x48f8]
+		push ecx	; starport ptr
+		mov eax,[eax+0x14]
+		push eax	; item index
+		call _ItemAtMaxStock
+		add esp,byte +0x8
+		mov ecx,eax
+		pop eax
+
+		test ecx,ecx
+		jz .NotMaxStock
+
+		mov dword [eax],0x99ea
+		push eax
 		call FUNC_000557
 		pop ecx
-		jmp short JUMP_002382
-	JUMP_002379:			; Pos = 26f21
+
+		jmp JUMP_002382
+	.NotMaxStock:
+
 		mov edx,[eax+0xc]
 		test edx,edx
 		jnl JUMP_002380
@@ -37181,11 +37993,12 @@ FUNC_000575:			; Pos = 27898
 		jnl JUMP_002424
 		mov eax,edx
 	JUMP_002424:			; Pos = 27f01
+		push byte +0x0	; not continuous
 		push byte +0x0
 		push eax
 		push ebx
-		call _FUNC_000953_TakeDamage
-		add esp,byte +0xc
+		call FUNC_000953
+		add esp,byte +0x10
 		cmp dword [ebp-0x68],byte +0x0
 		jnz JUMP_002425
 		cmp dword [ebp-0x64],byte +0x0
@@ -37252,11 +38065,12 @@ FUNC_000575:			; Pos = 27898
 		mov [ebx+0x94],eax
 		cmp byte [DATA_008700],0x0
 		jz JUMP_002429
+		push byte +0x0	; not continuous
 		push byte +0x0
 		push byte -0x1
 		push ebx
-		call _FUNC_000953_TakeDamage
-		add esp,byte +0xc
+		call FUNC_000953
+		add esp,byte +0x10
 		jmp short JUMP_002429
 	JUMP_002428:			; Pos = 27ff2
 		mov eax,[ebp-0x80]
@@ -37674,11 +38488,12 @@ FUNC_000578:			; Pos = 283b0
 		add eax,byte +0xa
 		cmp dword [ebx+0x82],byte +0xd
 		jna near JUMP_002457
+		push byte +0x0	; not continuous
 		push byte +0x0
 		push eax
 		push ebx
-		call _FUNC_000953_TakeDamage
-		add esp,byte +0xc
+		call FUNC_000953
+		add esp,byte +0x10
 		jmp JUMP_002457
 	JUMP_002455:			; Pos = 2845d
 
@@ -37819,18 +38634,20 @@ FUNC_000578:			; Pos = 283b0
 		mov edi, eax
 
 		movzx eax, byte [esi+0x86]
+		push byte +0x0	; not continuous
 		push eax
 		push edi
 		push ebx
-		call _FUNC_000953_TakeDamage
-		add esp,byte +0xc
+		call FUNC_000953
+		add esp,byte +0x10
 
 		movzx eax, byte [ebx+0x86]
+		push byte +0x0	; not continuous
 		push eax
 		push edi
 		push esi
-		call _FUNC_000953_TakeDamage
-		add esp,byte +0xc
+		call FUNC_000953
+		add esp,byte +0x10
 
 	JUMP_002457:			; Pos = 2854c
 		pop edi
@@ -37868,7 +38685,7 @@ FUNC_000578:			; Pos = 283b0
 ;		add eax,eax
 ;		push eax
 ;		push esi
-;		call _FUNC_000953_TakeDamage
+;		call FUNC_000953
 ;		add esp,byte +0xc
 ;		xor eax,eax
 ;		mov al,[esi+0x86]
@@ -37877,7 +38694,7 @@ FUNC_000578:			; Pos = 283b0
 ;		add eax,eax
 ;		push eax
 ;		push ebx
-;		call _FUNC_000953_TakeDamage
+;		call FUNC_000953
 ;		add esp,byte +0xc
 ;		jmp short JUMP_002457
 ;	JUMP_002456:			; Pos = 28514
@@ -37888,7 +38705,7 @@ FUNC_000578:			; Pos = 283b0
 ;		add eax,eax
 ;		push eax
 ;		push esi
-;		call _FUNC_000953_TakeDamage
+;		call FUNC_000953
 ;		add esp,byte +0xc
 ;		xor eax,eax
 ;		mov al,[esi+0x86]
@@ -37897,7 +38714,7 @@ FUNC_000578:			; Pos = 283b0
 ;		add eax,eax
 ;		push eax
 ;		push ebx
-;		call _FUNC_000953_TakeDamage
+;		call FUNC_000953
 ;		add esp,byte +0xc
 ;	JUMP_002457:			; Pos = 2854c
 ;		pop esi
@@ -39211,89 +40028,107 @@ FUNC_000583:			; Pos = 2907c
 
 
 
+; ANISO - limit turning speed?
 FUNC_000584:			; Pos = 291f0
 
 		push ebp
 		mov ebp,esp
 		mov edx,[ebp+0xc]
-		mov eax,[ebp+0x8]
+		mov eax,[ebp+0x8]	; pointer to turning rate param?
 		cmp dword [eax],0x9fb
 		jl JUMP_002538
 		mov dword [edx],0x2
-		mov dword [eax],0x9fb
+;		mov dword [eax],0x9fb
 		pop ebp
 		ret
 	JUMP_002538:			; Pos = 2920f
 		cmp dword [eax],0x511
 		jl JUMP_002539
 		mov dword [edx],0x3
-		mov dword [eax],0x511
+;		mov dword [eax],0x511
 		pop ebp
 		ret
 	JUMP_002539:			; Pos = 29225
 		cmp dword [eax],0x28b
 		jl JUMP_002540
 		mov dword [edx],0x4
-		mov dword [eax],0x28b
+;		mov dword [eax],0x28b
 		pop ebp
 		ret
 	JUMP_002540:			; Pos = 2923b
 		cmp dword [eax],0x146
 		jl JUMP_002541
 		mov dword [edx],0x5
-		mov dword [eax],0x146
+;		mov dword [eax],0x146
 		pop ebp
 		ret
 	JUMP_002541:			; Pos = 29251
 		cmp dword [eax],0xa3
 		jl JUMP_002542
 		mov dword [edx],0x6
-		mov dword [eax],0xa3
+;		mov dword [eax],0xa3
 		pop ebp
 		ret
 	JUMP_002542:			; Pos = 29267
 		cmp dword [eax],byte +0x52
 		jl JUMP_002543
 		mov dword [edx],0x7
-		mov dword [eax],0x52
+;		mov dword [eax],0x52
 		pop ebp
 		ret
 	JUMP_002543:			; Pos = 2927a
 		cmp dword [eax],byte +0x29
 		jl JUMP_002544
 		mov dword [edx],0x8
-		mov dword [eax],0x29
+;		mov dword [eax],0x29
 		pop ebp
 		ret
 	JUMP_002544:			; Pos = 2928d
 		mov dword [edx],0x9
-		mov dword [eax],0x14
+;		mov dword [eax],0x14
 		pop ebp
 		ret
 		nop
 
 
-
+; ANISO - AI turning function
 FUNC_000585:			; Pos = 2929c
 
 		push ebp
 		mov ebp,esp
-		add esp,byte -0x12	; TEST: see below
+		add esp,byte -0x12
 		push ebx
 		push esi
 		push edi
-		mov eax,[ebp+0x14]
+		
 		mov esi,[ebp+0xc]
 		mov ebx,[ebp+0x8]
 		lea edi,[ebp-0x4]
 		mov edx,[ebx+0x82]
-		cmp edx,byte +0x35
-		jc JUMP_002545
-		sar esi,1
-		cmp edx,byte +0x3b
-		jc JUMP_002545
-		sar esi,1
+		
+		; ANISO - determine turning rates!  HOORAY I FOUND IT
+
+		push edx
+		push esi
+		call _GetTurningRate
+		add esp,byte +0x8
+
+		mov esi,eax
+
+;		mov eax,[edx*4+DATA_TurningMultipliers]
+;		imul esi
+;		sar eax,0xf
+;		mov esi,eax
+
+;		cmp edx,byte +0x35
+;		jc JUMP_002545
+;		sar esi,1
+;		cmp edx,byte +0x3b
+;		jc JUMP_002545
+;		sar esi,1
 	JUMP_002545:			; Pos = 292c5
+		mov eax,[ebp+0x14]
+
 		cmp dword [ebp+0x10],byte +0x0
 		jz JUMP_002547
 		cmp eax,0x7fff
@@ -39358,7 +40193,6 @@ FUNC_000585:			; Pos = 2929c
 	sub [DATA_008933], ax
 	jmp JUMP_002560
 
-
 		movsx eax,word [ebx+0xb0]
 		mov [edi],eax
 		cmp dword [edi],byte +0x0
@@ -39369,15 +40203,16 @@ FUNC_000585:			; Pos = 2929c
 	JUMP_002549:			; Pos = 29334
 		cmp dword [edi],byte +0xf
 		jl JUMP_002552
-		lea eax,[ebp-0x8]
+		lea eax,[ebp-0x8]	; strange value - 0x2 to 0x9
 		push eax
 		push edi
 		call FUNC_000584
+
 		add esp,byte +0x8
 		mov ax,[edi]
 		sub [ebx+0xb0],ax
 		mov eax,[ebp-0x8]
-		push eax
+		push eax	; strange value again
 		push byte +0x70
 		lea eax,[ebx+0xc]
 		push eax
@@ -39532,6 +40367,8 @@ FUNC_000585:			; Pos = 2929c
 		pop edi
 		pop esi
 		pop ebx
+		pop ecx
+		pop ecx
 		mov esp, ebp	; TEST: see above
 		pop ebp
 		ret
@@ -40267,6 +41104,37 @@ FUNC_000597:			; Pos = 29c28
 		or dx,[ebx+0x106]
 		jz near JUMP_002583
 
+; ANISO - pirates don't 'snap' to the player instantly
+	cmp byte [ebx+0xff],0x4
+	jnz near .SkipHostileCheck
+	mov al,[ebx+0xfe]
+	cmp al,[DATA_008857]
+	jnz near .SkipHostileCheck
+
+	; if you're a hostile ship pursuing the player...
+	; don't attack until allowed
+	
+	; not in the right FOR?  No chance.
+	mov ecx,[_DATA_PlayerObject]
+	test ecx,ecx
+	jz .SkipHostileCheck
+
+	mov cl,[ecx+0x56]
+	cmp cl,[ebx+0x56]
+	jnz near JUMP_002583
+
+	mov cl,[ebx+0x118]
+	cmp cl,0xf4	; police
+	jz .SkipHostileCheck
+	cmp cl,0xf5	; mil. base ships
+	jz .SkipHostileCheck
+	
+	movzx eax,word [_DATA_HostileTimer]
+	test eax,eax
+	jnz near JUMP_002583	; disable autopilot fudge for now
+
+.SkipHostileCheck:
+
 ; FIX: Autopilot acceleration fudge
 ; Extra check for v^2 < 4as
 	cmp ebx, [DATA_008861]
@@ -40336,6 +41204,28 @@ FUNC_000597:			; Pos = 29c28
 ; If 4as < v^2, overshoot
 	cmp eax, [ebp-0x24]
 	jl near JUMP_002583
+; ANISO - make sure you're not in a photo/bombing mission
+	mov eax,[ebp+0xc]
+	
+	; is your target a starport?
+	movzx ecx,byte [eax+0x86]
+	mov cl,[ecx+_DATA_ObjectArray]
+	cmp cl,0x1d
+	jz .IsStarport
+	cmp cl,0x1f
+	jz .IsStarport
+	cmp cl,0xf
+	jz .IsStarport
+	jmp short .novelcheck
+
+.IsStarport:
+	push eax
+	call _IsStarportLocked
+	pop ecx
+
+	; if it's locked, don't snap to it
+	test eax,eax
+	jnz near JUMP_002583
 .novelcheck:
 
 		mov eax,[ebp+0x28]
@@ -40439,6 +41329,7 @@ FUNC_000597:			; Pos = 29c28
 		mov [eax],edx
 		jmp JUMP_002595
 	JUMP_002583:			; Pos = 29e0e
+
 		add eax,[ebp+0x10]
 		add eax,byte -0x8
 		mov [ebp-0x8],eax
@@ -40855,6 +41746,8 @@ FUNC_000600:			; Pos = 2a124
 
 
 
+; ANISO - found it!  apply thrust here
+; changed so that missiles have max thrust of 120g instead of 60
 FUNC_000601:			; Pos = 2a254
 
 		push ebp
@@ -40886,8 +41779,15 @@ FUNC_000601:			; Pos = 2a254
 		xor ecx,ecx
 		mov [edi+0x8],ecx
 		movsx ecx,word [eax+0xb6]
+		
+		cmp byte [eax+0xff],0x13
+		jnz RegThrust
+		sal ecx,0x1
+	RegThrust:
+		
 		test ecx,ecx
 		jz JUMP_002618
+
 		mov ebx,[eax]
 		sar ebx,0x10
 		imul ebx,edx
@@ -40908,8 +41808,15 @@ FUNC_000601:			; Pos = 2a254
 		mov [edi+0x8],ebx
 	JUMP_002618:			; Pos = 2a2d9
 		movsx ecx,word [eax+0xb8]
+
+		cmp byte [eax+0xff],0x13
+		jnz RegThrust2
+		sal ecx,0x1
+	RegThrust2:
+
 		test ecx,ecx
 		jz JUMP_002619
+
 		mov ebx,[eax+0xc]
 		sar ebx,0x10
 		imul ebx,edx
@@ -40930,8 +41837,15 @@ FUNC_000601:			; Pos = 2a254
 		add [edi+0x8],ebx
 	JUMP_002619:			; Pos = 2a319
 		movsx ecx,word [eax+0xba]
+
+		cmp byte [eax+0xff],0x13
+		jnz RegThrust3
+		sal ecx,0x1
+	RegThrust3:
+
 		test ecx,ecx
 		jz JUMP_002620
+
 		mov ebx,[eax+0x18]
 		sar ebx,0x10
 		imul ebx,edx
@@ -41008,6 +41922,9 @@ FUNC_000601:			; Pos = 2a254
 		jng JUMP_002625
 		xor ecx,ecx
 	JUMP_002625:			; Pos = 2a418
+		; ANISO - thruster related?  Let's try
+;		sal ecx,0x4
+		
 		add [eax+0x8c],ecx
 		movzx ecx,word [eax+0xee]
 		add ecx,[edi+0x4]
@@ -41036,6 +41953,8 @@ FUNC_000601:			; Pos = 2a254
 		jng JUMP_002629
 		xor ecx,ecx
 	JUMP_002629:			; Pos = 2a45f
+;		sal ecx,0x4
+		
 		add [eax+0x90],ecx
 		movzx ecx,word [eax+0xf0]
 		add ecx,[edi+0x8]
@@ -41064,6 +41983,8 @@ FUNC_000601:			; Pos = 2a254
 		jng JUMP_002633
 		xor ecx,ecx
 	JUMP_002633:			; Pos = 2a4a6
+;		sal ecx,0x4
+		
 		add [eax+0x94],ecx
 		jmp JUMP_002647
 	JUMP_002634:			; Pos = 2a4b1
@@ -41143,10 +42064,19 @@ FUNC_000601:			; Pos = 2a254
 		mov [edi+0x8],edx
 	JUMP_002646:			; Pos = 2a553
 		mov edx,[edi]
+		
+;		sal edx,0x2
+
 		add [eax+0x8c],edx
 		mov edx,[edi+0x4]
+		
+;		sal edx,0x2
+
 		add [eax+0x90],edx
 		mov edx,[edi+0x8]
+		
+;		sal edx,0x2
+
 		add [eax+0x94],edx
 	JUMP_002647:			; Pos = 2a56d
 		pop edi
@@ -41555,6 +42485,7 @@ FUNC_000604:			; Pos = 2a968
 
 
 
+; ANISO - switch current FOR, transform
 FUNC_000605:			; Pos = 2aa00
 
 		push ebp
@@ -41681,7 +42612,7 @@ FUNC_FindFORNew:
 		pop ebp
 		ret
 
-
+; ANISO - find current FOR?
 FUNC_000606:			; Pos = 2aaa8
 
 		push ebp
@@ -41859,6 +42790,51 @@ FUNC_000606:			; Pos = 2aaa8
 		call FUNC_000605
 		add esp,byte +0xc
 	JUMP_002670:			; Pos = 2ac7b
+		pop edi
+		pop esi
+		pop ebx
+		mov esp,ebp
+		pop ebp
+		ret
+
+
+		push ebp
+		mov ebp,esp
+		add esp,byte -0x24
+		push ebx
+		push esi
+		push edi
+		mov edi,[ebp+0x8]
+		
+		; position valid, or not?  
+		cmp byte [edi+0x57],0x0
+		jnz near .EndFORFunc
+
+		xor eax,eax
+		mov al,[edi+0x56]
+		mov [ebp-0x4],eax	; [ebp-0x4] = old FOR
+
+		; new stuff - skips a LOT
+
+		push edi
+		call FUNC_FindFORNew
+		pop ecx
+		mov ebx,eax
+
+		xor eax,eax
+		mov al,[ebx+0x86]
+		cmp eax,[ebp-0x4]	; same as the old FOR?
+		jz near .EndFORFunc
+
+		; set new FOR
+		push eax
+		mov eax,[ebp+0xc]
+		push eax
+		push edi
+		call FUNC_000605
+		add esp,byte +0xc
+
+	.EndFORFunc:			; Pos = 2ac7b
 		pop edi
 		pop esi
 		pop ebx
@@ -42743,7 +43719,7 @@ FUNC_000616:			; Pos = 2b4cc
 		call FUNC_000617
 		mov eax,[DATA_008885]
 		push eax
-		call FUNC_000622
+		call _CreateSystemData
 		pop ecx
 	JUMP_002710:			; Pos = 2b507
 		pop ebp
@@ -42972,7 +43948,7 @@ FUNC_000622:			; Pos = 2b6e8
 		push eax
 		mov eax,[ebp+0x8]
 		push eax
-		call _FUNC_000869_GetSystemData
+		call FUNC_000869
 		add esp,byte +0x24
 		mov ax,[ebp-0x40]
 		mov [DATA_008995],ax
@@ -43868,32 +44844,40 @@ _FUNC_000634_AddToShipyard:			; Pos = 2bfc0
 
 
 
+; find allegiance and morality based ship index, I think
 FUNC_000635:			; Pos = 2c008
 
 		push ebp
 		mov ebp,esp
 		push ebx
 		push esi
-		mov esi,[ebp+0xc]
-		mov edx,[ebp+0x8]
+		mov esi,[ebp+0xc]	; pointer to... something
+		mov edx,[ebp+0x8]	; bIsFriendly?
 		mov ebx,edx
 		cmp edx,byte +0x1
 		jz JUMP_002773
 		test edx,edx
 		jnz JUMP_002774
 	JUMP_002773:			; Pos = 2c01e
-		movzx eax,word [DATA_008996]
-		add eax,eax
-		add ebx,eax
+		movzx eax,word [DATA_008996]	; allegiance of system.
+		add eax,eax	; allegiance * 2
+		add ebx,eax	; isFriendly + allegiance*2
 	JUMP_002774:			; Pos = 2c029
-		mov eax,[ebx*8+DATA_006199]
+		cmp edx,0x13
+		jl LookupShip
+
+		mov ebx,0x13
+		xor edx,edx
+
+	LookupShip:
+		mov eax,[ebx*8+DATA_006199]	; AHA!  Find the ship - uh... what?
 		cmp edx,byte +0x1
-		jnz JUMP_002775
-		cmp word [DATA_008991],byte +0x4
+		jnz JUMP_002775	; not friendly
+		cmp word [DATA_008991],byte +0x4	; has at least a starport?
 		jnc JUMP_002775
-		movzx ecx,word [DATA_008991]
-		imul ecx,eax
-		shr ecx,0x2
+		movzx ecx,word [DATA_008991]	; population
+		imul ecx,eax	; mult by ship... something
+		shr ecx,0x2	; divide by 4
 		mov eax,ecx
 	JUMP_002775:			; Pos = 2c04e
 		cmp edx,byte +0x10
@@ -43909,7 +44893,7 @@ FUNC_000635:			; Pos = 2c008
 		imul dword [ebx*8+DATA_006199]
 		sar eax,0x10
 	JUMP_002777:			; Pos = 2c074
-		mov edx,[ebx*8+DATA_006200]
+		mov edx,[ebx*8+DATA_006200]	; ship index
 		mov eax,[edx+eax*4]
 		pop esi
 		pop ebx
@@ -44453,8 +45437,8 @@ FUNC_000643:			; Pos = 2c4f0
 		lea eax,[eax+eax*4]
 		lea eax,[eax+eax*4]
 		lea eax,[eax+eax*4]
-		add eax,[esi*8+DATA_006214]
-		mov ecx,[esi*8+DATA_006215]
+;		add eax,[esi*8+DATA_006214]
+;		mov ecx,[esi*8+DATA_006215]
 		add ecx,0x99b4
 		mov esi,[DATA_008818]
 		shr esi,0x10
@@ -44615,14 +45599,14 @@ FUNC_000648:			; Pos = 2c72c
 		mov [DATA_009006],eax
 		mov eax,[DATA_008885]
 		push eax
-		call FUNC_000622
+		call _CreateSystemData
 		pop ecx
 		pop ebp
 		ret
 	JUMP_002813:			; Pos = 2c778
 		cmp byte [DATA_008870],0x4
 		jz JUMP_002814
-		call FUNC_000633
+		call _RefreshSystemData ; used to be FUNC_000633
 	JUMP_002814:			; Pos = 2c786
 		pop ebp
 		ret
@@ -44919,6 +45903,7 @@ FUNC_000654:			; Pos = 2ca00
 
 
 
+; ANISO - decide whether player is allowed to dock and if so, do it
 FUNC_000655:			; Pos = 2ca40
 
 		push ebp
@@ -44934,12 +45919,34 @@ FUNC_000655:			; Pos = 2ca40
 		movsx eax,bl
 		cmp eax,[DATA_008857]
 		jnz JUMP_002841
+
+		; Added - player may not land in a photo/bombing system
+		push esi
+		call _IsStarportLocked
+		pop ecx
+
+		test eax,eax
+		jz .NotLockedDown
+		
+		mov eax,[edi]
+		push eax
+		push dword 0x99e9	; Clearance denied.
+		push ebx
+		push esi
+		call FUNC_000656
+		add esp,byte +0x10
+		mov al,0x1
+		jmp JUMP_002846
+
+	.NotLockedDown:
 		movzx eax,word [DATA_008996]
-		cmp dword [eax*4+DATA_009095],0x2710
+		
+		; Large outstanding fines?
+		cmp dword [eax*4+DATA_009095],0x2710	; player fine greater than 1000?
 		jl JUMP_002841
 		mov eax,[edi]
 		push eax
-		push dword 0x98b9
+		push dword 0x98b9	; Clearance denied.
 		push ebx
 		push esi
 		call FUNC_000656
@@ -45021,7 +46028,7 @@ FUNC_000655:			; Pos = 2ca40
 		ret
 
 
-
+; ANISO - initiate dock, play Blue Danube
 FUNC_000656:			; Pos = 2cb40
 
 		push ebp
@@ -45040,15 +46047,9 @@ FUNC_000656:			; Pos = 2cb40
 		jz JUMP_002847
 		cmp dword [DATA_009116],byte +0xf
 		jz JUMP_002847
-		
-		;push byte +0xf
-		;call FUNC_001902_SoundPlaySong		
-		;pop ecx
-
-		push 22
-		call _SoundPlaySong		
+		push byte +0xf
+		call FUNC_001902_SoundPlaySong
 		pop ecx
-		
 	JUMP_002847:			; Pos = 2cb7c
 		mov eax,[ebx+0xa0]
 		mov [ebp-0x14],ebx
@@ -45466,6 +46467,7 @@ FUNC_000671:			; Pos = 2cea4
 
 
 
+; ANISO - spawn assassination target?
 FUNC_000672:			; Pos = 2cf1a
 
 		push ebp
@@ -45526,7 +46528,7 @@ FUNC_000672:			; Pos = 2cf1a
 		mov byte [edi+0x57],0x1
 	JUMP_002860:			; Pos = 2cfb3
 		mov bl,[edi+0x86]
-		mov dword [edi+0x11a],0xffffffff
+;		mov dword [edi+0x11a],0xffffffff
 		mov byte [edi+0x100],0x0
 		mov al,[esi+0x86]
 		mov [edi+0xfe],al
@@ -45885,7 +46887,7 @@ FUNC_000680:			; Pos = 2d299
 		test eax,eax
 		jnz JUMP_002880
 		and byte [edi+0x3fb6],0xfe
-		call _FUNC_000688_SpawnTraders
+		call _OnSystemInit
 		pop edi
 		pop esi
 		pop ebx
@@ -46092,7 +47094,7 @@ FUNC_000686:			; Pos = 2d513
 		cmp byte [DATA_008870],0x4
 		jz JUMP_002892
 		or byte [DATA_009046],0x1
-		call _FUNC_000688_SpawnTraders
+		call _OnSystemInit
 	JUMP_002892:			; Pos = 2d52b
 		pop ebp
 		ret
@@ -46108,7 +47110,7 @@ FUNC_000687:			; Pos = 2d52d
 		cmp al,0x3
 		jnz JUMP_002893
 		and byte [DATA_009046],0xfe
-		call _FUNC_000688_SpawnTraders
+		call _OnSystemInit
 	JUMP_002893:			; Pos = 2d545
 		pop ebp
 		ret
@@ -46116,22 +47118,25 @@ FUNC_000687:			; Pos = 2d52d
 
 
 
-_FUNC_000688_SpawnTraders:			; Pos = 2d548
+; ANISO - this seems to be called upon entry to a system
+; and spawns pirates, traders, etc
+_FUNC_000688_SpawnTraders:
+FUNC_000688:			; Pos = 2d548	BBS Related??
 
 		push ebp
 		mov ebp,esp
-		add esp,byte -0x20
+		add esp,byte -0x24
 		push ebx
 		push esi
 		lea eax,[ebp-0xc]
 		push eax
 		lea eax,[ebp-0x20]
 		push eax
-		lea eax,[ebp-0x1c]
+		lea eax,[ebp-0x1c]	; traders
 		push eax
 		lea eax,[ebp-0x18]
 		push eax
-		lea eax,[ebp-0x14]
+		lea eax,[ebp-0x14]	; pirates
 		push eax
 		lea eax,[ebp-0x10]
 		push eax
@@ -46139,19 +47144,21 @@ _FUNC_000688_SpawnTraders:			; Pos = 2d548
 		push eax
 		lea eax,[ebp-0x4]
 		push eax
-		push dword [DATA_008885]
-		call _FUNC_000869_GetSystemData
+		push dword [DATA_008885]	; current system index?
+		call FUNC_000869	; system data lookup func?
 		add esp,byte +0x24
+		
 		mov eax,[DATA_009133]
 		mov [DATA_007758],eax
-		push dword [ebp-0x1c]
-		call near [DATA_007217]    ; FUNC_000922
-		pop ecx
+
+		mov eax,[ebp-0x1c]	; traders
 		mov ebx,eax
+		shl eax,0x3	; 8 times as many traders
+		
 		test ebx,ebx
 		jna JUMP_002895
 	JUMP_002894:			; Pos = 2d598
-		call _FUNC_000689_SpawnHSTrader
+		call FUNC_000689
 		dec ebx
 		test ebx,ebx
 		ja JUMP_002894
@@ -46166,7 +47173,7 @@ _FUNC_000688_SpawnTraders:			; Pos = 2d548
 		test ebx,ebx
 		jna JUMP_002897
 	JUMP_002896:			; Pos = 2d5b8
-		call _FUNC_000690_SpawnHSTrader2
+		call FUNC_000690
 		dec ebx
 		test ebx,ebx
 		ja JUMP_002896
@@ -46193,7 +47200,7 @@ _FUNC_000688_SpawnTraders:			; Pos = 2d548
 		test ebx,ebx
 		jna JUMP_002901
 	JUMP_002900:			; Pos = 2d5ff
-		call _FUNC_000691_SpawnDockedTrader
+		call FUNC_000691	; spawn a docked trader
 		dec ebx
 		test ebx,ebx
 		ja JUMP_002900
@@ -46207,32 +47214,14 @@ _FUNC_000688_SpawnTraders:			; Pos = 2d548
 		test ebx,ebx
 		jna JUMP_002903
 	JUMP_002902:			; Pos = 2d61d
-		call _FUNC_000699_SpawnAuxTrader
+		call FUNC_000699	; spawn aux. ships
 		dec ebx
 		test ebx,ebx
 		ja JUMP_002902
 	JUMP_002903:			; Pos = 2d627
-		mov ebx,[ebp-0x14]
-		test byte [DATA_009046],0x1
-		jnz JUMP_002904
-		shl ebx,0x2
-	JUMP_002904:			; Pos = 2d636
-		push ebx
-		call near [DATA_007217]    ; FUNC_000922
-		pop ecx
-		mov ebx,eax
-		test ebx,ebx
-		jna JUMP_002906
-	JUMP_002905:			; Pos = 2d644
-		call FUNC_000698
-		dec ebx
-		test ebx,ebx
-		ja JUMP_002905
-	JUMP_002906:			; Pos = 2d64e
-		push dword [ebp-0x14]
-		call near [DATA_007217]    ; FUNC_000922
-		pop ecx
-		mov ebx,eax
+		mov ebx,[ebp-0x24]
+		shr ebx,0x2
+		
 		test ebx,ebx
 		jna JUMP_002908
 	JUMP_002907:			; Pos = 2d65e
@@ -46241,6 +47230,7 @@ _FUNC_000688_SpawnTraders:			; Pos = 2d548
 		test ebx,ebx
 		ja JUMP_002907
 	JUMP_002908:			; Pos = 2d668
+
 		pop esi
 		pop ebx
 		mov esp,ebp
@@ -46248,15 +47238,16 @@ _FUNC_000688_SpawnTraders:			; Pos = 2d548
 		ret
 
 
-
-_FUNC_000689_SpawnHSTrader:			; Pos = 2d66e
+; Spawn HS trader exiting
+_FUNC_000689_SpawnHSTrader:
+FUNC_000689:			; Pos = 2d66e
 
 		push ebp
 		mov ebp,esp
 		add esp,byte -0x8
 		push ebx
 		push byte +0x1
-		call _FUNC_000772_AIShipSpawn
+		call FUNC_000772
 		pop ecx
 		mov ebx,eax
 		test ebx,ebx
@@ -46301,8 +47292,12 @@ _FUNC_000689_SpawnHSTrader:			; Pos = 2d66e
 		mov eax,[DATA_008807]
 		add [ebx+0xac],eax
 		push ebx
-		call FUNC_000775
+		call FUNC_000775	; get source system for incoming trader
 		pop ecx
+		
+		; new - set source system
+		mov [ebx+0x11a],eax
+
 		test eax,eax
 		jnz JUMP_002911
 		push ebx
@@ -46329,15 +47324,16 @@ _FUNC_000689_SpawnHSTrader:			; Pos = 2d66e
 		ret
 
 
-
-_FUNC_000690_SpawnHSTrader2:			; Pos = 2d768
+; Spawn HS trader exiting
+_FUNC_000690_SpawnHSTrader2:
+FUNC_000690:			; Pos = 2d768
 
 		push ebp
 		mov ebp,esp
 		add esp,byte -0x8
 		push ebx
-		push byte +0x11
-		call _FUNC_000772_AIShipSpawn
+		push byte +0x11	
+		call FUNC_000772
 		pop ecx
 		mov ebx,eax
 		test ebx,ebx
@@ -46352,7 +47348,7 @@ _FUNC_000690_SpawnHSTrader2:			; Pos = 2d768
 		mov word [ebx+0xf8],0x8
 		lea eax,[ebp-0x8]
 		push eax
-		call FUNC_000700
+		call FUNC_000700	; get starport
 		pop ecx
 		test eax,eax
 		jnz JUMP_002913
@@ -46384,6 +47380,10 @@ _FUNC_000690_SpawnHSTrader2:			; Pos = 2d768
 		push ebx
 		call FUNC_000775
 		pop ecx
+		
+		; new - set source system
+		mov [ebx+0x11a],eax
+		
 		test eax,eax
 		jnz JUMP_002915
 		push ebx
@@ -46410,8 +47410,9 @@ _FUNC_000690_SpawnHSTrader2:			; Pos = 2d768
 		ret
 
 
-
-_FUNC_000691_SpawnDockedTrader:			; Pos = 2d862
+; ANISO - spawn a docked trader or Bulk Carrier?
+_FUNC_000691_SpawnDockedTrader:
+FUNC_000691:			; Pos = 2d862
 
 		push ebp
 		mov ebp,esp
@@ -46420,7 +47421,7 @@ _FUNC_000691_SpawnDockedTrader:			; Pos = 2d862
 		push esi
 		push edi
 		push byte +0x1
-		call _FUNC_000772_AIShipSpawn
+		call FUNC_000772
 		pop ecx
 		mov edi,eax
 		test edi,edi
@@ -46496,7 +47497,8 @@ _FUNC_000691_SpawnDockedTrader:			; Pos = 2d862
 		shl eax,0x4
 		mov [edi+0xa8],eax
 		mov eax,[DATA_008818]
-		shr eax,0x1c
+		shr eax,0x1d
+		add eax,0x5
 		mov [edi+0xac],eax
 		test byte [DATA_008806],0x80
 		jz JUMP_002921
@@ -46540,7 +47542,7 @@ _FUNC_000691_SpawnDockedTrader:			; Pos = 2d862
 		ret
 
 
-
+; spawn no trader
 FUNC_000692:			; Pos = 2d9d2
 
 		ret
@@ -46971,7 +47973,7 @@ FUNC_000697:			; Pos = 2df11
 		and eax,byte +0xf
 		add eax,[ebp+0xc]
 		mov eax,[eax*4+DATA_006268]
-		mov [ebx+0x11a],eax
+;		mov [ebx+0x11a],eax
 		mov byte [ebx+0x118],0xfb
 		pop ebx
 		pop ebp
@@ -47027,7 +48029,9 @@ FUNC_000698:			; Pos = 2df3b
 
 
 
-_FUNC_000699_SpawnAuxTrader:			; Pos = 2df8f
+; ANISO - spawn aux. ships around station
+_FUNC_000699_SpawnAuxTrader:
+FUNC_000699:			; Pos = 2df8f
 
 		push ebp
 		mov ebp,esp
@@ -47040,7 +48044,7 @@ _FUNC_000699_SpawnAuxTrader:			; Pos = 2df8f
 		test al,al
 		jz JUMP_002932
 		push byte +0xf
-		call _FUNC_000772_AIShipSpawn
+		call FUNC_000772
 		pop ecx
 		mov ebx,eax
 		test ebx,ebx
@@ -47056,6 +48060,7 @@ _FUNC_000699_SpawnAuxTrader:			; Pos = 2df8f
 		mov eax,[ebp-0x8]
 		mov al,[eax+0x130]
 		mov [ebx+0x56],al
+		
 		xor eax,eax
 		mov al,[ebx+0x86]
 		push eax
@@ -47165,7 +48170,7 @@ FUNC_000701:			; Pos = 2e04a
 		ret
 
 
-
+_FUNC_000702_Unknown:
 FUNC_000702:			; Pos = 2e0d5
 
 		push ebp
@@ -47600,12 +48605,15 @@ FUNC_000714:			; Pos = 2e38f
 		cmp dword [ebx+0x82],0x99
 		jz JUMP_002951
 		cmp dword [ebx+0x82],byte +0x6a
-		jnz JUMP_002952
+		jz JUMP_002951
+		jmp JUMP_002952
 	JUMP_002951:			; Pos = 2e500
 		mov dword [ebp-0x60],0x9905
 		mov dword [ebp-0x48],0xffffffff
 		mov [ebp-0x44],ebx
 		movzx eax,word [ebx+0x9e]
+		
+		; ANISO - displays "scooping" message!
 		add eax,0x8e00
 		mov [ebp-0x5c],eax
 		lea eax,[ebp-0x60]
@@ -47615,16 +48623,44 @@ FUNC_000714:			; Pos = 2e38f
 		push byte +0x11
 		call FUNC_001906_SoundPlaySample
 		pop ecx
-		inc dword [esi+0x120]
 		movzx eax,word [ebx+0x9e]
-		inc word [esi+eax*2+0x134]
+		
+		; find free space
+
+		mov ecx,[DATA_008889]
+		sub ecx,[DATA_008891]
+
+		; ANISO - tractor in a cargo item!
+		movzx edx,word [ebx+0x116]
+		cmp edx,ecx
+		jng EnoughSpace
+
+		test ecx,ecx
+		jz near JUMP_002957
+
+		add [esi+eax*2+0x134],cx
+		add [DATA_008891],ecx
+		sub [ebx+0x116],cx
+
+		push ebx
+		call _MakeCargoString
+		pop ecx
+
+		jmp JUMP_002957
+	
+	EnoughSpace:
+		add [esi+eax*2+0x134],dx ; inc word [esi+eax*2+0x134]
+		mov cx,dx
+		add [DATA_008891],ecx
+
 		movzx eax,word [ebx+0x9e]
+		
 		push eax
 		push byte +0x16
 		call FUNC_000148
 		add esp,byte +0x8
 		push ebx
-		call FUNC_000940
+		call FUNC_000940	; delete the item?
 		pop ecx
 		jmp short JUMP_002957
 	JUMP_002952:			; Pos = 2e562
@@ -47825,43 +48861,64 @@ FUNC_000718:			; Pos = 2e654
 		push ebx
 		call FUNC_000721
 		add esp,byte +0x8
-		jmp short JUMP_002962
+		jmp JUMP_002962
 	JUMP_002959:			; Pos = 2e6f2
-		test byte [DATA_008835],0x4
-		jz JUMP_002962
-		mov eax,[ebx+0x82]
-		cmp eax,byte +0xd
+		mov edi,dword -0x1
+		
+	.ContinueECMCheck:
+		inc edi
+		cmp edi,115
+		jnl near JUMP_002962
+
+		mov eax,[DATA_009133]
+		push eax
+		push edi
+		call near [DATA_007754]	; GetObject(idx, *array)
+		add esp,byte +0x8
+
+		mov esi,eax
+		test byte [esi+0x151],0x20	; ECM activated?
+		jz .ContinueECMCheck
+
+		mov edx,[ebx+0x82] ; model index
+		cmp edx,byte +0xd ; destroy if not a missile?
 		ja JUMP_002961
-		mov al,[eax+DATA_000029]
-		jmp near [eax*4+DATA_000030]
 
+		xor eax,eax
+;		test dword [esi+0xc8],0x2000000
+;		jz .NotUltraECM
+;		inc eax
+;	.NotUltraECM:
+		test dword [esi+0xc8],0x800000
+		jz .NotNavalECM
+		inc eax
+	.NotNavalECM:
 
-SECTION .data
+		; 0 = std ecm, 1 = naval ecm, 2 = 'ultra' ecm
+		mov ax,[eax*2+DATA_ECMPower]
+		
+		sub ax,[edx*2+DATA_MissileSubtract]
 
-DATA_000029:			; Pos = 2e713
-	db 0x0, 0x0, 0x0, 0x0, 0x1, 0x0, 0x0, 0x2
-	db 0x1, 0x2, 0x2, 0x1, 0x1, 0x1
+		jc near .ContinueECMCheck
 
-DATA_000030:			; Pos = 2e721
-	dd JUMP_002961
-	dd JUMP_002962
-	dd JUMP_002960
-	db 0xeb, 0x10
+		mov ecx,[DATA_009155]
+		shr ecx,0x7
+		
+		push edx
+		imul cx
+		pop edx
 
+		add [ebx+0x116],ax	; store missile 'health'
+		mov ax,[edx*2+DATA_MissileTolerance]
+		
+		cmp [ebx+0x116],ax	; greater than the missile can handle?
+		jl near .ContinueECMCheck 
 
-SECTION .text
-	JUMP_002960:			; Pos = 2e72f
-		test byte [DATA_008835],0x8
-
-; FIX: Reversed ECM bug
-	jz JUMP_002962
-;		jnz JUMP_002962
-
-	JUMP_002961:			; Pos = 2e738
+	JUMP_002961:
 		push ebx
 		call FUNC_000719
 		pop ecx
-	JUMP_002962:			; Pos = 2e73f
+	JUMP_002962:
 		pop edi
 		pop esi
 		pop ebx
@@ -47871,7 +48928,7 @@ SECTION .text
 
 
 
-FUNC_000719:			; Pos = 2e746
+FUNC_000719:			; Pos = 2e746, ECM related
 
 		push ebp
 		mov ebp,esp
@@ -47920,22 +48977,27 @@ FUNC_000719:			; Pos = 2e746
 
 
 
+; ANISO - called to do missile damage.
 FUNC_000720:			; Pos = 2e7cb
 
 		push ebp
 		mov ebp,esp
 		push ebx
 		push esi
+		
+	
 		mov ebx,[ebp+0x8]
 		mov eax,[ebx+0x82]
 		mov esi,[eax*4+DATA_006269]
+		
+		push byte +0x0	; not continuous
 		xor eax,eax
 		mov al,[ebx+0x100]
-		push eax
-		push esi
-		push dword [ebp+0xc]
-		call _FUNC_000953_TakeDamage
-		add esp,byte +0xc
+		push eax	; inflictor is nav. target?
+		push esi	; damage
+		push dword [ebp+0xc]	; target
+		call FUNC_000953	; TakeDamage()
+		add esp,byte +0x10
 		test eax,eax
 		jz JUMP_002964
 		push ebx
@@ -47965,13 +49027,17 @@ FUNC_000721:			; Pos = 2e820
 		mov ebp,esp
 		push ebx
 		push esi
+		
 		mov esi,[ebp+0xc]
 		mov ebx,[ebp+0x8]
-		mov al,[esi+0x86]
-		cmp al,[ebx+0x100]
-		jnz JUMP_002966
-		cmp word [ebx+0x9e],byte +0x2
-		jna JUMP_002968
+
+		; no arming time if target is another missile
+		cmp byte [esi+0xff],0x13
+		jz JUMP_002966
+
+		; don't explode if you haven't armed
+		cmp word [ebx+0x9e],0x5
+		jl JUMP_002968
 	JUMP_002966:			; Pos = 2e843
 		cmp dword [ebx+0x82],byte +0xd
 		jnz JUMP_002967
@@ -47984,7 +49050,7 @@ FUNC_000721:			; Pos = 2e820
 	JUMP_002967:			; Pos = 2e85a
 		push esi
 		push ebx
-		call FUNC_000720
+		call FUNC_000720	; missile explodes?
 		add esp,byte +0x8
 	JUMP_002968:			; Pos = 2e864
 		pop esi
@@ -47994,12 +49060,15 @@ FUNC_000721:			; Pos = 2e820
 
 
 
+; ANISO - Blow up military target?
 FUNC_000722:			; Pos = 2e868
 
 		push ebp
 		mov ebp,esp
 		push ebx
 		push esi
+		push edi
+
 		mov esi,[ebp+0x8]
 		mov edx,[DATA_009084]
 	JUMP_002969:			; Pos = 2e876
@@ -48010,10 +49079,10 @@ FUNC_000722:			; Pos = 2e868
 	JUMP_002970:			; Pos = 2e880
 		imul ebx,edx,byte +0x34
 		add ebx,DATA_009085
-		mov al,[ebx+0x4]
+		mov al,[ebx+0x4]	; ??
 		and eax,byte +0xf
 		cmp eax,byte +0x5
-		jz JUMP_002971
+		jz JUMP_002971	
 		cmp eax,byte +0x6
 		jnz JUMP_002969
 	JUMP_002971:			; Pos = 2e899
@@ -48027,7 +49096,6 @@ FUNC_000722:			; Pos = 2e868
 		mov cl,[esi+0xfe]
 		cmp eax,ecx
 		jnz JUMP_002969
-
 		movsx eax,byte [ebx+0x1a]
 		mov edx,[ebp+0xc]
 		movzx edx,byte [edx+0x86]
@@ -48056,22 +49124,20 @@ FUNC_000722:			; Pos = 2e868
 		push eax
 		call near [DATA_007754]    ; FUNC_001532_GetModelInstancePtr
 		add esp,byte +0x8
-		mov dword [eax+0x82],0xa2
+		mov edi,eax
+
+		mov dword [eax+0x82],0xa2	; crater model
 		mov dword [eax+0x7e],0x6
 		movzx eax,byte [eax+0x86]
 		mov edx,[DATA_007758]
 		mov byte [edx+eax],0x8
-		mov eax,[ebp+0xc]
-		cmp byte [eax+0x88],0x10
-		jg JUMP_002973
-		push byte +0x0
-		push dword 0xc8
-		push dword [DATA_008861]
-		call _FUNC_000953_TakeDamage
-		add esp,byte +0xc
+		push edi
+		call _DoNukeDamage
+		pop ecx
 	JUMP_002973:			; Pos = 2e95e
 		mov al,0x1
 	JUMP_002974:			; Pos = 2e960
+		pop edi
 		pop esi
 		pop ebx
 		pop ebp
@@ -48561,11 +49627,18 @@ FUNC_000729:			; Pos = 2ed79
 
 
 
+; ANISO - AI per-frame function
 FUNC_000730:			; Pos = 2edda
 
 		push ebp
 		mov ebp,esp
 		mov eax,[ebp+0x8]
+		push eax
+		call _RegenerateShields
+		pop ecx
+		
+		mov eax,[ebp+0x8]
+		
 		mov ecx,[DATA_009155]
 		sar ecx,0x10
 		mov edx,[DATA_009155]
@@ -48667,12 +49740,40 @@ FUNC_000731:			; Pos = 2eeac
 
 
 
+; AI function - universal per-second func...?
 FUNC_000732:			; Pos = 2ef05
 
 		push ebp
 		mov ebp,esp
 		push ebx
 		mov ebx,[ebp+0x8]
+		
+		; check to see if you need to regroup the AI ships.
+		cmp byte [ebx+0x8],0x1
+		jnz near .NotSplitGroup
+		cmp byte [ebx+0x88],0x11
+		jl near .NotSplitGroup
+		movzx eax,byte [ebx+0x100]
+		test eax,eax
+		jz near .NotSplitGroup
+		
+		push dword [DATA_009133]
+		push eax
+		call near [DATA_007754]	; GetObject(idx, array)
+		add esp,byte +0x8
+
+		test eax,eax
+		jz .NotSplitGroup
+		cmp byte [eax+0xff],0x1
+		jnz .NotSplitGroup
+
+		; re-group, find your leader...
+		mov byte [ebx+0xff],0xb
+		mov cl,[ebx+0xfe]
+		xchg cl,[ebx+0x100]
+		mov [ebx+0xfe],cl
+
+	.NotSplitGroup:
 		push dword [DATA_009045]
 		push ebx
 		call FUNC_000938
@@ -48694,13 +49795,20 @@ FUNC_000732:			; Pos = 2ef05
 
 
 
+; ANISO - AI docked function
 FUNC_000733:			; Pos = 2ef4a
 
 		push ebp
 		mov ebp,esp
 		add esp,byte -0x8
 		push ebx
+		
 		mov ebx,[ebp+0x8]
+
+		; set last docked system
+		mov eax,[DATA_008885]
+		mov [ebx+0x11a],eax
+
 		mov eax,[ebx+0xa8]
 		mov [ebp-0x4],eax
 		mov eax,[ebx+0xac]
@@ -48732,7 +49840,7 @@ FUNC_000733:			; Pos = 2ef4a
 		call FUNC_000048
 		add esp,byte +0xc
 		push ebx
-		call FUNC_000734
+		call FUNC_000734	; launch?
 		pop ecx
 	JUMP_003002:			; Pos = 2efcd
 		pop ebx
@@ -48929,6 +50037,7 @@ FUNC_000736:			; Pos = 2f125
 
 
 
+; ANISO - hyperspace transit AI for non-players
 FUNC_000737:			; Pos = 2f1dc
 
 		push ebp
@@ -48963,7 +50072,7 @@ FUNC_000737:			; Pos = 2f1dc
 		ret
 
 
-
+; ANISO - come out of your cloud!
 FUNC_000738:			; Pos = 2f239
 
 		push ebp
@@ -49001,7 +50110,7 @@ FUNC_000738:			; Pos = 2f239
 		ret
 
 
-
+; ANISO - related to docking and waiting 
 FUNC_000739:			; Pos = 2f2be
 
 		push ebp
@@ -49048,7 +50157,7 @@ FUNC_000739:			; Pos = 2f2be
 		ret
 
 
-
+; ANISO - come out, spawn cloud remnant (0x1e AI)
 FUNC_000740:			; Pos = 2f30b
 
 		push ebp
@@ -49778,6 +50887,7 @@ FUNC_SetupCombatVelocity:
 
 
 
+; ANISO - battle begins?
 FUNC_000750:			; Pos = 2fa73
 
 		push ebp
@@ -49798,9 +50908,12 @@ FUNC_000750:			; Pos = 2fa73
 		add esp,byte +0x8
 		cmp byte [eax+0xff],0x24
 		jnz JUMP_003048
+		
+		; cut all accel if target is player...
 		mov word [esi+0xb6],0x0
 		mov word [esi+0xb8],0x0
 		mov word [esi+0xba],0x0
+
 		jmp JUMP_003057
 	JUMP_003048:			; Pos = 2fac7
 		mov edx,0x1
@@ -49828,6 +50941,14 @@ FUNC_000750:			; Pos = 2fa73
 		pop ecx
 		jmp JUMP_003057
 	JUMP_003049:			; Pos = 2fb0b
+
+		; set hostilities timer again
+		call near [_DATA_RandomizerFunc]
+		and ax,0x3fff
+		mov [_DATA_HostileTimer],ax
+
+		; look for partners!
+	
 		mov byte [esi+0xff],0x1
 		mov ebx,0x72
 	JUMP_003050:			; Pos = 2fb17
@@ -49844,12 +50965,18 @@ FUNC_000750:			; Pos = 2fa73
 		mov al,[edi+0xfe]
 		cmp al,[esi+0x86]
 		jnz JUMP_003051
+		
+		; Bring the partner into battle!
 		push edi
 		call FUNC_000728
 		pop ecx
 		mov byte [edi+0xff],0x1
+		
+		; move the player index from 0x100 to 0xfe, and the
+		; leader index from 0xfe to 0x100
 		mov al,[edi+0x100]
-		mov [edi+0xfe],al
+		xchg al,[edi+0xfe]
+		mov [edi+0x100],al
 		mov word [edi+0x102],0x0
 		mov word [edi+0x104],0x0
 		mov word [edi+0x106],0x0
@@ -49863,10 +50990,6 @@ FUNC_000750:			; Pos = 2fa73
 		jnz near JUMP_003056
 		cmp byte [DATA_008870],0x4
 		jz near JUMP_003056
-
-; FIX: Combat vel fudge issues
-	call FUNC_SetupCombatVelocity
-
 		call near [DATA_004920]    ; FUNC_000217_SysMenuPlayTime
 		test al,al
 		jz near JUMP_003056
@@ -49876,22 +50999,73 @@ FUNC_000750:			; Pos = 2fa73
 		push eax
 		call _FUNC_000349_ShowCommMessage
 		pop ecx
+	
+		call FUNC_SetupCombatVelocity
+
+		cmp byte [DATA_008870],0x2
+		jnz .NotAutopilot
+		mov byte [DATA_008870],0x0
+		or byte [DATA_008871],0x1
+	.NotAutopilot:
+
+	; ANISO - play alarm sound and start BATTLE MUSIC
+	; if it's an assassin, give warning
+	
+		test word [esi+0x116],0x8000
+		jz JUMP_NotAssassin
+
+		mov eax,[esi+0x11a]
+		inc eax
+		jz .ImperialMilitary
+		inc eax
+		jz .FederalMilitary
+		jmp .NotMilitary
+	.ImperialMilitary:
+		mov dword [ebp-0x4c],0x99e8
+		jmp short .ShowMessage
+	.FederalMilitary:
+		mov dword [ebp-0x4c],0x99e7
+	.ShowMessage:
+
+		jl .NotMilitary
+		mov [ebp-0x30],esi
+		mov dword [ebp-0x34],0xd
+
+		lea eax,[ebp-0x4c]
+		push eax
+		call _FUNC_000349_ShowCommMessage
+		pop ecx
+		jmp .EndMilitaryCond
+	.NotMilitary:
+		mov dword [ebp-0x4c],0x98d0
+		mov dword [ebp-0x34],0xd
+		mov eax,[esi+0xa0]
+		mov [ebp-0x40],eax
+		mov eax,[esi+0x11a]	; use bounty value
+		mov [ebp-0x28],eax
+		mov [ebp-0x30],esi
+		lea eax,[ebp-0x4c]
+		push eax
+		call _FUNC_000349_ShowCommMessage
+		pop ecx
+	.EndMilitaryCond:
+	
+		jmp JUMP_AssassinContinue
+
+	JUMP_NotAssassin:
+		
 		push byte +0x1e
 		call FUNC_001906_SoundPlaySample
 		pop ecx
+		
+	JUMP_AssassinContinue:
+		
 		mov al,[DATA_009035]
 		and al,[DATA_009029]
 		jz JUMP_003055
-		call FUNC_001903_SoundStopSong
-		
-		;push byte +0xe
-		;call FUNC_001902_SoundPlaySong
-		;pop ecx
-		
-		push 21
-		call _SoundPlaySong
+		push byte +0xe
+		call FUNC_001902_SoundPlaySong
 		pop ecx
-		
 		jmp short JUMP_003056
 	JUMP_003055:			; Pos = 2fc6a
 		call FUNC_001903_SoundStopSong
@@ -50084,6 +51258,7 @@ FUNC_000753:			; Pos = 2fd2c
 
 
 
+; ANISO - AI code for launching missiles
 FUNC_000754:			; Pos = 2fe4d
 
 		push ebp
@@ -50127,12 +51302,24 @@ FUNC_000754:			; Pos = 2fe4d
 	JUMP_003066:			; Pos = 2fec9
 		mov byte [ebx+0xff],0x2
 	JUMP_003067:			; Pos = 2fed0
+		; make sure game isn't paused
+		cmp dword [DATA_007706],0x0
+		jz near JUMP_003068
+
 		call near [DATA_007752]    ; FUNC_001530
 		mov esi,eax
-		cmp esi,0x2000
-		jnc JUMP_003068
-		and esi,byte +0x7
-		inc esi
+		cmp esi,0x500	; probability of missile launch 
+		jg JUMP_003068
+		
+		; ANISO - choose missile to fire
+		push ebx
+		call _AIGetMissileToFire
+		pop ecx
+
+		mov esi,eax
+		cmp esi,0x0
+		jng JUMP_003068
+
 		xor eax,eax
 		mov al,[ebx+0xfe]
 		push eax
@@ -50340,6 +51527,7 @@ FUNC_000757:			; Pos = 3008f
 
 
 
+; ANISO - per-second missile function?
 FUNC_000758:			; Pos = 30103
 
 		push ebp
@@ -50348,8 +51536,13 @@ FUNC_000758:			; Pos = 30103
 		push ebx
 		push esi
 		mov ebx,[ebp+0x8]
+		
+		; paused?
+		cmp dword [DATA_007706],0x0
+		jz near JUMP_003075
+
 		inc word [ebx+0x9e]
-		cmp word [ebx+0x9e],byte +0x3c
+		cmp word [ebx+0x9e],byte +0x1e	; det. timer - used to be 0x3c
 		jna JUMP_003073
 		push ebx
 		call FUNC_000719
@@ -50517,6 +51710,7 @@ FUNC_000762:			; Pos = 30230
 
 
 
+; ANISO - cloud remnant AI.  Die after a while
 FUNC_000763:			; Pos = 30280
 
 		push ebp
@@ -50807,12 +52001,15 @@ FUNC_000771:			; Pos = 304df
 
 
 
-_FUNC_000772_AIShipSpawn:			; Pos = 304f5
+; ANISO - AIShipSpawn() ?
+_FUNC_000772_AIShipSpawn:
+FUNC_000772:			; Pos = 304f5
 
 		push ebp
 		mov ebp,esp
 		push ecx
 		push ebx
+		
 		mov ebx,[ebp+0x8]
 		lea eax,[ebp-0x2]
 		push eax
@@ -50820,6 +52017,7 @@ _FUNC_000772_AIShipSpawn:			; Pos = 304f5
 		call FUNC_000658
 		add esp,byte +0x8
 		push eax
+		
 		push ebx
 		push dword DATA_006259
 		call FUNC_000773
@@ -50831,22 +52029,33 @@ _FUNC_000772_AIShipSpawn:			; Pos = 304f5
 
 
 
-FUNC_000773:			; Pos = 3051d
+FUNC_000773:			; Pos = 3051d	ANISO - Spawn an AI ship
 
 		push ebp
 		mov ebp,esp
-		add esp,byte -0x28
+		add esp,byte -0x34
 		push ebx
 		push esi
 		push edi
-		mov ebx,[ebp+0xc]
+		mov ebx,[ebp+0xc]	; ship basic type (0x1 trader, 0xa pirate??)
+
+		mov [ebp-0x34],ebx
+
+		; make custom ships work right
+		cmp ebx,0x13
+		jl SkipTypeCheck
+		sub ebx,0x9
+	SkipTypeCheck:
+
 		lea eax,[ebp-0x4]
 		push eax
-		push dword [ebp+0x10]
+		push dword [ebp+0x10]	; ship model type
 		push byte +0x4f
 		push dword [ebp+0x8]
 		push dword [DATA_009133]
-		call near [DATA_007198]    ; FUNC_000927
+		
+		; I think that this does the actual spawning.
+		call near [DATA_007198]    ; FUNC_000927 - lookup ship created with FUNC_000658?
 		add esp,byte +0x14
 		mov esi,eax
 		cmp dword [ebp-0x4],byte +0x0
@@ -50881,13 +52090,14 @@ FUNC_000773:			; Pos = 3051d
 	JUMP_003095:			; Pos = 305b4
 		cmp byte [esi+0x118],0x10
 		jnz JUMP_003096
-		mov word [ebp-0xa],0xffff
+		mov word [ebp-0xa],0xffff ; ANISO - what is this?
 	JUMP_003096:			; Pos = 305c3
-		movzx eax,word [esi+0x116]
+		movzx eax,word [esi+0x116]	; remaining internal capacity
+		
 		mov [ebp-0x8],eax
 		xor edi,edi
 		call near [DATA_007752]    ; FUNC_001530
-		mov edx,eax
+		mov edx,eax	; edx = intcap
 		mov eax,[ebp-0x14]
 		movsx eax,word [eax+0x14]
 		cmp byte [esi+0x118],0xc
@@ -50907,15 +52117,16 @@ FUNC_000773:			; Pos = 3051d
 		jna JUMP_003099
 		shr eax,0x8
 	JUMP_003099:			; Pos = 30615
+		; decide on drive type.
 		and eax,byte +0xf
 		mov [esi+0xd0],al
 		mov eax,[eax*4+DATA_006261]
-		sub [ebp-0x8],eax
+		sub [ebp-0x8],eax	; subtract equipment space
 	JUMP_003100:			; Pos = 30628
 		movsx eax,byte [esi+0xd0]
 		mov ebx,[eax*4+DATA_006266]
 		shl ebx,0x18
-		mov [esi+0x11e],ebx
+		mov [esi+0x11e],ebx	; fuel tank
 		mov ebx,[eax*4+DATA_006262]
 		cmp ebx,[ebp-0x8]
 		jc JUMP_003101
@@ -50926,11 +52137,11 @@ FUNC_000773:			; Pos = 3051d
 		mov [ebp-0x8],eax
 		mov [esi+0x119],bl
 		lea eax,[ebp-0x8]
-		push eax
-		push esi
-		call FUNC_000774
+		push eax	; pointer to ship internal capacity
+		push esi	; pointer to ship obj
+		call FUNC_000774	; choose laser
 		add esp,byte +0x8
-		mov [esi+0xd2],al
+		mov [esi+0xd2],al	; front laser (chosen by func 774?)
 		mov ebx,[ebp-0x8]
 		cmp ebx,0x12c
 		jna JUMP_003102
@@ -50968,7 +52179,7 @@ FUNC_000773:			; Pos = 3051d
 		sub eax,ebx
 		mov [ebp-0x8],eax
 		shl ebx,0x4
-		mov [esi+0xe2],bx
+		mov [esi+0xe2],bx	; total shield strength
 		cmp dword [ebp-0x8],byte +0x2
 		jl JUMP_003105
 		movzx eax,word [ebp-0xa]
@@ -50995,7 +52206,7 @@ FUNC_000773:			; Pos = 3051d
 		mov eax,[ebp-0x10]
 		inc eax
 		push eax
-		call near [DATA_007217]    ; FUNC_000922
+		call near [DATA_007217]    ; FUNC_000922 - Random.
 		pop ecx
 		mov [ebp-0x10],eax
 		cmp dword [ebp-0x10],byte +0x1
@@ -51003,11 +52214,13 @@ FUNC_000773:			; Pos = 3051d
 		movzx eax,word [ebp-0xa]
 		sar eax,0xc
 		xor ebx,ebx
-		mov bl,[eax+DATA_006260]
-		jmp short JUMP_003107
+		mov bl,[eax+DATA_006260]	; missiles
+		jmp JUMP_003107
 	JUMP_003106:			; Pos = 30748
+		; install the missile index stored in bl
+
 		mov eax,[ebp-0x10]
-		mov [esi+eax+0xd6],bl
+		mov [esi+eax+0xd6],bl	; bl = missile
 		dec dword [ebp-0x8]
 		dec dword [ebp-0x10]
 	JUMP_003107:			; Pos = 30758
@@ -51051,16 +52264,27 @@ FUNC_000773:			; Pos = 3051d
 		mov eax,[ebp-0x8]
 		sub eax,ebx
 		mov [ebp-0x8],eax
-		add [esi+0x119],bl
+		add [esi+0x119],bl	; cargo fuel in tonnes
 		mov ax,[ebp-0x8]
-		mov [esi+0x116],ax
-		mov eax,edi
+		mov dx,ax	; MODIFIED - store int. cap.
+		mov [esi+0x116],ax	; remaining internal capacity
+		mov eax,edi	;
 		sar eax,0x10
 		shl edi,0x10
-		or eax,edi
-		mov [esi+0xc8],eax
+		or eax,edi	; GAH! Confusing!	
+		
+	SkipAddShields:
+		mov ecx,[ebp-0x34]	; ship type
+		push ecx
+		
+		push esi
+		call _AIChooseEquipment	; see ffemisc.c
+		add esp,byte +0x8
+		
 		mov eax,esi
 	JUMP_003112:			; Pos = 307ff
+
+
 		pop edi
 		pop esi
 		pop ebx
@@ -51107,6 +52331,7 @@ FUNC_000774:			; Pos = 30806
 
 
 
+; ANISO - find hyperspace source system for incoming traders
 FUNC_000775:			; Pos = 30856
 
 		push ebp
@@ -56519,6 +57744,7 @@ FUNC_000828:			; Pos = 33f11
 
 
 
+; ANISO - decide what system to spawn you into for start positions.
 FUNC_000829:			; Pos = 33fbb
 
 		push ebp
@@ -56538,6 +57764,15 @@ FUNC_000829:			; Pos = 33fbb
 		jnz near JUMP_003380
 		xor edx,edx
 		mov [DATA_006797],edx
+		
+		cmp eax,0x6
+		jnz .NotFrontierStart
+		
+		mov byte [_DATA_ExtendedUniverse],0x1
+		mov dword [_DATA_GameDays],0x1381a7
+	.NotFrontierStart:
+
+		; ANISO - copy galgen vector of system
 		lea edx,[eax+eax*4]
 		mov edx,[edi+edx*4]
 		mov [esi+0x250],edx
@@ -56914,11 +58149,11 @@ FUNC_000832:			; Pos = 34425
 		mov ecx,0x5
 		rep movsd
 		mov esi,DATA_008657
-		mov al,[ebp+0x10]
-		mov [ebx+0x269],al
+		mov al,[ebp+0x10]	; p3 - high byte of 0x10
+		mov [ebx+0x269],al	
 		mov al,[ebp+0xc]
-		mov [ebx+0x26a],al
-		mov eax,[ebx+0x25c]
+		mov [ebx+0x26a],al	; galgen primary star type
+		mov eax,[ebx+0x25c]	; target system X
 		sar eax,0x10
 		and eax,0x1fff
 		and ax,0x1fff
@@ -57286,15 +58521,15 @@ FUNC_000839:			; Pos = 3484b
 		mov [ebp-0x4],eax
 		cmp edx,byte +0x1
 		jnz JUMP_003409
-		lea eax,[ebp-0x10]
+		lea eax,[ebp-0x10]	; etc
 		push eax
-		lea eax,[ebp-0xc]
+		lea eax,[ebp-0xc]	; etc
 		push eax
-		lea eax,[ebp-0x8]
+		lea eax,[ebp-0x8]	; returnval - something else?
 		push eax
-		lea eax,[ebp-0x2c]
+		lea eax,[ebp-0x2c]	; system vector?
 		push eax
-		push dword [ebp-0x4]
+		push dword [ebp-0x4]	; systemcode?
 		call FUNC_000852
 		add esp,byte +0x14
 		mov eax,[ebp-0x2c]
@@ -58630,6 +59865,7 @@ FUNC_000842:			; Pos = 35860
 
 
 
+; ANISO - display major exports/imports?
 FUNC_000843:			; Pos = 35957
 
 		push ebp
@@ -58707,13 +59943,16 @@ FUNC_000843:			; Pos = 35957
 		lea eax,[ebp-0x4]
 		push eax
 		push dword [DATA_008958]
-		call _FUNC_000870_GetSystemDataExt
+		call FUNC_000870
 		add esp,byte +0x14
 		xor ebx,ebx
 	JUMP_003489:			; Pos = 35a6c
 		mov eax,[ebp-0x4]
 		test byte [eax+ebx],0x80
 		jz JUMP_003490
+		
+		; display illegal goods
+
 		push byte +0x0
 		mov eax,[ebp-0x5c]
 		inc dword [ebp-0x5c]
@@ -58831,7 +60070,7 @@ FUNC_000843:			; Pos = 35957
 		lea eax,[ebp-0x1c]
 		push eax
 		push dword [DATA_008958]
-		call _FUNC_000870_GetSystemDataExt
+		call FUNC_000870
 		add esp,byte +0x14
 		lea eax,[ebp-0x3c]
 		push eax
@@ -58850,21 +60089,28 @@ FUNC_000843:			; Pos = 35957
 		lea eax,[ebp-0x20]
 		push eax
 		push dword [DATA_008958]
-		call _FUNC_000869_GetSystemData
+		call FUNC_000869
 		add esp,byte +0x24
 		mov eax,[ebp-0x3c]
 		and eax,byte +0x3f
 		add eax,0x84cb
 		mov [ebp-0x58],eax
-		mov eax,[ebp-0x3c]
-		and eax,byte +0x3f
+		
+		; MODIFIED - display danger level instead of economy
+		mov eax,[ebp-0x2c]
 		add eax,0x84bb
 		mov [ebp-0x54],eax
-		mov eax,[ebp-0x3c]
+
+;		mov eax,[ebp-0x3c]
+;		and eax,byte +0x3f
+;		add eax,0x84bb	; Economy type
+;		mov [ebp-0x54],eax
+		mov eax,[ebp-0x3c]	; allegiance
 		sar eax,0x6
 		add eax,0x84b7
-		mov [ebp-0x50],eax
-		mov eax,[ebp-0x14]
+		mov [ebp-0x50],eax	; allegiance string
+		
+		mov eax,[ebp-0x14]	; population string
 		add eax,0x84db
 		mov [ebp-0x4c],eax
 		push byte +0x12
@@ -59986,6 +61232,7 @@ FUNC_000851:			; Pos = 36768
 
 
 
+; ANISO - decides on system params, or what?
 FUNC_000852:			; Pos = 368dd
 
 		push ebp
@@ -59994,7 +61241,7 @@ FUNC_000852:			; Pos = 368dd
 		push ebx
 		push esi
 		push edi
-		mov ebx,[ebp+0xc]
+		mov ebx,[ebp+0xc]	; SysGenParams *ebx;
 		mov si,[ebp+0x8]
 		and esi,0x1fff
 		shl esi,0x10
@@ -60067,7 +61314,8 @@ FUNC_000852:			; Pos = 368dd
 
 
 
-_FUNC_000853_GetNumstars:			; Pos = 369b9
+_FUNC_000853_GetNumstars:
+FUNC_000853:			; Pos = 369b9
 
 		push ebp
 		mov ebp,esp
@@ -60241,7 +61489,7 @@ FUNC_000856:			; Pos = 36b72
 		push ebp
 		mov ebp,esp
 		push ebx
-		mov edx,[ebp+0x14]
+		mov edx,[ebp+0x14]	; SysGenParams edx;
 		mov eax,[ebp+0x10]
 		mov ecx,[ebp+0x8]
 		and ecx,0xffff0000
@@ -60553,14 +61801,87 @@ FUNC_000859:			; Pos = 36e8d
 		ret
 
 
-
-FUNC_000860_GetSysGenParams:			; Pos = 36ea9
+; ANISO - fills system gen params...
+_FUNC_GetSysGenParams:
 
 		push ebp
 		mov ebp,esp
 		add esp,byte -0x38
 		push ebx
-		mov ebx,[ebp+0x8]
+		mov ebx,[ebp+0x8]	; SysGenParams* ebx;
+		lea eax,[ebp-0xc]
+		push eax
+		lea eax,[ebp-0x8]
+		push eax
+		lea eax,[ebp-0x4]
+		push eax
+		lea eax,[ebp-0x38]
+		push eax
+		push dword [ebp+0xc]
+		call FUNC_000852
+		add esp,byte +0x14
+		inc eax
+		jnz JUMP_003578_2
+		or eax,byte -0x1
+		jmp JUMP_003581_2
+	JUMP_003578_2:			; Pos = 36ed9
+		push dword [ebp+0xc]
+		lea eax,[ebx+0x14]
+		push eax
+		push byte +0x0
+		push dword 0x1ff
+		call FUNC_000830
+		add esp,byte +0x10
+		mov eax,[ebp-0xc]
+		and eax,byte +0x7
+		mov [ebx+0x8],eax
+		mov eax,[ebp+0xc]
+		mov [ebx+0xc],eax
+		test byte [ebp-0x8],0x80
+		jz JUMP_003579_2
+		xor eax,eax
+		mov [ebx],eax
+		jmp short JUMP_003580_2
+	JUMP_003579_2:			; Pos = 36f3b
+		mov eax,[ebp-0x34]
+		sar eax,0x10
+		mov edx,[ebp-0x34]
+		shl edx,0x10
+		add eax,edx
+		add eax,[ebp-0x38]
+		sub eax,[ebp-0x30]
+		mov [ebx],eax
+	JUMP_003580_2:			; Pos = 36f51
+		mov eax,[ebp-0x8]
+		and eax,byte +0xf
+		mov eax,[eax*4+DATA_006804]
+		mov edx,[ebp-0x8]
+		and edx,byte +0xf
+		sub eax,[edx*4+DATA_006803]
+		shr eax,0x10
+		mov edx,[ebp-0xc]
+		and edx,0xf8
+		shl edx,0x8
+		imul edx
+		mov edx,[ebp-0x8]
+		and edx,byte +0xf
+		add eax,[edx*4+DATA_006803]
+		mov [ebx+0x4],eax
+		xor eax,eax
+	JUMP_003581_2:			; Pos = 36f8e
+		pop ebx
+		mov esp,ebp
+		pop ebp
+		ret
+
+FUNC_000860_GetSysGenParams:
+FUNC_000860:			; Pos = 36ea9
+
+		push ebp
+		mov ebp,esp
+		add esp,byte -0x38
+		push ebx
+		mov ebx,[ebp+0x8]	; SysGenParams* ebx;
 		lea eax,[ebp-0xc]
 		push eax
 		lea eax,[ebp-0x8]
@@ -60601,14 +61922,14 @@ FUNC_000860_GetSysGenParams:			; Pos = 36ea9
 		lea eax,[ebp-0x28]
 		push eax
 		push dword [ebp+0xc]
-		call _FUNC_000869_GetSystemData
+		call FUNC_000869
 		add esp,byte +0x24
 		mov eax,[ebp-0xc]
 		and eax,byte +0x7
 		mov [ebx+0x8],eax
 		mov eax,[ebp+0xc]
 		mov [ebx+0xc],eax
-		mov eax,[ebp-0x20]
+		mov eax,[ebp-0x20]	; tech level
 		mov [ebx+0x10],eax
 		test byte [ebp-0x8],0x80
 		jz JUMP_003579
@@ -61090,11 +62411,14 @@ FUNC_000867:			; Pos = 373ac
 
 
 
+; ANISO - look up table index of system
 FUNC_000868:			; Pos = 37480
 
 		push ebp
 		mov ebp,esp
 		push ecx
+		
+		; search to find a matching ID at DATA_007110
 		xor eax,eax
 		mov edx,DATA_007110
 		jmp short JUMP_003604
@@ -61108,10 +62432,15 @@ FUNC_000868:			; Pos = 37480
 		test ecx,ecx
 		jnz JUMP_003603
 	JUMP_003605:			; Pos = 3749c
+		; eax = index of matching system
+
 		lea edx,[eax+eax*2]
 		lea edx,[edx+edx*8]
 		cmp dword [edx*2+DATA_007110],byte +0x0
-		jnz near JUMP_003618
+		jnz near JUMP_003618	; 3618 = hand-coded?
+
+		; Not hand-coded, generate system??
+		; seems to determine system type by distance from key points??
 		mov eax,[ebp+0x8]
 		mov [ebp-0x4],eax
 		and byte [ebp-0x1],0x3
@@ -61141,6 +62470,8 @@ FUNC_000868:			; Pos = 37480
 		mov edx,eax
 		neg edx
 	JUMP_003609:			; Pos = 374f1
+		
+		; eax = edx = abs. distance from SOL
 		mov eax,edx
 		mov dl,[ebp+0xb]
 		shr edx,0x2
@@ -61163,6 +62494,8 @@ FUNC_000868:			; Pos = 37480
 		mov ecx,edx
 		neg ecx
 	JUMP_003611:			; Pos = 37528
+		; edx = ecx = abs. distance from Achenar??
+
 		mov edx,ecx
 		mov cl,[ebp+0xb]
 		shr ecx,0x2
@@ -61176,6 +62509,7 @@ FUNC_000868:			; Pos = 37480
 		add edx,eax
 		mov eax,edx
 		cmp eax,0x4c90
+
 		jc JUMP_003612
 		mov eax,0xfffffff8
 		jmp short JUMP_003618
@@ -61213,8 +62547,79 @@ FUNC_000868:			; Pos = 37480
 
 
 
-_FUNC_000869_GetSystemData:			; Pos = 3759c
+_FUNC_000869_GetSystemData:
+FUNC_000869:			; Pos = 3759c
 
+		push ebp
+		mov ebp,esp
+		push ebx
+		push esi
+		mov ebx,DATA_007106
+		mov eax,[ebp+0x8]
+		push eax
+		call FUNC_000868
+		pop ecx
+		
+		push eax
+		lea edx,[eax+eax*2]
+		lea edx,[edx+edx*8]
+		mov ecx,[ebx+edx*2+0x1de]
+		mov esi,[ebp+0xc]
+		mov [esi],ecx
+		mov ecx,[ebx+edx*2+0x1e2]
+		mov esi,[ebp+0x10]
+		mov [esi],ecx
+		xor ecx,ecx
+		mov cl,[ebx+edx*2+0x1b5]
+		mov esi,[ebp+0x14]
+		mov [esi],ecx
+		xor ecx,ecx
+		mov cl,[ebx+edx*2+0x1b6]
+		mov esi,[ebp+0x18]
+		mov [esi],ecx
+		xor ecx,ecx
+		mov cl,[ebx+edx*2+0x1b7]
+		mov esi,[ebp+0x1c]
+		mov [esi],ecx
+		xor ecx,ecx
+		mov cl,[ebx+edx*2+0x1b8]
+		mov esi,[ebp+0x20]
+		mov [esi],ecx
+		xor ecx,ecx
+		mov cl,[ebx+edx*2+0x1b9]
+		mov esi,[ebp+0x24]
+		mov [esi],ecx
+		movzx eax,word [ebx+edx*2+0x1ba]
+		mov edx,[ebp+0x28]
+		mov [edx],eax
+		pop eax
+
+		cmp eax,0
+		jnl .SkipOverride
+		cmp byte [_DATA_ExtendedUniverse],0
+		jz .SkipOverride
+		
+		; ANISO - optional override
+		push dword [ebp+0x28]
+		push dword [ebp+0x24]
+		push dword [ebp+0x20]
+		push dword [ebp+0x1c]
+		push dword [ebp+0x18]
+		push dword [ebp+0x14]
+		push dword [ebp+0x10]
+		push dword [ebp+0xc]
+		push dword [ebp+0x8]
+		call _Override_F869
+		add esp,byte +0x24
+
+	.SkipOverride:
+		pop esi
+		pop ebx
+		pop ebp
+		ret
+
+
+_FUNC_000869_NoOverride:
 		push ebp
 		mov ebp,esp
 		push ebx
@@ -61255,14 +62660,14 @@ _FUNC_000869_GetSystemData:			; Pos = 3759c
 		movzx eax,word [ebx+edx*2+0x1ba]
 		mov edx,[ebp+0x28]
 		mov [edx],eax
+
 		pop esi
 		pop ebx
 		pop ebp
 		ret
 
-
-
-_FUNC_000870_GetSystemDataExt:			; Pos = 37628
+_FUNC_000870_GetSystemDataExt:
+FUNC_000870:			; Pos = 37628
 
 		push ebp
 		mov ebp,esp
@@ -61271,9 +62676,12 @@ _FUNC_000870_GetSystemDataExt:			; Pos = 37628
 		push eax
 		call FUNC_000868
 		pop ecx
+		
+		push eax
 		mov edx,eax
 		lea eax,[edx+edx*2]
 		lea eax,[eax+eax*8]
+		push eax
 		xor ecx,ecx
 		mov cl,[eax*2+DATA_007111]
 		mov ebx,[ebp+0x10]
@@ -61310,14 +62718,45 @@ _FUNC_000870_GetSystemDataExt:			; Pos = 37628
 	JUMP_003621:			; Pos = 3769c
 		mov byte [DATA_008791],0xd
 		mov eax,[ebp+0xc]
+		cmp eax,0
+		jz .SkipStockData
 		mov dword [eax],DATA_008790
+		jmp short .EndStockData
+	.SkipStockData:
+		mov eax,[ebp+0x18]
+		pop edx
+		push edx
+		movzx ecx,word [edx*2+DATA_007112]
+		sar ecx,0x6
+		mov [eax],ecx	; get allegiance
+		mov eax,[ebp+0x14]
+		mov dword [eax],0x2
+	.EndStockData:
+		pop eax
+		pop eax
+
+		cmp eax,0
+		jnl .SkipOverride
+		cmp byte [_DATA_ExtendedUniverse],0
+		jz .SkipOverride
+
+		; ANISO - optional override
+		push dword [ebp+0x18]
+		push dword [ebp+0x14]
+		push dword [ebp+0x10]
+		push dword [ebp+0xc]
+		push dword [ebp+0x8]
+		call _Override_F870
+		add esp,byte +0x14
+
+	.SkipOverride:
 		pop ebx
 		pop ebp
 		ret
 
 
-
-_FUNC_000871_GetSystemDataExt2:			; Pos = 376b0
+_FUNC_000871_GetSystemDataExt2:
+FUNC_000871:			; Pos = 376b0
 
 		push ebp
 		mov ebp,esp
@@ -61329,6 +62768,7 @@ _FUNC_000871_GetSystemDataExt2:			; Pos = 376b0
 		push eax
 		call FUNC_000868
 		pop ecx
+		push eax
 		lea edx,[eax+eax*2]
 		lea edx,[edx+edx*8]
 		xor ecx,ecx
@@ -61373,6 +62813,24 @@ _FUNC_000871_GetSystemDataExt2:			; Pos = 376b0
 		mov edx,[ebx]
 		mov [eax],edx
 	JUMP_003624:			; Pos = 37745
+
+		pop eax
+		cmp eax,0
+		jnl .SkipOverride
+		; ANISO - optional override
+		cmp byte [_DATA_ExtendedUniverse],0
+		jz .SkipOverride
+		push dword [ebp+0x20]
+		push dword [ebp+0x1c]
+		push dword [ebp+0x18]
+		push dword [ebp+0x14]
+		push dword [ebp+0x10]
+		push dword [ebp+0xc]
+		push dword [ebp+0x8]
+		call _Override_F871
+		add esp,byte +0x1c
+
+	.SkipOverride:
 		pop esi
 		pop ebx
 		pop ebp
@@ -64153,7 +65611,9 @@ FUNC_000877:			; Pos = 395c8
 
 
 
-_FUNC_000878_GetSysObjectData:			; Pos = 3980c
+; ANISO - sets up starport params?
+_FUNC_000878_GetSysObjectData:
+FUNC_000878:			; Pos = 3980c
 
 		push ebp
 		mov ebp,esp
@@ -64163,6 +65623,29 @@ _FUNC_000878_GetSysObjectData:			; Pos = 3980c
 		push edi
 		mov ebx,[ebp+0xc]
 		mov esi,[ebp+0x8]
+
+		mov dword [DATA_007128],0x0
+
+		cmp dword [ebp+0x10],0x0
+		jz .SkipAllegianceParams
+
+		lea eax,[ebp-0x2c]
+		push eax
+		lea eax,[ebp-0x28]
+		push eax
+		push dword DATA_007128
+		lea eax,[ebp-0x24]
+		push eax
+		lea eax,[ebp-0x20]
+		push eax
+		lea eax,[ebp-0x1c]
+		push eax
+		mov eax,[ebx+0xc]
+		push eax
+		call FUNC_000871
+		add esp,byte +0x1c
+		
+	.SkipAllegianceParams:
 
 		lea edi,[ebp-0x8]
 		xor eax,eax
@@ -64179,8 +65662,13 @@ _FUNC_000878_GetSysObjectData:			; Pos = 3980c
 		mov [DATA_008852],eax
 		mov eax,[ebx+0xc]
 		mov [DATA_008853],eax
+		
+		; system colonization factor?
+		; if this is set to a fixed value, systems everywhere
+		; have starports even if they have no registered population
 		mov eax,[ebx+0x10]
 		mov [DATA_008854],eax
+
 		mov byte [DATA_008849],0x0
 		mov byte [DATA_008855],0x0
 		mov byte [DATA_008856],0x0
@@ -64190,21 +65678,7 @@ _FUNC_000878_GetSysObjectData:			; Pos = 3980c
 		mov byte [DATA_008848],0x0
 		xor eax,eax
 		mov [edi],eax
-		lea eax,[ebp-0x2c]
-		push eax
-		lea eax,[ebp-0x28]
-		push eax
-		push dword DATA_007128
-		lea eax,[ebp-0x24]
-		push eax
-		lea eax,[ebp-0x20]
-		push eax
-		lea eax,[ebp-0x1c]
-		push eax
-		mov eax,[DATA_008853]
-		push eax
-		call _FUNC_000871_GetSystemDataExt2
-		add esp,byte +0x1c
+		
 		mov eax,[ebx]
 		test eax,eax
 		jz near JUMP_003645
@@ -65850,7 +67324,7 @@ FUNC_000883:			; Pos = 3a884
 		push byte +0x0
 		push ebx
 		push esi
-		call FUNC_000891
+		call FUNC_000891	; generate starport
 		add esp,byte +0x14
 		mov eax,[DATA_008854]
 		cmp eax,byte +0x1e
@@ -67340,9 +68814,15 @@ FUNC_000897:			; Pos = 3b6b4
 		add si,di
 	JUMP_003779:			; Pos = 3b94c
 		movzx eax,si
+
+		cmp si,0
+		jz .EndLoop
+
 		add edi,eax
 		cmp edi,0x10000
 		jc near JUMP_003764
+	
+	.EndLoop:
 		pop edi
 		pop esi
 		pop ebx
@@ -67512,7 +68992,8 @@ FUNC_000902:			; Pos = 3ba00
 
 
 
-FUNC_000903:			; Pos = 3ba88
+; ANISO - calculate hyperdrive ranges
+FUNC_000903:			; Pos = 3ba88	Hyperspace jump related
 
 		push ebp
 		mov ebp,esp
@@ -67530,24 +69011,24 @@ FUNC_000903:			; Pos = 3ba88
 		mov eax,[eax+0x38]
 		mov [ebp-0x4],eax
 		mov eax,[ebp-0x4]
-		movsx eax,word [eax+0x6]
-		mov [ebx],eax
-		movsx eax,byte [esi+0xd0]
-		shl eax,0x4
+		movsx eax,word [eax+0x6]	; eax = hull mass
+		mov [ebx],eax	; [ebx] = hull mass
+		movsx eax,byte [esi+0xd0]	; eax = drive type
+		shl eax,0x4	; drive *= 16
 		add eax,DATA_007187
-		mov [ebp-0x8],eax
-		mov eax,[ebp-0x8]
+		mov [ebp-0x8],eax	; drive*16 + DATA_007187
+		mov eax,[ebp-0x8]	; redundant
 		mov eax,[eax+0xc]
 		mov edx,[ebp+0x10]
 		mov [edx],eax
-		mov eax,[ebp-0x8]
-		mov eax,[eax]
+		mov eax,[ebp-0x8]	; drive * 16 + D7187
+		mov eax,[eax]	; var1 = divide [drive*16+D7187] by hull mass
 		cdq
 		idiv dword [ebx]
 		mov edx,[ebp+0x20]
-		mov [edx],eax
-		mov edx,[ebp+0x20]
-		mov edx,[edx]
+		mov [edx],eax	; var1
+		mov edx,[ebp+0x20]	; addr of var1
+		mov edx,[edx]	; edx = range
 		mov eax,[ebp+0xc]
 		mov eax,[eax]
 		cmp edx,eax
@@ -67567,17 +69048,29 @@ FUNC_000903:			; Pos = 3ba88
 		jz JUMP_003787
 		and word [DATA_008860],0xfeff
 	JUMP_003787:			; Pos = 3bb1f
-		or eax,byte -0x1
+		or eax,byte -0x1	; set eax to 0xffffffff
 		jmp JUMP_003801
 	JUMP_003788:			; Pos = 3bb27
 		mov eax,[ebp+0xc]
-		mov eax,[eax]
-		imul dword [ebx]
-		mov ecx,0x7531
+		mov eax,[eax]	; eax = hyperspace jump range?
+		
+		movzx ecx,byte [esi+0xd0]
+		
 		cdq
+		movzx ecx,word [ecx*2+_DATA_DriveFuelConsumption]
+		imul ecx
+
+		; divide by max range
+		mov ecx,[ebp+0x20]
+		mov ecx,[ecx]
+		
+		inc ecx
+
+		cdq 
 		idiv ecx
-		inc eax
-		mov [ebx],eax
+		inc eax					
+		
+		mov dword [ebx],eax
 		mov eax,[ebp-0x8]
 		mov eax,[eax+0x4]
 		shl eax,0xf
@@ -67613,14 +69106,15 @@ FUNC_000903:			; Pos = 3ba88
 		mov [edi],eax
 		jmp short JUMP_003792
 	JUMP_003790:			; Pos = 3bb95
-		cmp byte [esi+0xd0],0xa
+		cmp byte [esi+0xd0],0xa	; military drive?
 		jl JUMP_003791
-		movzx eax,word [DATA_008902]
+		movzx eax,word [DATA_008902]	; military fuel
 		mov [edi],eax
 		jmp short JUMP_003792
 	JUMP_003791:			; Pos = 3bba9
-		movzx eax,word [DATA_008901]
+		movzx eax,word [DATA_008901]	; hydrogen fuel
 		mov [edi],eax
+	; [edi] = amount of fuel available
 	JUMP_003792:			; Pos = 3bbb2
 		mov eax,[ebx]
 		cmp eax,[edi]
@@ -67650,15 +69144,20 @@ FUNC_000903:			; Pos = 3ba88
 		jz JUMP_003796
 		mov al,[ebx]
 		sub [esi+0x119],al
+
 		mov eax,[ebx]
 		sub [edi],eax
 		jmp short JUMP_003798
 	JUMP_003796:			; Pos = 3bc1a
+		; ANISO - make the hyperjump
+
+		and word [DATA_008860],0xfcff
+		
 		cmp byte [esi+0xd0],0xa
 		jl JUMP_003797
 		mov ax,[ebx]
-		sub [DATA_008902],ax
-		add [DATA_008903],ax
+		sub [DATA_008902],ax	; military fuel
+		add [DATA_008903],ax	; radioactives
 		mov eax,[ebx]
 		sub [edi],eax
 		and word [DATA_008860],0xfeff
@@ -67671,6 +69170,11 @@ FUNC_000903:			; Pos = 3ba88
 		sub [edi],eax
 		and word [DATA_008860],0xfeff
 	JUMP_003798:			; Pos = 3bc60
+		
+		; set hostile autopilot timer, don't attack instantly
+		call near [_DATA_RandomizerFunc]
+		mov [_DATA_HostileTimer],ax
+		
 		mov eax,[ebp-0x4]
 		movsx ebx,word [eax+0x6]
 		mov eax,[ebp-0x8]
@@ -67684,17 +69188,28 @@ FUNC_000903:			; Pos = 3ba88
 		cmp ebx,byte +0x1
 		jnl JUMP_003799
 		mov ebx,0x1
+	; ANISO - display current range based on available fuel
 	JUMP_003799:			; Pos = 3bc86
-		mov eax,0x7531
-		cdq
-		idiv ebx
-		imul eax,[edi]
-		mov [edi],eax
+		; eax = maxRange
 		mov eax,[ebp+0x20]
 		mov eax,[eax]
-		cmp eax,[edi]
-		jnl JUMP_003800
+		
+		mov edx,[edi]	; available fuel
+		movsx ecx,byte [esi+0xd0]
+		movsx ecx,word [ecx*2+_DATA_DriveFuelConsumption]
+
+		cmp edx,ecx
+		jng AvailNotLargerThanMax
+
+		mov edx,ecx
+
+	AvailNotLargerThanMax:
+		imul edx
+
+		cdq
+		idiv ecx
 		mov [edi],eax
+				
 	JUMP_003800:			; Pos = 3bc9e
 		mov eax,[ebp+0xc]
 		mov eax,[eax]
@@ -67702,10 +69217,11 @@ FUNC_000903:			; Pos = 3ba88
 		pop edi
 		pop esi
 		pop ebx
-		pop ecx
-		pop ecx
+		mov esp,ebp
 		pop ebp
 		ret
+		nop
+		nop
 
 
 
@@ -67740,10 +69256,11 @@ FUNC_000905:			; Pos = 3bccc
 		push eax
 		call FUNC_000906
 		pop ecx
+		push dword 0x1
 		push ebx
 		push dword DATA_008798
-		call _FUNC_000878_GetSysObjectData
-		add esp,byte +0x8
+		call FUNC_000878
+		add esp,byte +0xc
 		movsx eax,byte [DATA_008856]
 		mov [DATA_009011],eax
 		mov byte [DATA_008932],0x0
@@ -67925,6 +69442,7 @@ FUNC_000908:			; Pos = 3bda0
 
 
 
+; ANISO - generate system params
 FUNC_000909:			; Pos = 3bee0
 
 		push ebp
@@ -68006,11 +69524,13 @@ FUNC_000909:			; Pos = 3bee0
 		push byte +0x13
 		call FUNC_000148
 		add esp,byte +0x8
+		
+		; ebp-0x38 = sysgen params
 		mov eax,[ebp+0x8]
 		push eax
 		lea eax,[ebp-0x38]
 		push eax
-		call FUNC_000860_GetSysGenParams
+		call FUNC_000860
 		add esp,byte +0x8
 		lea eax,[ebp-0x38]
 		push eax
@@ -68022,8 +69542,8 @@ FUNC_000909:			; Pos = 3bee0
 		cmp dword [eax+0x82],byte +0x45
 		jnz JUMP_003810
 		mov eax,[ebx+0xcc]
-		mov byte [eax+0x56],0x70
-		mov dword [eax+0x3e],0xf4240
+		mov byte [eax+0x56],0x70	; FOR = sun?
+		mov dword [eax+0x3e],0xf4240	; initial speed
 		xor edx,edx
 		mov [eax+0x42],edx
 		mov dword [eax+0x46],0x989680
@@ -68132,7 +69652,7 @@ SECTION .text
 		push eax
 		lea eax,[ebp-0x60]
 		push eax
-		call FUNC_000860_GetSysGenParams
+		call FUNC_000860
 		add esp,byte +0x8
 		lea eax,[ebp-0x60]
 		push eax
@@ -68547,6 +70067,7 @@ SECTION .data
 pSplash1: db 'JJFFE version 2.8a6', 0x0
 pSplash2: db 'Original game copyright Frontier Developments', 0x0
 pSplash3: db 'This version recompiled and modified by John Jordan', 0x0
+pSplashA: db 'Further modified by Anisotropic (mod version 0.9c)', 0x0
 
 pSplash4: db 'This is a replacement executable not a complete game', 0x0
 pSplash5: db 'Visit http://jaj22.org.uk/jjffe/ for more information', 0x0
@@ -68604,6 +70125,10 @@ _asmmain:			; Pos = 3c5f4
 		push esi
 		push edi
 
+		; ADDED - safety from bugs
+		xor ecx,ecx
+		mov [DATA_ConfiscatedAmount],ecx
+
 		mov ebx,DATA_008804
 		push dword 0x556a
 		push byte +0x0
@@ -68644,33 +70169,39 @@ _asmmain:			; Pos = 3c5f4
 		call FUNC_001583_TextWriteDefaultColor
 		add esp, byte 0xc
 
-		push dword 80
+		push dword 70
+		push dword 70
+		push dword pSplashA
+		call FUNC_001583_TextWriteDefaultColor
+		add esp, byte 0xc
+
+		push dword 90
 		push dword 66
 		push dword pSplash4
 		call FUNC_001583_TextWriteDefaultColor
 		add esp, byte 0xc
-		push dword 90
+		push dword 100
 		push dword 54
 		push dword pSplash5
 		call FUNC_001583_TextWriteDefaultColor
 		add esp, byte 0xc
-		push dword 100
+		push dword 110
 		push dword 59
 		push dword pSplash6
 		call FUNC_001583_TextWriteDefaultColor
 		add esp, byte 0xc
 
-		push dword 120
+		push dword 130
 		push dword 59
 		push dword pSplash7
 		call FUNC_001583_TextWriteDefaultColor
 		add esp, byte 0xc
-		push dword 130
+		push dword 140
 		push dword 72
 		push dword pSplash8
 		call FUNC_001583_TextWriteDefaultColor
 		add esp, byte 0xc
-		push dword 140
+		push dword 150
 		push dword 68
 		push dword pSplash9
 		call FUNC_001583_TextWriteDefaultColor
@@ -68849,7 +70380,15 @@ _asmmain:			; Pos = 3c5f4
 		cmp eax,[ebx]
 		jna JUMP_003851
 		inc dword [ebx+0x4]
-		cmp dword [ebx+0x4],0x127c8e
+		
+		; ANISO - commander dies of old age
+		; change for "frontierman" start position
+		mov ecx,0x127c8e
+		cmp byte [_DATA_ExtendedUniverse],0x0
+		jz .NotFrontierman
+		mov ecx,0x13e13e
+	.NotFrontierman:
+		cmp [ebx+0x4],ecx
 		jna JUMP_003851
 		push byte +0x1
 		call FUNC_000918
@@ -68888,6 +70427,7 @@ _asmmain:			; Pos = 3c5f4
 		call FUNC_000148
 		add esp,byte +0x8
 	JUMP_003853:			; Pos = 3c870
+		; ANISO - call new days
 		push byte +0x0
 		push byte +0xf
 		call FUNC_000148
@@ -69500,7 +71040,7 @@ _FUNC_000926_SpawnCargo:			; Pos = 3cb30
 	JUMP_003865:			; Pos = 3cb6a
 		mov eax,esi
 		add ax,0x7200
-		mov [ebx+0x9e],ax
+		mov [ebx+0x9e],ax	; ??? hmm
 		lea eax,[ebp-0x24]
 		push eax
 		push esi
@@ -69534,6 +71074,14 @@ _FUNC_000926_SpawnCargo:			; Pos = 3cb30
 		push ebx
 		call near [DATA_007746]    ; FUNC_001514
 		add esp,byte +0x8
+		
+		mov eax,[ebp+0x10]
+		mov [ebx+0x116],ax
+
+		push ebx
+		call _MakeCargoString
+		pop ecx
+
 		mov eax,ebx
 	JUMP_003866:			; Pos = 3cc00
 		pop esi
@@ -69571,12 +71119,14 @@ FUNC_000927:			; Pos = 3cc28
 		test ebx,ebx
 		jg JUMP_003875
 	JUMP_003870:			; Pos = 3cc51
-
+		; checking for 0x0 type object failed, try again?
 		mov ebx,0x72
 		lea eax,[edx+0x72]
 	JUMP_003871:			; Pos = 3cc59
 		test byte [eax],0x20
 		jz JUMP_003873
+
+		; if an 0x20-type object past index 0x14...
 		cmp ebx,byte +0x14
 		jl JUMP_003872
 		dec dword [DATA_008834]
@@ -69601,6 +71151,8 @@ FUNC_000927:			; Pos = 3cc28
 		jmp short JUMP_003877
 
 	JUMP_003875:			; Pos = 3cc85
+		; ebx = index of free slot
+		
 		mov al,[ebp+0x10]
 		mov [edx+ebx],al
 		test byte [ebp+0x10],0x20
@@ -69632,7 +71184,7 @@ FUNC_000927:			; Pos = 3cc28
 		ret
 
 
-
+; ANISO - finds a slot for jettisoned cargo...
 FUNC_000928:			; Pos = 3ccd0
 
 		push ebp
@@ -69828,7 +71380,8 @@ FUNC_000929:			; Pos = 3cdc4
 
 
 
-FUNC_000930:			; Pos = 3cf50
+; returns damage in EAX
+FUNC_000930:			; Pos = 3cf50	Calculate damage here
 
 		push ebp
 		mov ebp,esp
@@ -69836,13 +71389,17 @@ FUNC_000930:			; Pos = 3cf50
 		push esi
 		push edi
 		mov esi,[ebp+0x8]
-		mov al,[DATA_008836]
+		mov al,[DATA_008836]	; laser info byte
 		and eax,byte +0x78
 		mov edi,eax
 		sar edi,0x3
-		mov ebx,[edi*4+DATA_007209]
-		cmp edi,byte +0x4
+		
+		; using four bytes of info here: 01111000
+		mov ebx,[edi*4+DATA_007209]	; MW Power
+		cmp edi,byte +0x4	; beam or pulse?
 		jnl JUMP_003893
+		
+		; pulse laser
 		movsx eax,byte [esi+0x88]
 		push eax
 		push byte +0xa
@@ -69883,6 +71440,8 @@ FUNC_000930:			; Pos = 3cf50
 		mov eax,ebx
 		jmp short JUMP_003896
 	JUMP_003893:			; Pos = 3cfe4
+		
+		; beam laser
 		movsx eax,byte [esi+0x88]
 		push eax
 		push byte +0xb
@@ -69891,28 +71450,34 @@ FUNC_000930:			; Pos = 3cf50
 		mov eax,[DATA_009155]
 		shr eax,0x7
 		and eax,0xffff
-		imul ebx
+
+		mov ecx,eax
+
+		imul ebx	; multiply MW power by time(?)
+		
+		shr eax,0x1	
+		
 		mov ebx,eax
+
 		cmp ebx,0xffff
 		jng JUMP_003894
-		mov ebx,0xffff
+		mov ebx,0xffff	; max 0xFFFF damage
 	JUMP_003894:			; Pos = 3d014
-		mov eax,ebx
-		shl eax,0x3
-		mov ecx,[edi*4+DATA_007208]
-		sar eax,cl
+		mov eax,[edi*4+DATA_007208]	; heat levels
+		imul ecx
+
 		mov dx,[esi+0xea]
-		and ax,0xffff
-		add [esi+0xea],ax
+		and ax,0xffff	; pointless?
+		add [esi+0xea],ax	; heat it up!
 		cmp dx,[esi+0xea]
 		jna JUMP_003895
-		mov word [esi+0xea],0xffff
+		mov word [esi+0xea],0xffff	; if larger than old value, set to max?  whaaa?
 	JUMP_003895:			; Pos = 3d046
-		mov eax,ebx
-		shl eax,0x4
+		mov eax,ebx	; eax = damage
+		shl eax,0x4	; eax = eax * 16
 		push eax
 		push esi
-		call FUNC_000929
+		call FUNC_000929	; call thruster-related function?
 		add esp,byte +0x8
 		mov eax,ebx
 	JUMP_003896:			; Pos = 3d057
@@ -69923,8 +71488,7 @@ FUNC_000930:			; Pos = 3cf50
 		ret
 
 
-
-FUNC_000931:			; Pos = 3d05c
+FUNC_000931:			; Pos = 3d05c Laser Fire function?
 
 		push ebp
 		mov ebp,esp
@@ -69939,12 +71503,26 @@ FUNC_000931:			; Pos = 3d05c
 		jz near JUMP_003909
 		mov edx,eax
 		mov [DATA_008836],dl
+
+		xor eax,eax
+		mov al,[ebx+0x86]
+		cmp eax,[DATA_008857]	
+		jnz JUMP_003898
+
+		push ebx
+		push byte +0x3
+		call FUNC_000237	; ANISO - fine player for unlawful discharge of weapon?
+		add esp,byte +0x8
+
+	JUMP_003898:
+
 		cmp word [ebx+0xe8],byte +0x0
 		jnz near JUMP_003909
 		cmp word [ebx+0xea],0xf000
 		ja near JUMP_003909
 		cmp dword [ebx+0x11e],byte +0x0
 		jz near JUMP_003909
+
 		cmp ebx,[DATA_008861]
 		jnz JUMP_003897
 		xor eax,eax
@@ -69966,18 +71544,6 @@ FUNC_000931:			; Pos = 3d05c
 		call FUNC_000034
 		add esp,byte +0x8
 	JUMP_003897:			; Pos = 3d0ea
-		xor eax,eax
-		mov al,[ebx+0x86]
-		cmp eax,[DATA_008857]
-		jnz JUMP_003898
-		test byte [DATA_008860],0x4
-		jnz JUMP_003898
-		or word [DATA_008860],byte +0x4
-		push ebx
-		push byte +0x3
-		call FUNC_000237
-		add esp,byte +0x8
-	JUMP_003898:			; Pos = 3d116
 		or byte [ebx+0x151],0x2
 		sub esi,byte +0x1
 		jc JUMP_003900
@@ -69985,6 +71551,7 @@ FUNC_000931:			; Pos = 3d05c
 		sub esi,byte +0x3
 		jz JUMP_003900
 		jmp JUMP_003901
+
 	JUMP_003899:			; Pos = 3d12e
 		or byte [ebx+0x151],0x8
 		mov eax,[ebx+0x18]
@@ -70146,6 +71713,10 @@ FUNC_000931:			; Pos = 3d05c
 		test esi,esi
 		jl JUMP_003907
 	JUMP_003905:			; Pos = 3d356
+		call near [_DATA_RandomizerFunc]
+		and eax,0x7
+		add eax,0x5
+		push eax	; 5 - 12 t
 		mov eax,[DATA_008714]
 		push eax
 		mov eax,[eax+0xa0]
@@ -70153,7 +71724,7 @@ FUNC_000931:			; Pos = 3d05c
 		movzx eax,word [eax*2+DATA_007207]
 		push eax
 		call _FUNC_000926_SpawnCargo
-		add esp,byte +0x8
+		add esp,byte +0xc
 		test eax,eax
 		jz JUMP_003906
 		push esi
@@ -70166,22 +71737,31 @@ FUNC_000931:			; Pos = 3d05c
 		dec esi
 		test esi,esi
 		jnl JUMP_003905
+
+		; actually hitting something?
 	JUMP_003907:			; Pos = 3d390
+		push dword [DATA_008714]
+		push ebx
+		call FUNC_ShipHit
+		add esp,byte +0x8
 		xor eax,eax
+
+		push byte +0x1	; continuous
+
 		mov al,[ebx+0x86]
 		push eax
 		push ebx
-		call FUNC_000930
+		call FUNC_000930	; calculate damage!  BUG HERE
 		pop ecx
 		push eax
 		mov eax,[DATA_008714]
 		push eax
-		call _FUNC_000953_TakeDamage
-		add esp,byte +0xc
-		push byte +0x1
-		push dword DATA_008715
+		call FUNC_000953	; do the damage
+		add esp,byte +0x10
+		push byte +0x1	; [ebp-0x10]
+		push dword DATA_008715	; laser hit position, [ebp-0xc]
 		mov eax,[DATA_008861]
-		push eax
+		push eax	; player obj, [ebp-0x8]
 		call FUNC_000939
 		add esp,byte +0xc
 		jmp short JUMP_003909
@@ -70190,6 +71770,7 @@ FUNC_000931:			; Pos = 3d05c
 		call FUNC_000930
 		pop ecx
 	JUMP_003909:			; Pos = 3d3cd
+
 		pop edi
 		pop esi
 		pop ebx
@@ -70397,6 +71978,7 @@ FUNC_000935:			; Pos = 3d588
 
 
 
+; ANISO - called to do Energy Bomb damage
 FUNC_000936:			; Pos = 3d600
 
 		push ebp
@@ -70406,10 +71988,13 @@ FUNC_000936:			; Pos = 3d600
 		push esi
 		mov esi,[ebp+0xc]
 		mov ebx,[ebp+0x8]
-		cmp dword [ebx+0x82],byte +0x3f
+		cmp dword [ebx+0x82],byte +0x47
 		ja JUMP_003922
-		cmp esi,ebx
+		cmp esi,ebx		; a ship is unaffected by its own bomb
 		jz JUMP_003922
+		cmp byte [ebx+0x88],0xa	; maximum distance about 20km
+		jg JUMP_003922
+
 		lea eax,[ebp-0x4]
 		push eax
 		lea eax,[ebp-0x10]
@@ -70420,13 +72005,23 @@ FUNC_000936:			; Pos = 3d600
 		add esp,byte +0x10
 		cmp dword [ebp-0x4],byte +0x11
 		jg JUMP_003922
+
+		; ANISO - Energy Bomb is illegal to fire in populated areas
+		; if it hurts someone, you're in deep shit
+		push ebx
+		push esi
+		call FUNC_ShipHit
+		add esp,byte +0x8
+
+		push byte +0x0	; not continuous
+
 		xor eax,eax
 		mov al,[esi+0x86]
 		push eax
-		push dword 0x105
+		push dword [DATA_EnergyBombDamage]
 		push ebx
-		call _FUNC_000953_TakeDamage
-		add esp,byte +0xc
+		call FUNC_000953
+		add esp,byte +0x10
 	JUMP_003922:			; Pos = 3d64b
 		pop esi
 		pop ebx
@@ -70435,7 +72030,7 @@ FUNC_000936:			; Pos = 3d600
 		ret
 
 
-
+; ANISO - Energy Bomb?
 FUNC_000937:			; Pos = 3d654
 
 		push ebp
@@ -70449,12 +72044,12 @@ FUNC_000937:			; Pos = 3d654
 		jz JUMP_003927
 		cmp byte [esi+0x118],0xff
 		jnz JUMP_003923
-		add dword [DATA_008889],byte +0x4
+		add dword [DATA_008889],byte +0x2
 		jmp short JUMP_003924
 	JUMP_003923:			; Pos = 3d67d
-		add word [esi+0x116],byte +0x4
+		add word [esi+0x116],byte +0x2
 	JUMP_003924:			; Pos = 3d685
-		mov byte [esi+0x14f],0x7
+		mov byte [esi+0x14f],0x1	; duration of visual effect - used to be 0x7
 		or byte [esi+0x151],0x40
 		and byte [esi+0x151],0xdf
 		movsx eax,byte [esi+0x88]
@@ -70462,6 +72057,17 @@ FUNC_000937:			; Pos = 3d654
 		push byte +0x1b
 		call FUNC_001907_SoundPlaySampleLogVol
 		add esp,byte +0x8
+
+		mov al,[esi+0x86]
+		cmp al,[DATA_008857]	
+		jnz .SkipDischargeCharge
+
+		push esi
+		push byte +0x3
+		call FUNC_000237	; ANISO - fine player for unlawful discharge of weapon
+		add esp,byte +0x8
+	
+	.SkipDischargeCharge:
 		mov ebx,0x72
 	JUMP_003925:			; Pos = 3d6b1
 		mov edx,[edi]
@@ -70511,26 +72117,29 @@ FUNC_000938:			; Pos = 3d6f8
 		shr edi,0x10
 		or eax,edi
 		mov edi,eax
-		mov ax,[ebx+0xe0]
-		cmp ax,[ebx+0xe2]
-		jz JUMP_003930
-		movzx eax,word [ebx+0xe2]
-		imul esi
-		sar eax,0x5
-		test edi,0x1000
-		jnz JUMP_003928
-		shr eax,1
-	JUMP_003928:			; Pos = 3d73c
-		movzx edx,word [ebx+0xe0]
-		add edx,eax
-		movzx ecx,word [ebx+0xe2]
-		cmp edx,ecx
-		jna JUMP_003929
-		mov ax,[ebx+0xe2]
-		mov [ebx+0xe0],ax
-		jmp short JUMP_003930
-	JUMP_003929:			; Pos = 3d760
-		add [ebx+0xe0],ax
+		
+		; ANISO - regenerate shields?
+;		mov ax,[ebx+0xe0]
+;		cmp ax,[ebx+0xe2]
+;		jz JUMP_003930
+;		mov eax,0x400
+;		movzx eax,word [ebx+0xe2]
+;		imul esi
+;		sar eax,0x5
+;		test edi,0x1000
+;		jnz JUMP_003928
+;		shr eax,1
+;	JUMP_003928:			; Pos = 3d73c
+;		movzx edx,word [ebx+0xe0]
+;		add edx,eax
+;		movzx ecx,word [ebx+0xe2]
+;		cmp edx,ecx
+;		jna JUMP_003929
+;		mov ax,[ebx+0xe2]
+;		mov [ebx+0xe0],ax
+;		jmp short JUMP_003930
+;	JUMP_003929:			; Pos = 3d760
+;		add [ebx+0xe0],ax
 
 	JUMP_003930:			; Pos = 3d767
 		test edi,0x8000
@@ -70539,24 +72148,20 @@ FUNC_000938:			; Pos = 3d6f8
 		push eax
 		call near [DATA_007756]    ; FUNC_001538_GetModelPtr
 		pop ecx
+		
+		; eax = max hull * 4
 		mov eax,[eax+0x38]
 		movsx eax,word [eax+0x6]
 		shl eax,0x2
+
 		movzx edx,word [ebx+0xe4]
 		cmp eax,edx
 		jz JUMP_003932
-		mov eax,[ebx+0x82]
-		push eax
-		call near [DATA_007756]    ; FUNC_001538_GetModelPtr
-		pop ecx
-		mov eax,[eax+0x38]
-		movsx eax,word [eax+0x6]
-		shl eax,0x2
-		movzx edx,word [ebx+0xe4]
-		add edx,esi
-		cmp eax,edx
-		jl JUMP_003931
-		add [ebx+0xe4],si
+		cmp ebx,[DATA_008861]
+		jnz JUMP_003932
+
+		call _RegenerateHull
+
 		jmp short JUMP_003932
 	JUMP_003931:			; Pos = 3d7c0
 		mov eax,[ebx+0x82]
@@ -70593,17 +72198,17 @@ FUNC_000938:			; Pos = 3d6f8
 		jmp short JUMP_003936
 	JUMP_003935:			; Pos = 3d81c
 		mov byte [ebx+0x14f],0x0
-		and byte [ebx+0x151],0x9f
+		and byte [ebx+0x151],0x9f	; remove ecm and energy bomb effect
 
 	JUMP_003936:			; Pos = 3d82a
 		mov dx,[ebx+0xea]
 		test dx,dx
 		jz JUMP_003939
 		mov eax,esi
-		shl eax,0xa
-		test edi,0x10000
+		shl eax,0xb
+		test edi,0x10000	; laser cooling booster?
 		jz JUMP_003937
-		shl eax,0x2
+		shl eax,0x1
 	JUMP_003937:			; Pos = 3d846
 		movzx edx,dx
 		cmp eax,edx
@@ -70649,7 +72254,7 @@ FUNC_000938:			; Pos = 3d6f8
 		neg ecx
 
 	JUMP_003945:			; Pos = 3d8ca
-		add edx,ecx
+		add edx,ecx	; edx = sum of all thrusts
 		imul edx
 		sar eax,0x9
 		imul esi
@@ -70773,7 +72378,8 @@ FUNC_000940:			; Pos = 3da00
 
 
 
-FUNC_000941:			; Pos = 3da28
+; ANISO - launches a missile
+FUNC_000941:			; Pos = 3da28 
 
 		push ebp
 		mov ebp,esp
@@ -70819,6 +72425,8 @@ FUNC_000941:			; Pos = 3da28
 		push eax
 		xor eax,eax
 		mov al,bl
+		
+		; Create a missile object
 		mov eax,[eax*4+DATA_007220]
 		push eax
 		push byte +0x4b
@@ -70841,19 +72449,43 @@ FUNC_000941:			; Pos = 3da28
 		jnz JUMP_003957
 		mov al,[edi+0x86]
 		mov [DATA_008877],al
-		test byte [DATA_008860],0x4
-		jnz JUMP_003956
-		push esi
-		push byte +0x3
-		call FUNC_000237
-		add esp,byte +0x8
 	JUMP_003956:			; Pos = 3daf9
-		or word [DATA_008860],byte +0x4
-		inc dword [DATA_008889]
+;		or word [DATA_008860],byte +0x4
+		;		inc dword [DATA_008889]  YES!  FOUND IT!
 		jmp short JUMP_003958
 	JUMP_003957:			; Pos = 3db09
-		inc word [esi+0x116]
+;		inc word [esi+0x116]
 	JUMP_003958:			; Pos = 3db10
+		xor eax,eax
+		mov al,[esi+0x86]
+		cmp eax,[DATA_008857]	
+		jnz .SkipDischargeCharge
+
+		push esi
+		push byte +0x3
+		call FUNC_000237	; ANISO - fine player for unlawful discharge of weapon
+		add esp,byte +0x8
+	
+	.SkipDischargeCharge:
+		xor eax,eax
+		mov al,[esi+0x86]
+		cmp eax,[DATA_008857]	; if D8857 = ship obj, then player is near starport??
+		jnz near JUMP_SkipPiracyCharge2
+
+		; ADDED - Make ship hostile to player
+		mov eax,[DATA_009133]
+		push eax
+		mov eax,[ebp+0x10]
+		push eax
+		call near [DATA_007754]    ; FUNC_001532
+		add esp,byte +0x8
+	
+		push eax
+		push esi
+		call FUNC_ShipHit
+		add esp,byte +0x8
+		
+	JUMP_SkipPiracyCharge2:
 		mov byte [edi+0x87],0xb
 		mov byte [edi+0x118],0xfd
 		mov al,[esi+0x86]
@@ -70880,15 +72512,20 @@ FUNC_000941:			; Pos = 3da28
 		jmp JUMP_003962
 	JUMP_003959:			; Pos = 3db74
 		mov byte [edi+0xff],0x13
+
 		mov word [edi+0xba],0x442
 		lea eax,[edi+0x124]
+		movzx ecx,byte [edi+0x82]
+
 		push esi
 		push edi
 		mov edi,eax
-		mov esi,DATA_007227
+		
+		mov esi,[ecx*4+DATA_MissileStrings]
+		
 		mov eax,edi
-		movsd
-		movsd
+		mov ecx,5
+		rep movsd
 		pop edi
 		pop esi
 		mov al,[ebp+0x10]
@@ -70918,6 +72555,23 @@ FUNC_000941:			; Pos = 3da28
 		jnz JUMP_003961
 		cmp byte [eax+0xff],0xc
 		jnc JUMP_003961
+		
+		; is launching?
+		cmp byte [eax+0xff],0x24
+		jz JUMP_003961
+		cmp byte [eax+0xff],0x19
+		jz JUMP_003961
+
+		; ANISO - should the ship flee this missile?
+		; only if it could take out the hull unshielded
+
+		movzx edx,word [eax+0xe4]
+		movzx ecx,byte [edi+0x82]
+		cmp edx,[ecx*4+DATA_006269]
+		jg JUMP_003961
+		cmp byte [eax+0x82],0x45
+		jg JUMP_003961
+
 		mov byte [eax+0xff],0xc
 		mov dl,[edi+0x86]
 		mov [eax+0xfe],dl
@@ -70935,6 +72589,14 @@ FUNC_000941:			; Pos = 3da28
 		add esp,byte +0x8
 	JUMP_003962:			; Pos = 3dc36
 		mov word [edi+0x9e],0x0
+		mov word [edi+0x116],0x0
+		
+		; ANISO - disable ray-collision for the missile.  BUGFIX
+;		movzx eax,byte [edi+0x86]
+;		mov edx,[DATA_007758]
+
+;		mov byte [edx+eax],0x4b
+	
 		mov eax,[esi+0x140]
 		neg eax
 		push eax
@@ -71024,6 +72686,7 @@ FUNC_000941:			; Pos = 3da28
 
 
 
+; ANISO - kills a ship and gives the player bounty?
 FUNC_000942:			; Pos = 3dd28
 
 		push ebp
@@ -71038,22 +72701,31 @@ FUNC_000942:			; Pos = 3dd28
 		jz near JUMP_003968
 		cmp edi,[DATA_008857]
 		jnz near JUMP_003968
-		cmp byte [esi+0x118],0xfb
+;		cmp byte [esi+0x118],0xfb
+;		jnz JUMP_003967
+		; don't give bounty if an assassin
+		test word [esi+0x116],0x8000
 		jnz JUMP_003967
-		mov eax,[esi+0x11a]
+
+		push esi
+		call _GetBounty
+		pop ecx
 		test eax,eax
 		jz JUMP_003967
+		
+		
 		mov edx,[DATA_008861]
 		test byte [edx+0xca],0x40
 		jz JUMP_003967
 		mov dword [ebp-0x40],0x8635
 		mov dword [ebp-0x28],0xffffffff
 		mov [ebp-0x34],eax
+		push eax
 		lea eax,[ebp-0x40]
 		push eax
 		call _FUNC_000349_ShowCommMessage
 		pop ecx
-		mov eax,[esi+0x11a]
+		pop eax
 		add eax,eax
 		lea eax,[eax+eax*4]
 		add [DATA_008888],eax
@@ -71071,6 +72743,8 @@ FUNC_000942:			; Pos = 3dd28
 		pop ecx
 		mov eax,[eax+0x38]
 		movsx eax,word [eax+0x16]
+		
+		; add to elite ranking points
 		add [DATA_008911],eax
 		mov eax,[DATA_008911]
 		sar eax,0x10
@@ -71126,19 +72800,21 @@ FUNC_000942:			; Pos = 3dd28
 		push eax
 		call near [DATA_007756]    ; FUNC_001538_GetModelPtr
 		pop ecx
+		
+		; ANISO - hull mass related
 		mov eax,[eax+0x38]
 		movsx eax,word [eax+0x6]
-		mov [ebp-0x8],eax
+		mov [ebp-0x8],eax	; mass
 		dec dword [ebx+0x7e]
 		cmp dword [ebp-0x8],byte +0xa
-		jl JUMP_003969
+		jl JUMP_003969	; mass less than 10?
 		movsx eax,byte [esi+0x88]
 		push eax
 		push byte +0x1f
 		call FUNC_001907_SoundPlaySampleLogVol
 		add esp,byte +0x8
 		inc dword [ebx+0x7e]
-		cmp dword [ebp-0x8],0x190
+		cmp dword [ebp-0x8],0x190	; mass less than 400
 		jl JUMP_003969
 		mov eax,[esi+0x82]
 		push eax
@@ -71163,58 +72839,29 @@ FUNC_000942:			; Pos = 3dd28
 		mov [ebx+0x7e],eax
 	JUMP_003969:			; Pos = 3df11
 		mov eax,[esi+0x82]
-		cmp eax,byte +0xf
+		cmp eax,byte +0xe
 		jc JUMP_003974
-		cmp eax,byte +0x3f
+		cmp eax,byte +0x47
 		ja JUMP_003974
-		push byte +0x6
-		call near [DATA_007217]    ; FUNC_000922
-		pop ecx
-		mov ebx,eax
-		sub ebx,byte +0x2
-		test ebx,ebx
-		jng JUMP_003971
-	JUMP_003970:			; Pos = 3df33
-		push esi
-		push dword 0x8e0f
-		call _FUNC_000926_SpawnCargo
-		add esp,byte +0x8
-		dec ebx
-		test ebx,ebx
-		jg JUMP_003970
 	JUMP_003971:			; Pos = 3df46
-		movzx ebx,word [esi+0x116]
-		sar ebx,1
-		cmp ebx,byte +0x4
-		jng JUMP_003972
-		mov ebx,0x4
-	JUMP_003972:			; Pos = 3df59
+		movzx ebx,word [esi+0x116]	; remaining cargo space...
+		and ebx,0x7fff
+
 		test ebx,ebx
-		jng JUMP_003974
-		push ebx
-		call near [DATA_007217]    ; FUNC_000922
-		pop ecx
-		sub eax,byte +0x2
-		mov ebx,eax
-		test eax,eax
 		jl JUMP_003974
+	; ANISO - produce cargo from destroyed ships.
 	JUMP_003973:			; Pos = 3df6e
-		push esi
-		call near [DATA_007752]    ; FUNC_001530
-		and eax,byte +0x1f
-		movzx eax,byte [eax+DATA_007212]
-		add eax,0x8e00
-		push eax
-		call _FUNC_000926_SpawnCargo
-		add esp,byte +0x8
-		dec ebx
-		test ebx,ebx
-		jnl JUMP_003973
+		push esi	; ship ptr
+
+		call _DoSpawnCargo
+		add esp,byte +0x4
+		
 	JUMP_003974:			; Pos = 3df92
 		mov eax,edi
 		push eax
 		push esi
 		call _FUNC_000924_DestroyObject
+		
 		add esp,byte +0x8
 		xor eax,eax
 		pop edi
@@ -71258,6 +72905,8 @@ FUNC_000944:			; Pos = 3dfcc
 		mov [ebp-0x30],eax
 		mov eax,[ebp+0x10]
 		mov [ebp-0x2c],eax
+		mov eax,[ebp+0x14]
+		mov [ebp-0x28],eax
 		lea eax,[ebp-0x30]
 		push eax
 		call _FUNC_000349_ShowCommMessage
@@ -71276,7 +72925,7 @@ FUNC_000944:			; Pos = 3dfcc
 		ret
 
 
-
+; Destroy flagged equipment?
 FUNC_000945:			; Pos = 3e014
 
 		push ebp
@@ -71288,11 +72937,12 @@ FUNC_000945:			; Pos = 3e014
 		pop ecx
 		test eax,eax
 		jz JUMP_003977
+		push dword 0x0
 		push eax
 		push dword 0x98c9
 		push ebx
 		call FUNC_000944
-		add esp,byte +0xc
+		add esp,byte +0x10
 		pop ebx
 		pop ebp
 		ret
@@ -71336,20 +72986,21 @@ FUNC_000947:			; Pos = 3e06c
 		jnz JUMP_003978
 		mov eax,[eax*4+DATA_007210]
 		push eax
-		call FUNC_000946
+		call FUNC_000946	; drive destroyed
 		pop ecx
 	JUMP_003978:			; Pos = 3e0a0
+		push dword 0x0
 		push byte +0x0
-		push dword 0x98ca
+		push dword 0x98ca	; drive damaged
 		push ebx
 		call FUNC_000944
-		add esp,byte +0xc
+		add esp,byte +0x10
 		pop ebx
 		pop ebp
 		ret
 
 
-
+; ANISO - replace drive with interplanetary
 FUNC_000948:			; Pos = 3e0b4
 
 		push ebp
@@ -71364,16 +73015,17 @@ FUNC_000948:			; Pos = 3e0b4
 		cmp byte [ebx+0x118],0xff
 		jnz JUMP_003979
 		mov eax,[eax*4+DATA_007210]
-		sub eax,byte +0x4
+		sub eax,byte +0x2	; ANISO - bugfix: cargo space not lost
 		push eax
 		call FUNC_000946
 		pop ecx
 	JUMP_003979:			; Pos = 3e0e9
+		push dword 0x0
 		push byte +0x0
 		push dword 0x98ca
 		push ebx
 		call FUNC_000944
-		add esp,byte +0xc
+		add esp,byte +0x10
 		pop ebx
 		pop ebp
 		ret
@@ -71430,18 +73082,19 @@ SECTION .text
 		xor edx,edx
 		mov [eax*4+DATA_008935],edx
 	JUMP_003987:			; Pos = 3e184
+		push dword 0x0
 		add eax,0x99ae
 		push eax
 		push dword 0x98cb
 		push ebx
 		call FUNC_000944
-		add esp,byte +0xc
+		add esp,byte +0x10
 		pop ebx
 		pop ebp
 		ret
 
 
-
+; ANISO - destroy equipment...
 FUNC_000950:			; Pos = 3e19c
 
 		push ebp
@@ -71461,7 +73114,7 @@ FUNC_000950:			; Pos = 3e19c
 		cmp ax,0x888
 		jnc JUMP_003989
 		push ebx
-		call FUNC_000947
+		call FUNC_000947	; destroy hyperdrive!
 		pop ecx
 		pop ebx
 		pop ebp
@@ -71470,7 +73123,7 @@ FUNC_000950:			; Pos = 3e19c
 		cmp ax,0x1c71
 		jnc JUMP_003990
 		push ebx
-		call FUNC_000948
+		call FUNC_000948	; damage hyperdrive
 		pop ecx
 		pop ebx
 		pop ebp
@@ -71484,13 +73137,15 @@ FUNC_000950:			; Pos = 3e19c
 		ret
 
 
-
+; ANISO - destroy cargo...
 FUNC_000951:			; Pos = 3e1e4
 
 		push ebp
 		mov ebp,esp
 		push ebx
 		push esi
+		push edi
+
 		mov ecx,[ebp+0xc]
 		mov esi,[ebp+0x8]
 		cmp ecx,[DATA_008891]
@@ -71501,14 +73156,37 @@ FUNC_000951:			; Pos = 3e1e4
 		movzx ebx,word [eax]
 		sub ecx,ebx
 		jns JUMP_003992
-		dec word [eax]
-		inc word [DATA_008904]
+		
+		push eax
+		push edx
+		mov edi,[DATA_008889]	; cargo space
+		call [_DATA_RandomizerFunc]
+		imul edi
+		sar eax,0x12
+		mov edi,eax	; edi = cargo amount to destroy
+		pop edx
+		pop eax
+
+		cmp di,[eax]
+		jng .OKValue
+		mov di,[eax]	; can't destroy more than there is
+	.OKValue:
+		
+		cmp di,0
+		jng near JUMP_003994 
+
+		; destroy X tonnes of cargo
+		sub [eax],di
+		add [DATA_008904],di
+		
+		and edi,0xffff
+		push edi
 		add edx,0x8e00
 		push edx
 		push dword 0x98c8
 		push esi
 		call FUNC_000944
-		add esp,byte +0xc
+		add esp,byte +0x10
 		jmp short JUMP_003994
 	JUMP_003992:			; Pos = 3e229
 		dec edx
@@ -71521,14 +73199,15 @@ FUNC_000951:			; Pos = 3e1e4
 		call FUNC_000943
 		pop ecx
 	JUMP_003994:			; Pos = 3e238
+		pop edi
 		pop esi
 		pop ebx
 		pop ebp
 		ret
 
 
-
-_FUNC_000952_DestroyEquip:			; Pos = 3e23c
+_FUNC_000952_DestroyEquip:
+FUNC_000952:			; Pos = 3e23c
 
 		push ebp
 		mov ebp,esp
@@ -71563,8 +73242,8 @@ _FUNC_000952_DestroyEquip:			; Pos = 3e23c
 		ret
 
 
-
-_FUNC_000953_TakeDamage:			; Pos = 3e288
+_FUNC_000953_TakeDamage:
+FUNC_000953:			; Pos = 3e288 TakeDamage function!
 
 		push ebp
 		mov ebp,esp
@@ -71572,17 +73251,17 @@ _FUNC_000953_TakeDamage:			; Pos = 3e288
 		push ebx
 		push esi
 		push edi
-		mov edi,[ebp+0xc]
-		mov ebx,[ebp+0x8]
+		mov edi,[ebp+0xc]	; second param?	damage
+		mov ebx,[ebp+0x8]	; first param?  ship
 		test edi,edi
 		jnl JUMP_003996
 		mov edi,0x7fffffff
 	JUMP_003996:			; Pos = 3e2a0
 		xor eax,eax
-		mov al,[ebx+0x86]
+		mov al,[ebx+0x86]	; object index
 		push eax
 		push byte +0xd
-		call FUNC_000034
+		call FUNC_000034	; pass 0xd and obj idx to func
 		add esp,byte +0x8
 		mov eax,[ebp+0x10]
 		push eax
@@ -71623,88 +73302,55 @@ _FUNC_000953_TakeDamage:			; Pos = 3e288
 		jl JUMP_003997
 
 		cmp byte [ebx+0x87],0x3
-		jz JUMP_004000
+		jz JUMP_004000	; player ship
 		cmp byte [ebx+0x87],0xb
-		jnz near JUMP_004006
+		jnz near JUMP_004006	; If not an AI ship or player
+
+		; if AI ship, run this!
 		xor eax,eax
 		mov al,[ebx+0x86]
-		mov edx,[DATA_007758]
-		test byte [edx+eax],0x10
+		mov edx,[DATA_007758]	; indexed by object list?
+		test byte [edx+eax],0x10	; flags?
 		jnz near JUMP_004006
-		mov eax,[ebx+0x82]
+		mov eax,[ebx+0x82]	; model index
 		push eax
-		call near [DATA_007756]    ; FUNC_001538_GetModelPtr
+		call near [DATA_007756]    ; FUNC_001538
 		pop ecx
 		cmp dword [eax+0x38],byte +0x0
 		jz near JUMP_004006
 	JUMP_004000:			; Pos = 3e35e
-		movzx eax,word [ebx+0xe0]
-		cmp edi,eax
-		jg JUMP_004001
-		sub [ebx+0xe0],di
-		movsx eax,byte [ebx+0x88]
-		push eax
-		push byte +0x1c
-		call FUNC_001907_SoundPlaySampleLogVol
-		add esp,byte +0x8
-		or byte [ebx+0x151],0x1
-		jmp short JUMP_004004
-	JUMP_004001:			; Pos = 3e38b
-		movzx eax,word [ebx+0xe0]
-		sub edi,eax
-		mov word [ebx+0xe0],0x0
-		movzx eax,word [ebx+0xe4]
-		cmp edi,eax
-		jl JUMP_004002
+		; edi = damage
+		; ebx = ship ptr
+		
+		; now pass parameters
+		mov eax,[ebp+0x14]
+		push eax	; bContinuous
+		push edi	; damage
+		push ebx	; ship ptr
+		
+
+		call _DoShipDamage	; see ffemisc.c
+		add esp,byte +0xc
+		
+		cmp word [ebx+0xe4],0x0
+		jnz EndCond2
+	ShipDeath:
+		
 		mov eax,[ebp+0x10]
 		push eax
 		push ebx
-		call FUNC_000942
+		call FUNC_000942	; die, bastard!
 		add esp,byte +0x8
-		jmp short JUMP_004007
-	JUMP_004002:			; Pos = 3e3b7
-		sub [ebx+0xe4],di
-		mov byte [ebx+0x14e],0xa
-		movsx eax,byte [ebx+0x88]
-		push eax
-		push byte +0x1d
-		call FUNC_001907_SoundPlaySampleLogVol
-		add esp,byte +0x8
-		movzx esi,word [ebx+0xe4]
-		sar esi,0x2
-		cmp edi,esi
-		jnl JUMP_004003
-		call near [DATA_007752]    ; FUNC_001530
-		mov ecx,eax
-		mov eax,edi
-		shl eax,0xf
-		cdq
-		idiv esi
-		cmp ecx,eax
-		jnc JUMP_004004
-	JUMP_004003:			; Pos = 3e3f9
-		push ebx
-		call _FUNC_000952_DestroyEquip
-		pop ecx
-		jmp short JUMP_004007
-	JUMP_004004:			; Pos = 3e402
-		cmp byte [ebx+0x118],0xff
-		jnz JUMP_004005
-		push byte +0x0
-		push byte +0x17
-		call FUNC_000148
-		add esp,byte +0x8
-	JUMP_004005:			; Pos = 3e417
-		mov eax,0x1
-		jmp short JUMP_004007
-	JUMP_004006:			; Pos = 3e41e
+		jmp EndCond2
+	JUMP_004006:			; Pos = 3e41e.  Used when ship has no model or is not a ship.
 		movsx eax,byte [ebx+0x88]
 		push eax
 		push byte +0x1d
 		call FUNC_001907_SoundPlaySampleLogVol
 		add esp,byte +0x8
 		mov eax,0x1
-	JUMP_004007:			; Pos = 3e435
+	EndCond2:
+		; NOTE - A bunch of code used to be here.  Mourn it.
 		pop edi
 		pop esi
 		pop ebx
@@ -72467,6 +74113,8 @@ FUNC_000963:			; Pos = 3ec44
 		jz JUMP_004048
 		dec eax
 		jz JUMP_004049
+		dec eax
+		jz JUMP_FrontierManStart
 		jmp short JUMP_004051
 	JUMP_004048:			; Pos = 3ec94
 		mov byte [edx+0x3fb],0x60
@@ -72480,6 +74128,11 @@ FUNC_000963:			; Pos = 3ec44
 		mov byte [edx+0x3fb],0x6c
 		pop ebp
 		ret
+	JUMP_FrontierManStart:
+		mov byte [edx+0x3fb],0x6c
+		pop ebp
+		ret
+	
 	JUMP_004051:			; Pos = 3ecaf
 		mov byte [edx+0x3fb],0x6f
 	JUMP_004052:			; Pos = 3ecb6
@@ -72703,10 +74356,11 @@ FUNC_000972:			; Pos = 3eea8
 		call FUNC_000855
 		pop ecx
 		lea eax,[ebp-0x28]
+		push dword 0x1
 		push eax
 		push dword DATA_008798
-		call _FUNC_000878_GetSysObjectData
-		add esp,byte +0x8
+		call FUNC_000878
+		add esp,byte +0xc
 		mov eax,[DATA_008807]
 		push eax
 		mov eax,[DATA_008804]
@@ -74403,7 +76057,7 @@ FUNC_000997:			; Pos = 40178
 
 
 
-FUNC_000998:			; Pos = 40194
+FUNC_000998:			; Pos = 40194  Related to start pos?
 
 		push ebp
 		mov ebp,esp
@@ -74412,6 +76066,7 @@ FUNC_000998:			; Pos = 40194
 		push esi
 		xor eax,eax
 		mov [DATA_008916],eax
+		mov [_DATA_ExtendedUniverse],al
 		xor eax,eax
 		mov [DATA_008915],eax
 		xor eax,eax
@@ -74424,6 +76079,7 @@ FUNC_000998:			; Pos = 40194
 		mov [DATA_008911],eax
 		xor eax,eax
 		mov [DATA_009091],eax
+
 		xor edx,edx
 		mov eax,DATA_009095
 	JUMP_004140:			; Pos = 401d4
@@ -74432,60 +76088,71 @@ FUNC_000998:			; Pos = 40194
 		inc edx
 		add eax,byte +0x4
 		cmp edx,byte +0x6
-		jl JUMP_004140
+		jl JUMP_004140	
 		mov eax,[DATA_008881]
 		dec eax
-		jz near JUMP_004143
+		jz near JUMP_004143	; 1 - Ross 154 start
 		dec eax
-		jz JUMP_004141
+		jz JUMP_004141	; 2 - Sol start
 		dec eax
-		jz near JUMP_004142
+		jz near JUMP_004142	; 3 - Lave start
+		sub eax,0x3
+		jz near JUMP_FrontierStart
 		jmp JUMP_004144
-	JUMP_004141:			; Pos = 401fc
-		mov dword [DATA_008888],0x3e8
+	JUMP_004141:			; Pos = 401fc SOL START?
+		mov dword [DATA_008888],500000
+
 		push dword 0x4a0d
-		push byte +0x17
+		push byte +0x14	; Falcon
 		call FUNC_000996
 		add esp,byte +0x8
 		mov ebx,eax
-		mov byte [ebx+0xd0],0x1
+		
+		mov byte [ebx+0x119],0x0
+
+		mov byte [ebx+0xd0],0xa
 		mov byte [ebx+0xd2],0xa0
-		mov byte [ebx+0xd6],0x82
-		mov byte [ebx+0xd7],0x82
+		mov byte [ebx+0xd6],0x84
+		mov byte [ebx+0xd7],0x84
 		mov word [ebx+0xe2],0x0
-		mov dword [ebx+0xc8],0x40000000
-		sub dword [DATA_008889],byte +0xc
+		mov dword [ebx+0xc8],0x402C0020
+		sub dword [DATA_008889],byte +14
 		xor eax,eax
 		mov [DATA_008907],eax
-		xor eax,eax
-		mov [DATA_008891],eax
-		mov dword [ebx+0x11e],0x40000000
+		mov [DATA_008891],dword 4
+		mov [DATA_008902],dword 4
+
+		mov dword [ebx+0x11e],0x20000000
 		mov byte [ebx+0x56],0x60
 		push byte +0x5f
 		push ebx
 		call FUNC_000994
 		add esp,byte +0x8
 		jmp JUMP_004145
-	JUMP_004142:			; Pos = 40279
-		mov dword [DATA_008888],0x3e8
+	JUMP_004142:			; Pos = 40279	LAVE START?
+		mov dword [DATA_008888],152
 		push dword 0x941a
-		push byte +0x26
+		push byte +0x1c	; Gecko
 		call FUNC_000996
 		add esp,byte +0x8
 		mov ebx,eax
+		
+		mov byte [ebx+0x119],0x0
+
 		mov byte [ebx+0xd0],0x3
-		mov byte [ebx+0xd2],0x88
-		mov byte [ebx+0xd6],0x82
-		mov byte [ebx+0xd7],0x82
-		mov byte [ebx+0xd8],0x82
-		mov byte [ebx+0xd9],0x82
+		mov byte [ebx+0xd2],0xa0
+;		mov byte [ebx+0xd6],0x82
+;		mov byte [ebx+0xd7],0x82
+;		mov byte [ebx+0xd8],0x83
+;		mov byte [ebx+0xd9],0x83
 		mov word [ebx+0xe2],0x0
-		mov dword [ebx+0xc8],0x40000
-		sub dword [DATA_008889],byte +0x1f
+		mov dword [ebx+0xc8],0x12c0400
+		sub dword [DATA_008889],byte +36
 		mov dword [DATA_008907],0x320
 		mov dword [ebx+0x11e],0x40000000
-		mov word [DATA_008901],0x4
-		mov dword [DATA_008891],0x4
+		mov word [DATA_008901],0x0
+		mov word [DATA_Liquor],0x1
+		mov dword [DATA_008891],0x1
 		mov dword [DATA_009097],0xaae60
 		mov dword [DATA_009096],0xaae60
 		mov dword [DATA_008909],0x1f4
@@ -74495,7 +76162,7 @@ FUNC_000998:			; Pos = 40194
 		mov eax,[DATA_009133]
 		push eax
 		push byte +0x70
-		call near [DATA_007754]    ; FUNC_001532_GetModelInstancePtr
+		call near [DATA_007754]    ; FUNC_001532
 		add esp,byte +0x8
 		mov esi,eax
 		mov [DATA_008862],esi
@@ -74511,22 +76178,25 @@ FUNC_000998:			; Pos = 40194
 		mov byte [edx+eax],0x4b
 		mov dword [DATA_008867],0xffffffff
 		jmp JUMP_004145
-	JUMP_004143:			; Pos = 40389
-		mov dword [DATA_008888],0x3e8
+	JUMP_004143:			; Pos = 40389 ROSS 154 START
+		mov dword [DATA_008888],500000
 		push dword 0xde27
-		push byte +0x17
+		push byte +0x35	; used to be 0x17 - Eagle MkI?
 		call FUNC_000996
 		add esp,byte +0x8
 		mov ebx,eax
-		mov byte [ebx+0xd0],0x2
-		mov byte [ebx+0xd2],0x88
-		mov dword [ebx+0xc8],0x40240000
-		mov byte [ebx+0xd6],0x82
-		mov byte [ebx+0xd7],0x82
-		sub dword [DATA_008889],byte +0x10
-		mov word [DATA_008901],0x1
-		mov dword [DATA_008891],0x1
-		mov dword [ebx+0x11e],0x20000000
+		
+		mov byte [ebx+0x119],0x0
+
+		mov byte [ebx+0xd0],0x4
+		mov byte [ebx+0xd2],0xa0	; 1MW beamer
+		mov dword [ebx+0xc8],0x40240020
+;		mov byte [ebx+0xd6],0x82
+;		mov byte [ebx+0xd7],0x82
+		sub dword [DATA_008889],byte +55
+		mov word [DATA_008901],0x9
+		mov dword [DATA_008891],0x9
+		mov dword [ebx+0x11e],0x60000000
 		mov dword [DATA_008907],0x3e8
 		mov byte [ebx+0x56],0x6f
 		push byte +0x6e
@@ -74540,17 +76210,20 @@ FUNC_000998:			; Pos = 40194
 		call FUNC_000996
 		add esp,byte +0x8
 		mov ebx,eax
-		mov dword [DATA_008888],0x2710
-		mov byte [ebx+0xd2],0x88
-		mov word [DATA_008901],0x1
-		mov dword [DATA_008891],0x1
-		sub dword [DATA_008889],byte +0x10
+		
+		mov byte [ebx+0x119],0x0
+
+		mov dword [DATA_008888],10000
+		mov byte [ebx+0xd2],0x88	; laser
+		mov word [DATA_008902],4	; milfuel
+		mov dword [DATA_008891],4
+		sub dword [DATA_008889],13
 		mov dword [DATA_008907],0x42f
-		mov byte [ebx+0xd0],0x2
-		mov dword [ebx+0xc8],0x40240020
-		mov byte [ebx+0xd6],0x82
-		mov byte [ebx+0xd7],0x82
-		mov dword [ebx+0x11e],0x20000000
+		mov byte [ebx+0xd0],0xb	; drive type
+		mov dword [ebx+0xc8],0x40240020	; equipment
+		mov byte [ebx+0xd6],0x83	; missiles
+		mov byte [ebx+0xd7],0x83
+		mov dword [ebx+0x11e],0x20000000	; fuel tank
 		mov byte [ebx+0x56],0x6c
 		push byte +0x6a
 		push ebx
@@ -74576,6 +76249,87 @@ FUNC_000998:			; Pos = 40194
 		push eax
 		call FUNC_001575
 		pop ecx
+		
+		jmp JUMP_004145
+	JUMP_FrontierStart:
+
+		mov byte [_DATA_ExtendedUniverse],0x1
+		mov dword [_DATA_GameDays],0x1381a7
+		mov dword [_DATA_GameTics],0xc0000000
+		mov dword [DATA_008888],1000
+		push dword 0xde27
+		push byte +0x22	; viper mk2
+		call FUNC_000996
+		add esp,byte +0x8
+		mov ebx,eax
+		
+		mov byte [ebx+0x119],0x0
+
+		mov byte [ebx+0xd0],0xc
+		mov byte [ebx+0xd2],0xa0
+		mov byte [ebx+0xd6],0x82
+		mov byte [ebx+0xd7],0x82
+		mov word [ebx+0xe2],0x0
+		mov dword [ebx+0xc8],0x402c0020
+		sub dword [DATA_008889],10
+		mov dword [DATA_008907],0x320
+		mov dword [ebx+0x11e],0x20000000
+		mov word [DATA_008902],0x0
+		mov dword [DATA_008891],0x0
+		mov dword [DATA_009097],9000000
+		mov dword [DATA_009096],9000000
+		mov dword [DATA_009098],9000000
+		mov dword [DATA_008909],0x1f4
+		mov dword [DATA_008910],0x1f4
+		mov byte [ebx+0x56],0x6c
+		push byte +0x6b
+		push ebx
+		call FUNC_000994
+		add esp,byte +0x8
+;		push ebx
+;		call FUNC_000997
+;		pop ecx
+		mov ax,[DATA_007266]
+		mov [ebp-0x23],ax
+		mov al,[DATA_007267]
+		mov [ebp-0x21],al
+		mov ax,[ebp-0x23]
+		mov [DATA_008815],ax
+		mov al,[ebp-0x21]
+		mov [DATA_008817],al
+		mov ax,[ebp-0x23]
+		mov [DATA_009136],ax
+		mov al,[ebp-0x21]
+		mov [DATA_009137],al
+		mov dword [DATA_008814],0xffffffff
+
+;		mov dword [ebx+0x18],0x00420000
+		lea eax,[ebp-0x23]
+		push eax
+		call FUNC_001575
+		pop ecx
+
+		; set orientation
+;		xor ecx,ecx
+;		mov dword [ebx],0x0066e27a
+;		mov dword [ebx+0x4],0x0066f252
+;		mov dword [ebx+0x8],0x02000000
+;		mov dword [ebx+0xc],ecx
+;		mov dword [ebx+0x10],ecx
+;		mov dword [ebx+0x14],ecx
+;		mov dword [ebx+0x1c],ecx
+;		mov dword [ebx+0x20],0x30
+
+;		mov dword [ebx+0x5a],ecx
+;		mov dword [ebx+0x5e],ecx
+;		mov dword [ebx+0x62],0x02000000
+;		mov dword [ebx+0x66],ecx
+;		mov dword [ebx+0x6a],0x0000fca8
+;		mov dword [ebx+0x6e],ecx
+;		mov dword [ebx+0x72],ecx
+;		mov dword [ebx+0x76],ecx
+;		mov dword [ebx+0x7a],ecx
+
 	JUMP_004145:			; Pos = 404e1
 		pop esi
 		pop ebx
@@ -75346,73 +77100,64 @@ FUNC_001014:			; Pos = 40dac
 		mov ebp,esp
 		push ebx
 		push esi
+		push edi
+
 		mov ebx,[ebp+0x8]
 		mov esi,DATA_008804
 		cmp dword [esi+0xdc],0x1312d00
 		jg near JUMP_004206
-
-; FIX: Atmospheric heat dependency on frame rate, not time
-
 		test byte [ebx+0xcb],0x40
 		jz JUMP_004198
-		mov eax, 0x16
+		mov eax,0xb
 		jmp short JUMP_004199
 	JUMP_004198:			; Pos = 40dd9
-		mov eax, 0x13
+		mov eax,0x5
 	JUMP_004199:			; Pos = 40dde
+		test byte [esi+0xe9],0x2
+		setz dl
+		and edx,byte +0x1
+		sub eax,edx
+		mov ecx,eax
+		mov eax,[esi+0xd8]	; player speed
+		sar eax,cl
+		
+		mov edi,eax
 
-; Undercarriage mod: Not well known enough
-;		test byte [esi+0xe9], 0x2
-;		setz dl
-;		and edx, byte +0x1
-;		sub eax, edx
+		; ANISO - FIX: Cabin Temp now related to gametime
+		mov ecx,[_DATA_FrameTime]
+		shr ecx,0x7
+		imul ecx
+		sar eax,0x4
 
-		mov ecx, eax
-		mov eax, [esi+0xd8]
-		mov edx, [DATA_009155]
-		cmp edx, 0xffff
-		jl .notimecap
-		mov edx, 0xffff
-	.notimecap:
-		mul edx
-		sar eax, cl
-		cmp eax, 0x1000
-		jl .noheatcap
-		mov eax, 0x1000
-	.noheatcap:
-		mov edx, [esi+0x1ec]
-		add edx, eax
-
-		cmp edx, 0xffff
+		mov edx,[esi+0x1ec]
+		add edx,eax
+		cmp edx,0xffff
 		jng JUMP_004200
+		
+		; Destroy ship if cabin temp. is too high
+		push byte +0x0	; not continuous
 		push byte +0x0
 		push byte -0x1
 		push ebx
-		call _FUNC_000953_TakeDamage
-		add esp, 12
+		call FUNC_000953
+		add esp,byte +0x10
 		jmp short JUMP_004201
 	JUMP_004200:			; Pos = 40e16
-		xor edx, [esi+0x1ec]
-		add [esi+0x1ec], eax
-		test edx, 0x8000
-		jz JUMP_004201
+		add [esi+0x1ec],eax
+		mov edx,edi
+		sar edx,0x8
+		test edx,edx
+		jng JUMP_004201
+		
+		mov edx,eax
+		sar edx,0x8
 
-		push byte -1
-		push dword 0x99e6
-		call FUNC_001097
-		add esp, 8
-
-; Pointless overheating-damage code
-;		mov edx,eax
-;		sar edx,0x8
-;		test edx,edx
-;		jng JUMP_004201
-;		push byte +0x0
-;		push edx
-;		push ebx
-;		call _FUNC_000953_TakeDamage
-;		add esp,byte +0xc
-
+		push byte +0x0	; not continuous
+		push byte +0x0
+		push edx
+		push ebx
+		call FUNC_000953
+		add esp,byte +0x10
 	JUMP_004201:			; Pos = 40e31
 		cmp byte [esi+0x3f62],0x0
 		jz JUMP_004202
@@ -75439,29 +77184,14 @@ FUNC_001014:			; Pos = 40dac
 		pop ecx
 		jmp short JUMP_004206
 	JUMP_004203:			; Pos = 40e84
-
-; Atmospheric drag modification
-; Can't be arsed to do it properly though
-
-;		mov eax, 0x1312d00
-;		sub eax, [esi+0xdc]
-;		shr eax, 20
-;		add eax, 10			; result: 10 to 30
-
-		mov esi, [DATA_009155]
-		cmp esi, 0xffff
-		jl .nocap
-		mov esi, 0xffff
-	.nocap:
-		shl esi, 0xb
-
-; Undercarriage modifies drag
-;		mov cl, byte [DATA_008871]
-;		shl cl, 6
-;		sar cl, 7
-;		add cl, 0x6
-;		shl esi, cl
-
+		cmp dword [DATA_009155],0xfffff
+		jna JUMP_004204
+		mov esi,0xfffff
+		jmp short JUMP_004205
+	JUMP_004204:			; Pos = 40e97
+		mov esi,[DATA_009155]
+	JUMP_004205:			; Pos = 40e9d
+		shl esi,0xb
 		push esi
 		mov eax,[ebx+0x8c]
 		push eax
@@ -75484,6 +77214,7 @@ FUNC_001014:			; Pos = 40dac
 		call FUNC_001016
 		pop ecx
 	JUMP_004206:			; Pos = 40ee9
+		pop edi
 		pop esi
 		pop ebx
 		pop ebp
@@ -75793,16 +77524,19 @@ FUNC_001021:			; Pos = 411b8
 		xor eax,eax
 		mov [DATA_009138],eax
 	JUMP_004223:			; Pos = 41241
-		push byte +0xd
-		mov eax,[esi+0xe0]
-		push eax
-		lea eax,[esi+0x88]
-		push eax
-		mov eax,[esi+0xc8]
-		add eax,0x8c
-		push eax
-		call FUNC_000726
-		add esp,byte +0x10
+;		push byte +0xd
+; ANISO - player velocity fudge removed
+;		mov eax,[esi+0xe0]
+;		push eax
+;		lea eax,[esi+0x88]
+;		push eax
+;		mov eax,[esi+0xc8]
+;		add eax,0x8c
+;		push eax
+;		call FUNC_000726
+;		add esp,byte +0x10
+		call FUNC_SetupCombatVelocity
+
 		or byte [esi+0xe9],0x1
 		push byte +0xb
 		mov eax,[esi+0xe0]
@@ -76642,11 +78376,12 @@ FUNC_001033:			; Pos = 41a7c
 		mov [esi+0x1ec],edx
 		cmp eax,[esi+0x1ec]
 		jng JUMP_004273
+		push byte +0x0	; not continuous
 		push byte +0x0
 		push byte -0x1
 		push edi
-		call _FUNC_000953_TakeDamage
-		add esp,byte +0xc
+		call FUNC_000953
+		add esp,byte +0x10
 	JUMP_004273:			; Pos = 41c46
 		movsx eax,byte [esi+0x212]
 	JUMP_004274:			; Pos = 41c4d
@@ -76658,7 +78393,7 @@ FUNC_001033:			; Pos = 41a7c
 		ret
 
 
-
+; ANISO - kill off live animals and slaves
 FUNC_001034:			; Pos = 41c54
 
 		push ebp
@@ -77159,6 +78894,10 @@ FUNC_001038:			; Pos = 4203c
 		jmp short JUMP_004297
 
 	JUMP_004294:			; Pos = 42116
+		; ANISO - bugfix: make sure turrets can't turn when paused
+		cmp dword [DATA_007706],0x0
+		jz JUMP_004297
+
 		mov ax,[ebp-0x8]
 		sub [ebx+0x204],ax
 		mov ax,[ebp-0x6]
@@ -77664,11 +79403,14 @@ FUNC_001047:			; Pos = 425c8
 		ret
 
 
-
+; ANISO - called when docked at a starport...
 FUNC_001048:			; Pos = 4260c
 
 		push ebp
 		mov ebp,esp
+		
+		call _PlayerDocked
+
 		push byte +0x0
 		push byte +0x5
 		call FUNC_000148
@@ -79021,7 +80763,10 @@ SECTION .text
 		jnz JUMP_004419
 		mov eax,[esi+0x5030]
 		cmp eax,[esi+0x502c]
-		jz JUMP_004418
+
+		; ANISO - allow player to launch w/ excess crew
+		jnl JUMP_004418
+
 		mov dword [ebp-0x30],0x9938
 		mov edx,[esi+0xcc]
 		mov [ebp-0x14],edx
@@ -80427,6 +82172,9 @@ FUNC_001091:			; Pos = 444e0
 
 		push ebp
 		mov ebp,esp
+		
+		call _PlayerDocked
+		
 		push byte +0x0
 		push byte +0x5
 		call FUNC_000148
@@ -80730,6 +82478,7 @@ FUNC_001097:			; Pos = 44850
 
 
 
+; ANISO - launch escape capsule
 FUNC_001098:			; Pos = 44870
 
 		push ebp
@@ -80747,9 +82496,9 @@ FUNC_001098:			; Pos = 44870
 		mov eax,0x10
 		jmp short JUMP_004509
 	JUMP_004508:			; Pos = 44895
-		test edx,0x8000000
+		test edx,0x8000000	; has... what?
 		jz JUMP_004509
-		mov eax,0xe
+		mov eax,0xe	; escape capsule model
 	JUMP_004509:			; Pos = 448a2
 		test eax,eax
 		jz near JUMP_004513
@@ -80786,14 +82535,14 @@ FUNC_001098:			; Pos = 44870
 		pop ecx
 		test byte [esi+0xc8],0x8
 		jz JUMP_004511
-		mov dword [ebx+0xc8],0x40200000
+		mov dword [ebx+0xc8],0x40200020
 		mov byte [ebx+0xd2],0x88
 		mov byte [ebx+0xd0],0x2
 		mov word [edi+0x15a],0x2
 		mov dword [edi+0x120],0x2
 		jmp short JUMP_004512
 	JUMP_004511:			; Pos = 44964
-		mov dword [ebx+0xc8],0x40200000
+		mov dword [ebx+0xc8],0x40200020
 		mov byte [ebx+0xd2],0x0
 	JUMP_004512:			; Pos = 44975
 		xor eax,eax
@@ -80851,7 +82600,13 @@ FUNC_001098:			; Pos = 44870
 		call FUNC_000048
 		add esp,byte +0xc
 		or eax,byte -0x1
+
+		; store old ship model
+		movzx ecx,byte [esi+0x82]
+		mov [ebx+0x116],cx
+
 		jmp short JUMP_004514
+		
 	JUMP_004513:			; Pos = 44a7f
 		xor eax,eax
 	JUMP_004514:			; Pos = 44a81
@@ -80863,7 +82618,7 @@ FUNC_001098:			; Pos = 44870
 		ret
 
 
-
+; ANISO - radar mapper code?
 FUNC_001099:			; Pos = 44a88
 
 		push ebp
@@ -80872,6 +82627,14 @@ FUNC_001099:			; Pos = 44a88
 		push ebx
 		push esi
 		push edi
+		
+		mov eax,[DATA_008861]
+		push eax
+		call _RegenerateShields
+		pop ecx
+
+		call _SystemTick
+
 		mov ebx,DATA_008804
 		push byte +0x0
 		mov eax,0x5f
@@ -81125,11 +82888,12 @@ FUNC_001099:			; Pos = 44a88
 		call near [DATA_007644]    ; FUNC_001399_StringDrawWrapShadow
 		add esp,byte +0x18
 	JUMP_004529:			; Pos = 44dbf
+		; ANISO - display current FOR?
 		mov eax,[ebx+0x1b8]
 		mov [ebp-0x58],eax
 		mov eax,[ebx+0xd8]
 		mov [ebp-0x54],eax
-		mov eax,DATA_009124
+		mov eax,DATA_009124	; parent object string - such as "Sol"
 		mov [ebp-0x4c],eax
 		push byte +0x0
 		push dword 0x94
@@ -81158,20 +82922,26 @@ FUNC_001099:			; Pos = 44a88
 		call FUNC_000989
 		add esp,byte +0x8
 	JUMP_004531:			; Pos = 44e36
+		; ANISO - display shield & hull power on screen
 		mov eax,[ebx+0xc8]
 		mov cx,[eax+0xe0]
 		mov si,[eax+0xe2]
-		cmp cx,si
+		cmp cx,si	; shields full?
 		jz JUMP_004532
-		movzx eax,cx
-		shl eax,0x2
-		lea eax,[eax+eax*4]
-		lea eax,[eax+eax*4]
-		movzx edx,si
-		mov ecx,edx
-		cdq
-		idiv ecx
-		mov [ebp+0xffffff74],eax
+		movzx eax,cx	; eax = current shields
+		
+		; total means curShields *= 100, I think.  DAMN OPTIMIZERS
+		shl eax,0x2	; curShields *= 4
+		lea eax,[eax+eax*4]	; curShields *= 5?
+		lea eax,[eax+eax*4]	; curShields *= 5?
+		
+		movzx edx,si	; edx = totalShields
+		mov ecx,edx	; ecx = totalShields
+		
+		cdq	; sets edx to 0, I think... prep for idiv
+		idiv ecx	; curShields /= totalShields
+		
+		mov [ebp+0xffffff74],eax	; copy TotalShields... where??
 		push byte +0x0
 		push byte +0x1
 		push byte +0x2
@@ -81179,30 +82949,36 @@ FUNC_001099:			; Pos = 44a88
 		lea eax,[ebp+0xffffff74]
 		push eax
 		push dword 0x8624
+		
+		; draw (curShields*100)/totalShields...  AHA! perfect!
+		; this draws the percentage of shields remaining!
 		call near [DATA_007644]    ; FUNC_001399_StringDrawWrapShadow
 		add esp,byte +0x18
 	JUMP_004532:			; Pos = 44e86
 		cmp dword [ebx+0x10e],byte +0x0
 		jz JUMP_004534
-		mov eax,[ebx+0xc8]
-		mov eax,[eax+0x82]
+		mov eax,[ebx+0xc8]	; shipObj ptr?
+		mov eax,[eax+0x82]	; model index...
 		push eax
-		call near [DATA_007756]    ; FUNC_001538_GetModelPtr
+		
+		; ANISO - FUNC_001538: pass it the model index
+		; and it will give you a ptr to the ship's static data
+		call near [DATA_007756]    ; FUNC_001538
 		pop ecx
 		mov ecx,eax
 		mov eax,[ebx+0xc8]
 		movzx eax,word [eax+0xe4]
-		shl eax,0x3
-		lea eax,[eax+eax*4]
-		lea eax,[eax+eax*4]
-		lea eax,[eax+eax*4]
-		test eax,eax
+		shl eax,0x3	; hull *= 8
+		lea eax,[eax+eax*4]	; hull *= 5
+		lea eax,[eax+eax*4]	; hull *= 5
+		lea eax,[eax+eax*4]	; hull *= 5
+		test eax,eax	; if(hull*1000 == 0), 
 		jns JUMP_004533
-		add eax,byte +0x3
+		add eax,byte +0x3	; hull += 3.
 	JUMP_004533:			; Pos = 44ec5
-		sar eax,0x2
-		mov edx,[ecx+0x38]
-		movsx edx,word [edx+0x6]
+		sar eax,0x2	; hull * 250
+		mov edx,[ecx+0x38]	; ptr to ship specs
+		movsx edx,word [edx+0x6]	; total mass in ship prop.
 		mov ecx,edx
 		cdq
 		idiv ecx
@@ -81256,6 +83032,11 @@ FUNC_001099:			; Pos = 44a88
 		cdq
 		idiv ecx
 		pop ecx
+		
+		; ANISO - radar mapper code
+		; uncomment following line if you want to use radar to find out AI code (debug)
+;		movsx eax,byte [esi+0xff]
+		
 		mov [ebp+0xffffff4c],eax
 		movzx eax,word [esi+0xe0]
 		shl eax,0x2
@@ -81265,6 +83046,8 @@ FUNC_001099:			; Pos = 44a88
 		mov [ebp+0xffffff50],eax
 	JUMP_004535:			; Pos = 44fc2
 		movzx eax,word [esi+0xe4]
+		
+		; hull * 250
 		add eax,eax
 		lea eax,[eax+eax*4]
 		lea eax,[eax+eax*4]
@@ -81314,16 +83097,36 @@ FUNC_001099:			; Pos = 44a88
 		call near [DATA_007644]    ; FUNC_001399_StringDrawWrapShadow
 		add esp,byte +0x18
 	JUMP_004537:			; Pos = 45070
-		cmp byte [esi+0x118],0xfb
-		jnz JUMP_004538
-		cmp dword [esi+0x11a],byte +0x0
-		jz JUMP_004538
+	; ANISO - added cargo display.
+
+		lea eax,[ebp+0xffffff4c]
+		push eax
+		push esi
+		call _RadarCargoDisplay
+		add esp,byte +0x8
+		
+		mov ecx,eax
+;		cmp byte [esi+0x118],0xfb
+;		jnz JUMP_004538
 		test byte [ebx+0x1],0x80
 		jz JUMP_004538
-		mov eax,[esi+0x11a]
+		
+		; don't display bounty if an assassin, this data is used for other things
+		test word [esi+0x116],0x8000
+		jnz JUMP_004538
+
+		push ecx
+		push esi
+		call _GetBounty
+		pop ecx
+		pop ecx
+
+		cmp eax,0x0
+		jz JUMP_004538
+		
 		mov [ebp+0xffffff54],eax
 		push byte +0x0
-		push byte +0x47
+		push ecx
 		push dword 0xeb
 		push byte +0x10
 		lea eax,[ebp+0xffffff4c]
@@ -82303,22 +84106,26 @@ SECTION .text
 		test edx,edx
 		jnl JUMP_004580
 		cmp eax,edx
-		jg JUMP_004583
+		jng JUMP_004580
+		jmp JUMP_004583
 	JUMP_004580:			; Pos = 45ae8
 		mov [DATA_008895],eax
-		jmp short JUMP_004583
+		jmp JUMP_004583
 	JUMP_004581:			; Pos = 45aef
 		cmp byte [DATA_008870],0x4
 		jnz JUMP_004583
+
 		call FUNC_001094
 		jmp short JUMP_004583
+	; ANISO - award the player an Eagle when he lands in an Esc. capsule	
 	JUMP_004582:			; Pos = 45aff
 		mov ebx,[DATA_008861]
 		cmp dword [ebx+0x82],byte +0xe
 		jnz JUMP_004583
 		call near [DATA_007752]    ; FUNC_001530
 		push eax
-		push byte +0x17
+		movsx ecx,word [ebx+0x116] ; old ship model
+		push ecx	; old ship model
 		push ebx
 		call FUNC_000441
 		add esp,byte +0xc
@@ -83056,7 +84863,7 @@ FUNC_001122:			; Pos = 4624c
 		ret
 
 
-
+; ANISO - deploy mining machine?
 FUNC_001123:			; Pos = 46290
 
 		push ebp
@@ -83066,7 +84873,7 @@ FUNC_001123:			; Pos = 46290
 		ret
 
 
-
+; ANISO - recall mining machine?
 FUNC_001124:			; Pos = 4629c
 
 		push ebp
@@ -83076,7 +84883,7 @@ FUNC_001124:			; Pos = 4629c
 		ret
 
 
-
+; ANISO - use camera?
 FUNC_001125:			; Pos = 462a8
 
 		push ebp
@@ -83106,13 +84913,14 @@ FUNC_001125:			; Pos = 462a8
 		push eax
 		call near [DATA_007754]    ; FUNC_001532_GetModelInstancePtr
 		add esp,byte +0x8
-		cmp byte [eax+0x88],0xd
+		movzx ecx,byte [eax+0x88]
+		cmp ecx,13	; limit for usable photos...
 		jg JUMP_004644
 		mov byte [ebx+0x5],0xff
-		mov dl,[eax+0x88]
-		cmp dl,[ebx+0x1b]
+		movzx edx,byte [ebx+0x1b]
+		cmp ecx,edx
 		jg JUMP_004644
-		mov [ebx+0x1b],dl
+		mov [ebx+0x1b],cl
 	JUMP_004644:			; Pos = 4630c
 		add ebx,byte +0x34
 		dec esi
@@ -84351,6 +86159,16 @@ FUNC_001347_StringExpandArrayIndex:			; Pos = 4ee80
 		push dword [eax+edx*4]
 		push dword [ebp+0x8]
 		call near [DATA_007642]    ; FUNC_001348_StringExpand
+		
+		; inserted for debugging purposes
+;		push eax
+		
+;		mov eax,[ebp+0x8]
+;		push eax
+;		call _StringBreak
+;		pop eax
+;		pop eax
+		
 		add esp,byte +0x8
 		pop ebp
 		ret
@@ -86573,6 +88391,7 @@ FUNC_001440_GuiAddHotAreas:			; Pos = 50a2c
 		mov ebp,esp
 		push esi
 		push edi
+		;call _TimerCli
 		mov edx,[ebp+0x8]
 		mov eax,DATA_007683
 		jmp short JUMP_005428
@@ -86591,6 +88410,7 @@ FUNC_001440_GuiAddHotAreas:			; Pos = 50a2c
 	JUMP_005430:			; Pos = 50a5f
 		cmp dword [esi],byte -0x1
 		jnz JUMP_005429
+		;call _TimerSti
 		pop edi
 		pop esi
 		pop ebp
@@ -86609,6 +88429,7 @@ FUNC_001441_GuiAddHotRect:			; Pos = 50a68
 		push ebx
 		push esi
 		push edi
+		;call _TimerCli
 		mov esi,[ebp+0x14]
 		mov ebx,[ebp+0x10]
 		mov ecx,[ebp+0xc]
@@ -86647,6 +88468,7 @@ FUNC_001441_GuiAddHotRect:			; Pos = 50a68
 		mov [eax+0x4],edx
 		add esi,ecx
 		mov [eax+0xc],esi
+		;call _TimerSti
 		pop edi
 		pop esi
 		pop ebx
@@ -86687,6 +88509,7 @@ FUNC_001443_GuiRemoveHotArea:			; Pos = 50ae8
 		mov ebp,esp
 		push esi
 		push edi
+		;call _TimerCli
 		mov edx,[ebp+0x8]
 		mov eax,DATA_007683
 		jmp short JUMP_005438
@@ -86707,6 +88530,7 @@ FUNC_001443_GuiRemoveHotArea:			; Pos = 50ae8
 	JUMP_005440:			; Pos = 50b17
 		cmp dword [eax],byte -0x1
 		jnz JUMP_005439
+		;call _TimerSti
 		pop edi
 		pop esi
 		pop ebp
@@ -86982,6 +88806,7 @@ FUNC_001461_GuiAddHotRect2:			; Pos = 510c4
 		push ebp
 		mov ebp,esp
 		push ebx
+		;call _TimerCli
 		mov ecx,[ebp+0xc]
 		mov edx,[ebp+0x8]
 		mov eax,DATA_007683
@@ -87000,6 +88825,7 @@ FUNC_001461_GuiAddHotRect2:			; Pos = 510c4
 		mov [eax+0x4],ecx
 		add ecx,[ebp+0x14]
 		mov [eax+0xc],ecx
+		;call _TimerSti
 		pop ebx
 		pop ebp
 		ret
@@ -90298,7 +92124,8 @@ FUNC_001506:			; Pos = 52fc4
 		ret
 
 
-
+; ANISO - get random position for ships?
+; F1507 (char *ship, int special, int rand1, int rand2)
 FUNC_001507:			; Pos = 53025
 
 	push ebp
@@ -91416,7 +93243,7 @@ FUNC_001532_GetModelInstancePtr:			; Pos = 53a54
 		pop ebp
 		ret
 
-
+		
 
 FUNC_001533:			; Pos = 53a70
 
@@ -109882,6 +111709,7 @@ FUNC_001747:			; Pos = 5f4b4
 		mov esi,eax
 		jmp short JUMP_006743
 	JUMP_006742:			; Pos = 5f80a
+		; edi is exceeding regular parameters, is causing crashes
 		mov esi,[ebx+edi*4-0x3c]
 		add esi,byte -0x2
 	JUMP_006743:			; Pos = 5f811
@@ -109922,6 +111750,7 @@ FUNC_001747:			; Pos = 5f4b4
 	JUMP_006746:			; Pos = 5f886
 		inc dword [ebp-0xc]
 	JUMP_006747:			; Pos = 5f889
+		; increment through bytes of... string?!
 		mov eax,[ebp-0xc]
 		movzx edi,byte [eax]
 		test edi,edi
@@ -110812,7 +112641,7 @@ FUNC_001760:			; Pos = 60050
 		ret
 
 
-
+; ANISO - create military bases?
 FUNC_001761:			; Pos = 6008c
 
 		push ebp
@@ -133973,9 +135802,26 @@ FUNC_001902_SoundPlaySong:			; Pos = 700b4
 		jz JUMP_008104
 		cmp ebx, [edi+0x5334]
 		jz JUMP_008104
+		
+		cmp ebx,0xe
+		jnz .NotBattleMusic
+		
+		call near [DATA_007752]	; random
+		and eax,0xf
+
+		mov ebx,[eax*4+DATA_BattleSongs]
 		push ebx
 		call _SoundPlaySong
 		pop ecx
+		
+		mov dword [edi+0x5334],0xe		
+		jmp short JUMP_008104
+	
+	.NotBattleMusic:
+		push ebx
+		call _SoundPlaySong
+		pop ecx
+
 		
 		mov [edi+0x5334],ebx
 	JUMP_008104:			; Pos = 70178
@@ -134096,6 +135942,7 @@ FUNC_001907_SoundPlaySampleLogVol:			; Pos = 703c0
 ; If siren, station, ecm, necm or wind, modify volume only
 ; if already playing, else kill old and start new
 
+_FUNC_001908_SoundPlaySampleLinVol:
 FUNC_001908_SoundPlaySampleLinVol:			; Pos = 70592
 
 		push ebp
@@ -134157,11 +136004,27 @@ FUNC_001908_SoundPlaySampleLinVol:			; Pos = 70592
 
 	JUMP_008120:			; Pos = 70390
 		mov eax, [ebp+0xc]
+		
+		; added
+		test eax,0x80000000
+		jz RegularScale
+		and eax,0x7fffffff
+		jmp short BasicScale
+	
+	RegularScale:
 		shl eax, 9
+	
+	BasicScale:
 		cmp eax, 0x7fff
 		jng JUMP_008121
 		mov eax, 0x7fff
 	JUMP_008121:
+		
+		cmp ebx,0xb
+		jnz NotBeamLaser
+		shr eax,0x1
+	NotBeamLaser:
+
 		push dword -1
 		push eax
 		push ebx
@@ -134495,6 +136358,114 @@ pop edi
 		pop esi
 		iret
 
+FUNC_ShipHit:
+		push ebp
+		mov ebp,esp
+		push ebx
 
+		mov ebx,[ebp+0x8]
+		xor eax,eax
+		mov al,[ebx+0x86]
+		cmp eax,[DATA_008857]	; if ship = player, then culpable
+		jnz near JUMP_SkipPiracyCharge
+		
+		; ADDED - Make ship hostile to player
+		mov eax,[ebp+0xc]
+		cmp dword [eax+0x82],0xe
+		jng near JUMP_SkipPiracyCharge
+		cmp dword [eax+0x82],0x47
+		jg near JUMP_SkipPiracyCharge
 
+		cmp byte [eax+0xd2],0x0
+		jz near JUMP_EndMusicCond
 
+		mov cl,[eax+0xff]
+		; if the ship is already hostile, don't charge with piracy
+		cmp cl,0x2
+		jz near JUMP_SkipPiracyCharge
+		cmp cl,0x4
+		jz near JUMP_SkipPiracyCharge
+		cmp cl,0xc
+		jz near JUMP_SkipPiracyCharge
+
+		; if landed at a starport or fleeing a missile, don't anger AI
+		cmp cl,0x1d
+		jge near JUMP_EndMusicCond
+		
+		mov byte [eax+0xff],0x4
+		push eax
+		push ecx
+		call FUNC_SetupCombatVelocity
+		pop ecx
+		pop eax
+
+		mov dl,[DATA_008857]
+		mov [eax+0xfe],dl
+
+		cmp cl,0x1
+		jz near JUMP_SkipPiracyCharge
+		cmp cl,0x3
+		jz near JUMP_SkipPiracyCharge
+
+		push eax
+		mov al,[DATA_009035]
+		and al,[DATA_009029]
+		jz JUMP_NoMusic
+		push byte +0xe
+		call FUNC_001902_SoundPlaySong
+		pop ecx
+		pop eax
+
+		jmp short JUMP_EndMusicCond
+	JUMP_NoMusic:			; Pos = 2fc6a
+		call FUNC_001903_SoundStopSong
+	JUMP_EndMusicCond:
+
+		; ANISO - don't charge again until you attack someone else
+		mov dl,[eax+0x86]
+		cmp dl,[_DATA_LastAttackedIndex]
+		jz JUMP_SkipPiracyCharge
+		
+		mov [_DATA_LastAttackedIndex],dl
+		push ebx
+		push byte +0xa
+		call FUNC_000237	; ANISO - fine player for piracy and murder!!
+		add esp,byte +0x8
+		
+	JUMP_SkipPiracyCharge:		
+		pop ebx
+		pop ebp
+		ret
+
+_GetStarRange:
+		push ebp
+		mov ebp,esp
+		add esp,byte -0x38
+		push ebx
+
+		lea eax,[ebp-0x10]	; etc
+		push eax
+		lea eax,[ebp-0xc]	; etc
+		push eax
+		lea eax,[ebp-0x8]	; returnval - something else?
+		push eax
+		lea eax,[ebp-0x2c]
+		push eax	; starvec
+		push dword [ebp+0x8]	; systemcode
+		call FUNC_000852
+		add esp,byte +0x14
+		
+		; player system vec32 in D8950, target system vec in [ebp-0x2c]
+		push dword [DATA_008952]
+		push dword [DATA_008951]
+		push dword [DATA_008950]
+		push dword [ebp-0x24]
+		push dword [ebp-0x28]
+		push dword [ebp-0x2c]
+		call FUNC_000833
+		add esp,byte +0x18
+		
+		pop ebx
+		mov esp,ebp
+		pop ebp
+		ret

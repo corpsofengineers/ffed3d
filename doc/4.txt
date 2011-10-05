@@ -1,7 +1,0 @@
-		call FUNC_001656_FindMSB
-		pop ecx
-		add eax,[DATA_007837]
-		add eax, 1				; DreamZzz, increase planet detail
-		mov [DATA_009269],eax
-		xor ebx,ebx
-		lea edi,[ebp+0xfffff7e8]
