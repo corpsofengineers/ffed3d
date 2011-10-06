@@ -234,34 +234,6 @@
 			</File>
 		</Filter>
 		<Filter
-			Name="CModel"
-			>
-			<File
-				RelativePath="..\..\win\CModel\CAllocateHierarchy.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\win\CModel\CAllocateHierarchy.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\win\CModel\CModel.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\win\CModel\CModel.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\win\CModel\DerivedStructs.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\win\CModel\Macros.h"
-				>
-			</File>
-		</Filter>
-		<Filter
 			Name="ini"
 			>
 			<File
@@ -270,22 +242,6 @@
 			</File>
 			<File
 				RelativePath="..\..\win\ini\INI.H"
-				>
-			</File>
-		</Filter>
-		<Filter
-			Name="Object3D"
-			>
-			<File
-				RelativePath="..\..\win\Object3D\Defines.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\win\Object3D\Object3D.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\win\Object3D\Object3D.h"
 				>
 			</File>
 		</Filter>
