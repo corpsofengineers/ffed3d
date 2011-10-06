@@ -139,45 +139,45 @@ unsigned char pKeybConvTableDef[256] = {
 };
 
 char *Commands[256] = {
-	"", "Int_Pause", "KEY_1", "KEY_2", "KEY_3", "KEY_4", "KEY_5", "KEY_6", 
-	"KEY_7", "KEY_8", "KEY_9", "KEY_0", "KEY_MINUS", "KEY_EQUALS", "KEY_BACK", "Ship_EngineControl",
-	"KEY_Q", "KEY_W", "KEY_E", "Map_ShowSystemScheme", "Ship_Target", "KEY_Y","Ship_Gear", "KEY_I",
-	"KEY_O", "KEY_P", "Ship_RollLeft", "Ship_RollRight", "Ship_Acceleration", "KEY_LCONTROL", "Ship_PitchDown", "KEY_S",
-	"Ship_MiningCraft", "KEY_F", "KEY_G", "Ship_HyperJump", "KEY_J", "KEY_K", "Int_ShowMarkers", "KEY_SEMICOLON",
-	"KEY_APOSTROPHE", "KEY_GRAVE", "KEY_LSHIFT", "KEY_BACKSLASH", "Ship_PitchUp", "Ship_Catapult", "Ship_Decoys", "KEY_V",
-	"Ship_EnergyBomb", "Ship_LandTarget", "Ship_launchMissile", "Ship_YawRight", "Ship_YawLeft", "Ship_HyperCloudAnalysis", "Ship_Inhibition", "KEY_MULTIPLY",
-	"KEY_LMENU", "Ship_Fire", "KEY_CAPITAL", "Int_SwitchView", "Int_ShowShipInfo", "Int_StarMap", "Int_Comm", "Ship_SwitchTobMode",
-	"KEY_F6", "KEY_F7", "KEY_F8", "KEY_F9", "KEY_F10", "KEY_NUMLOCK", "KEY_SCROLL", "Eng_StrafeLeft",
-	"Eng_Main", "Eng_StrafeRight", "KEY_SUBTRACT", "KEY_NUMPAD4", "Eng_Retro", "KEY_NUMPAD6", "KEY_ADD", "KEY_NUMPAD1",
-	"KEY_NUMPAD2", "KEY_NUMPAD3", "KEY_NUMPAD0", "KEY_DECIMAL", "", "", "", "KEY_F11",
-	"KEY_F12", "", "", "", "", "", "", "",
-	"", "", "", "", "", "", "", "",			// ""x6""-""x67
-	"", "", "", "", "", "", "", "",			// ""x68-""x6f
-	"", "", "", "", "", "", "", "",			// ""x7""-""x77
-	"", "", "", "", "", "", "", "",			// ""x78-""x7f
-	"", "", "", "", "", "", "", "",			// ""x8""-""x87
-	"", "", "", "", "", "", "", "",			// ""x88-""x8f
-	"", "", "", "", "", "", "", "",			// ""x9""-""x97
-	"", "", "", "", "KEY_NUMPADENTER", "KEY_RCONTROL", "", "",			// ""x98-""x9f
-	"", "", "", "", "", "", "", "",			// ""xa""-""xa7
-	"", "", "", "", "", "", "", "",			// ""xa8-""xaf
-	"", "", "", "", "", "KEY_DIVIDE", "", "KEY_SYSRQ",			// ""xb""-""xb7
-	"KEY_RMENU", "", "", "", "", "", "", "",			// ""xb8-""xbf
-	"", "", "", "", "", "", "", "KEY_HOME",			// ""xc""-""xc7
-	"KEY_UP", "Int_MessageUp", "", "KEY_LEFT", "", "KEY_RIGHT", "", "KEY_END",			// ""xc8-""xcf
-	"KEY_DOWN", "Int_MessageDown", "KEY_INSERT", "KEY_DELETE", "", "", "", "",			// ""xd""-""xd7
-	"", "", "", "KEY_LWIN", "KEY_RWIN", "KEY_APPS", "", "",			// ""xd8-""xdf
-	"", "", "", "", "", "", "", "",			// ""xe""-""xe7
-	"", "", "", "", "", "", "", "",			// ""xe8-""xef
-	"", "", "", "", "", "", "", "",			// ""xf""-""xf7
-	"", "", "", "", "", "", "", ""			// ""xf8-""xff
+	"NULL", "time_pause", "cheat1", "cheat2", "cheat3", "cheat_4", "game_load", "time_x1", 
+	"time_x2", "time_x4", "time_x8", "time_x16", "cam_zoomin", "cam_zoomout", "NULL", "eng_switch",
+	"NULL", "NULL", "env_ecm", "map_orbscheme", "pl_target", "NULL", "pl_gear", "NULL",
+	"NULL", "NULL", "pl_rolll", "pl_rollr", "pl_accel", "NULL", "pl_pitchd", "NULL",
+	"env_mdeploy", "NULL", "NULL", "pl_hjump", "NULL", "NULL", "int_shownames", "NULL",
+	"NULL", "NULL", "NULL", "NULL", "pl_pitchu", "env_evac", "env_decoy", "NULL",
+	"env_bomb", "pl_ltarget", "env_missile", "pl_yawl", "pl_yawr", "env_hanalis", "pl_inhibition", "UNKNOWN",
+	"NULL", "pl_fire", "NULL", "cam_switch", "pl_info", "pl_map", "pl_comm", "pl_bmode",
+	"cam_ahead", "cam_back", "cam_turret", "cam_orbit", "cam_missile", "NULL", "NULL", "pl_strafel",
+	"pl_trustm", "pl_strafer", "NULL", "pl_strafeu", "pl_trustr", "NULL", "NULL", "pl_strafed",
+	"NULL", "NULL", "NULL", "NULL", "NULL", "NULL", "NULL", "env_battlec",
+	"cam_capsule", "NULL", "NULL", "NULL", "NULL", "NULL", "NULL", "NULL",
+	"NULL", "NULL", "NULL", "NULL", "NULL", "NULL", "NULL", "NULL",			// "NULL"x6"NULL"-"NULL"x67
+	"NULL", "NULL", "NULL", "NULL", "NULL", "NULL", "NULL", "NULL",			// "NULL"x68-"NULL"x6f
+	"NULL", "NULL", "NULL", "NULL", "NULL", "NULL", "NULL", "NULL",			// "NULL"x7"NULL"-"NULL"x77
+	"NULL", "NULL", "NULL", "NULL", "NULL", "NULL", "NULL", "NULL",			// "NULL"x78-"NULL"x7f
+	"NULL", "NULL", "NULL", "NULL", "NULL", "NULL", "NULL", "NULL",			// "NULL"x8"NULL"-"NULL"x87
+	"NULL", "NULL", "NULL", "NULL", "NULL", "NULL", "NULL", "NULL",			// "NULL"x88-"NULL"x8f
+	"NULL", "NULL", "NULL", "NULL", "NULL", "NULL", "NULL", "NULL",			// "NULL"x9"NULL"-"NULL"x97
+	"NULL", "NULL", "NULL", "NULL", "NULL", "NULL", "NULL", "NULL",			// "NULL"x98-"NULL"x9f
+	"NULL", "NULL", "NULL", "NULL", "NULL", "NULL", "NULL", "NULL",			// "NULL"xa"NULL"-"NULL"xa7
+	"NULL", "NULL", "NULL", "NULL", "NULL", "NULL", "NULL", "NULL",			// "NULL"xa8-"NULL"xaf
+	"NULL", "NULL", "NULL", "NULL", "NULL", "NULL", "NULL", "NULL",			// 0xb0-0xb7
+	"NULL", "NULL", "NULL", "NULL", "NULL", "NULL", "NULL", "NULL",			// "NULL"xb8-"NULL"xbf
+	"NULL", "NULL", "NULL", "NULL", "NULL", "NULL", "NULL", "NULL",			// 0xc0-0xc7
+	"cam_up", "msg_down", "NULL", "cam_left", "NULL", "cam_right", "NULL", "NULL",			// 0xc8-0xcf
+	"cam_down", "msg_up", "NULL", "NULL", "NULL", "NULL", "NULL", "NULL",			// "NULL"xd"NULL"-"NULL"xd7
+	"NULL", "NULL", "NULL", "NULL", "NULL", "NULL", "NULL", "NULL",			// "NULL"xd8-"NULL"xdf
+	"NULL", "NULL", "NULL", "NULL", "NULL", "NULL", "NULL", "NULL",			// "NULL"xe"NULL"-"NULL"xe7
+	"NULL", "NULL", "NULL", "NULL", "NULL", "NULL", "NULL", "NULL",			// "NULL"xe8-"NULL"xef
+	"NULL", "NULL", "NULL", "NULL", "NULL", "NULL", "NULL", "NULL",			// "NULL"xf"NULL"-"NULL"xf7
+	"NULL", "NULL", "NULL", "NULL", "NULL", "NULL", "NULL", "NULL",			// "NULL"xf8-"NULL"xff
 };
 
 char *keyTOdig [256] = 
 {
 	"", "KEY_ESCAPE", "KEY_1", "KEY_2", "KEY_3", "KEY_4", "KEY_5", "KEY_6", 
 	"KEY_7", "KEY_8", "KEY_9", "KEY_0", "KEY_MINUS", "KEY_EQUALS", "KEY_BACK", "KEY_TAB",
-	"KEY_Q", "KEY_W", "KEY_E", "KEY_R", "KEY_T", "KEY_Y","KEY_U", "KEY_I",
+	"KEY_Q", "KEY_W", "KEY_E", "KEY_R", "KEY_T", "KEY_Y", "KEY_U", "KEY_I",
 	"KEY_O", "KEY_P", "KEY_LBRACKET", "KEY_RBRACKET", "KEY_RETURN", "KEY_LCONTROL", "KEY_A", "KEY_S",
 	"KEY_D", "KEY_F", "KEY_G", "KEY_H", "KEY_J", "KEY_K", "KEY_L", "KEY_SEMICOLON",
 	"KEY_APOSTROPHE", "KEY_GRAVE", "KEY_LSHIFT", "KEY_BACKSLASH", "KEY_Z", "KEY_X", "KEY_C", "KEY_V",
@@ -185,28 +185,28 @@ char *keyTOdig [256] =
 	"KEY_LMENU", "KEY_SPACE", "KEY_CAPITAL", "KEY_F1", "KEY_F2", "KEY_F3", "KEY_F4", "KEY_F5",
 	"KEY_F6", "KEY_F7", "KEY_F8", "KEY_F9", "KEY_F10", "KEY_NUMLOCK", "KEY_SCROLL", "KEY_NUMPAD7",
 	"KEY_NUMPAD8", "KEY_NUMPAD9", "KEY_SUBTRACT", "KEY_NUMPAD4", "KEY_NUMPAD5", "KEY_NUMPAD6", "KEY_ADD", "KEY_NUMPAD1",
-	"KEY_NUMPAD2", "KEY_NUMPAD3", "KEY_NUMPAD0", "KEY_DECIMAL", "", "", "", "KEY_F11",
-	"KEY_F12", "", "", "", "", "", "", "",
-	"", "", "", "", "", "", "", "",			// ""x6""-""x67
-	"", "", "", "", "", "", "", "",			// ""x68-""x6f
-	"", "", "", "", "", "", "", "",			// ""x7""-""x77
-	"", "", "", "", "", "", "", "",			// ""x78-""x7f
-	"", "", "", "", "", "", "", "",			// ""x8""-""x87
-	"", "", "", "", "", "", "", "",			// ""x88-""x8f
-	"", "", "", "", "", "", "", "",			// ""x9""-""x97
-	"", "", "", "", "KEY_NUMPADENTER", "KEY_RCONTROL", "", "",			// ""x98-""x9f
-	"", "", "", "", "", "", "", "",			// ""xa""-""xa7
-	"", "", "", "", "", "", "", "",			// ""xa8-""xaf
-	"", "", "", "", "", "KEY_DIVIDE", "", "KEY_SYSRQ",			// ""xb""-""xb7
-	"KEY_RMENU", "", "", "", "", "", "", "",			// ""xb8-""xbf
-	"", "", "", "", "", "", "", "KEY_HOME",			// ""xc""-""xc7
-	"KEY_UP", "KEY_PRIOR", "", "KEY_LEFT", "", "KEY_RIGHT", "", "KEY_END",			// ""xc8-""xcf
-	"KEY_DOWN", "KEY_NEXT", "KEY_INSERT", "KEY_DELETE", "", "", "", "",			// ""xd""-""xd7
-	"", "", "", "KEY_LWIN", "KEY_RWIN", "KEY_APPS", "", "",			// ""xd8-""xdf
-	"", "", "", "", "", "", "", "",			// ""xe""-""xe7
-	"", "", "", "", "", "", "", "",			// ""xe8-""xef
-	"", "", "", "", "", "", "", "",			// ""xf""-""xf7
-	"", "", "", "", "", "", "", ""			// ""xf8-""xff
+	"KEY_NUMPAD2", "KEY_NUMPAD3", "KEY_NUMPAD0", "KEY_DECIMAL","","","", "KEY_F11",
+	"KEY_F12","","","","","","","",
+	"","","","","","","","",			// 0x60-0x67
+	"","","","","","","","",			// 0x68-0x6f
+	"","","","","","","","",			// 0x70-0x77
+	"","","","","","","","",			// 0x78-0x7f
+	"","","","","","","","",			// 0x80-0x87
+	"","","","","","","","",			// 0x88-0x8f
+	"","","","","","","","",			// 0x90-0x97
+	"","","","", "KEY_NUMPADENTER", "KEY_RCONTROL","","",			// 0x98-0x9f
+	"","","","","","","","",			// 0xa0-0xa7
+	"","","","","","","","",			// 0xa8-0xaf
+	"","","","","", "KEY_DIVIDE","", "KEY_SYSRQ",			// 0xb0-0xb7
+	"KEY_RMENU","","","","","","","",			// 0xb8-0xbf
+	"","","","","","","", "KEY_HOME",			// 0xc0-0xc7
+	"KEY_UP", "KEY_PRIOR","", "KEY_LEFT","", "KEY_RIGHT","", "KEY_END",			// 0xc8-0xcf
+	"KEY_DOWN", "KEY_NEXT", "KEY_INSERT", "KEY_DELETE","","","","",			// 0xd0-0xd7
+	"","","", "KEY_LWIN", "KEY_RWIN", "KEY_APPS","","",			// 0xd8-0xdf
+	"","","","","","","","",			// 0xe0-0xe7
+	"","","","","","","","",			// 0xe8-0xef
+	"","","","","","","","",			// 0xf0-0xf7
+	"","","","","","","","",			// 0xf8-0xff
 };
 
 
@@ -273,6 +273,7 @@ static BOOL CALLBACK JoyEnumFunc (LPCDIDEVICEINSTANCE lpddi, LPVOID pGuid)
 void KeyBinds (CfgStruct *cfg)
 {
 	bool bind = false;
+	bool notuse = false;
 	char key[256];
 	char *tok;
 
@@ -280,30 +281,35 @@ void KeyBinds (CfgStruct *cfg)
 
 	for (int i=0;i<256;i++)
 	{
-		
-		if (CfgGetKeyStr (cfg, Commands[i], key, 255) != 0)
+		//≈сли комманда по индексу задана, то провер€ем клавиши, в противном случае биндин NULL и едем дальше
+		if (strcmp (Commands[i], "NULL") == 0) {notuse = true;}
+		if (!notuse && CfgGetKeyStr (cfg, Commands[i], key, 255) != 0)
 		{
 			tok = strtok (key, " \n\t");
 			strcpy (key, tok);
-			for (int kc=0;kc<256;kc++)
+
+			for (int kc=0; kc<256;kc++)
 			{
-
-				if (strcmp (keyTOdig[kc], key) == 0)
+				if (strlen (key) > 0 && strcmp (keyTOdig[kc], key) == 0)
 				{
-					pKeybConvTable[i]=kc;
-					bind=true;
-					break;
+					pKeybConvTable[i] = kc;
+					bind = true;
 				}
-
 			}
 		}
 
-		if (!bind)
+		if (notuse)
 		{
-			pKeybConvTable[i]=pKeybConvTableDef[i];
+			pKeybConvTable[i] = 0;
 		}
-		bind=false;
-	
+
+		if (!notuse && !bind)
+		{
+			pKeybConvTable[i] = pKeybConvTableDef[i];
+		}
+			
+		bind = false;
+		notuse = false;
 	}
 
 }
