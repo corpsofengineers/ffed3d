@@ -40,7 +40,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories="F:\devzone\EliteD3D\ffed3d\win;F:\devzone\EliteD3D\ffed3d\Utils"
-				PreprocessorDefinitions="__FFEWIN__;_CRT_SECURE_NO_WARNINGS"
+				PreprocessorDefinitions="__FFEWIN__;_CRT_SECURE_NO_WARNINGS;WIN32"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -61,8 +61,9 @@
 				Name="VCLinkerTool"
 				UseLibraryDependencyInputs="false"
 				AdditionalDependencies="bass.lib lua5.1.lib lua51.lib glu32.lib d3dx9.lib d3d9.lib dinput.lib dxguid.lib dsound.lib winmm.lib odbc32.lib odbccp32.lib"
+				OutputFile="$(OutDir)\FFE D3D.exe"
 				AdditionalLibraryDirectories="F:\devzone\EliteD3D\ffed3d\lib"
-				GenerateDebugInformation="false"
+				GenerateDebugInformation="true"
 				GenerateMapFile="false"
 				MapFileName=""
 				TargetMachine="1"
@@ -228,10 +229,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\ffemisc.c"
-				>
-			</File>
-			<File
 				RelativePath="..\..\hmp.cpp"
 				>
 			</File>
@@ -349,8 +346,34 @@
 			>
 		</File>
 		<File
+			RelativePath="..\..\win\bbs.cpp"
+			>
+		</File>
+		<File
 			RelativePath="..\..\win\ffe3d.h"
 			>
+		</File>
+		<File
+			RelativePath="..\..\win\ffemisc.cpp"
+			>
+			<FileConfiguration
+				Name="Debug|Win32"
+				>
+				<Tool
+					Name="VCCLCompilerTool"
+					ObjectFile="$(IntDir)\$(InputName)1.obj"
+					XMLDocumentationFileName="$(IntDir)\$(InputName)1.xdc"
+				/>
+			</FileConfiguration>
+			<FileConfiguration
+				Name="Release|Win32"
+				>
+				<Tool
+					Name="VCCLCompilerTool"
+					ObjectFile="$(IntDir)\$(InputName)1.obj"
+					XMLDocumentationFileName="$(IntDir)\$(InputName)1.xdc"
+				/>
+			</FileConfiguration>
 		</File>
 		<File
 			RelativePath="..\..\win\gfx.cpp"
@@ -365,11 +388,31 @@
 			>
 		</File>
 		<File
+			RelativePath="..\..\win\market.cpp"
+			>
+		</File>
+		<File
+			RelativePath="..\..\win\misc.h"
+			>
+		</File>
+		<File
+			RelativePath="..\..\win\missions.cpp"
+			>
+		</File>
+		<File
 			RelativePath="..\..\win\planet.cpp"
 			>
 		</File>
 		<File
 			RelativePath="..\..\win\planet.h"
+			>
+		</File>
+		<File
+			RelativePath="..\..\win\ships.cpp"
+			>
+		</File>
+		<File
+			RelativePath="..\..\win\sysgen.cpp"
 			>
 		</File>
 		<File
