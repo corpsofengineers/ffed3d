@@ -620,6 +620,7 @@ CXFileEntity* sphereObj;
 CXFileEntity* atmoObj;
 LPDIRECT3DTEXTURE9 aviTex;
 LPDIRECT3DTEXTURE9 panelTex, battlepanel, navigatepanel, voidbutton;
+LPDIRECT3DTEXTURE9 loadingTex, modelTex, texTex, effectTex;
 LPDIRECT3DTEXTURE9 panelIcons[4];
 int panelnum=0;
 CXFileEntity* objectList[500];
@@ -838,6 +839,35 @@ bool InitD3D(HWND hWnd)
 	renderSystem->CreateVertexBuffer(vertexBuffer,MAXVERT,VertexXYZNDT1::declaration);
 	renderSystem->CreateVertexBuffer(spriteVB,4,VertexXYZWDT1::declaration);
 
+	//Loading Screen Pack
+	D3DXMATRIX *lScale = new D3DXMATRIX;
+	float sx = curwidth/1024.0f;
+	float sy = curheight/1024.0f;
+	D3DXMatrixScaling (lScale, sx, sy, 1);
+	
+	D3DXVECTOR3 *elPos = new D3DXVECTOR3 (curwidth/2/sx-128, curheight/2/sy-32, 0);
+	
+	char buf[1000];
+	sprintf_s(buf,"textures/loading/Loadscreen.png");
+	if (FAILED(FFED3DCreateTextureFromFileRT(renderSystem->GetDevice(), buf, &loadingTex))) {
+		loadingTex=NULL;
+	}
+
+	sprintf_s(buf,"textures/loading/loading_models.png");
+	if (FAILED(FFED3DCreateTextureFromFileRT(renderSystem->GetDevice(), buf, &modelTex))) {
+		modelTex=NULL;
+	}
+
+	sprintf_s(buf,"textures/loading/loading_textures.png");
+	if (FAILED(FFED3DCreateTextureFromFileRT(renderSystem->GetDevice(), buf, &texTex))) {
+		texTex=NULL;
+	}
+
+	sprintf_s(buf,"textures/loading/loading_effects.png");
+	if (FAILED(FFED3DCreateTextureFromFileRT(renderSystem->GetDevice(), buf, &effectTex))) {
+		effectTex=NULL;
+	}
+
 	CreateLocalFont();
 	D3DXCreateSprite(renderSystem->GetDevice(),&textSprite);
 
@@ -846,9 +876,12 @@ bool InitD3D(HWND hWnd)
 
 	renderSystem->BeginScene();    
 	textSprite->Begin(D3DXSPRITE_ALPHABLEND);
-	DrawText("Loading models...", curwidth/2-100, curheight/2, D3DCOLOR_XRGB(255,255,255));
+	textSprite->SetTransform (lScale);
+	textSprite->Draw (loadingTex, NULL, NULL, NULL, 0xffffffff);
+	textSprite->Draw (modelTex, NULL, NULL, elPos, 0xffffffff);
+	//DrawText("Loading models...", curwidth/2-100, curheight/2, D3DCOLOR_XRGB(255,255,255));
 	textSprite->End();
-	renderSystem->EndScene();  
+	renderSystem->EndScene();
 
 	loadModels();
 
@@ -857,7 +890,10 @@ bool InitD3D(HWND hWnd)
 
 	renderSystem->BeginScene();    
 	textSprite->Begin(D3DXSPRITE_ALPHABLEND);
-	DrawText("Loading textures...", curwidth/2-100, curheight/2, D3DCOLOR_XRGB(255,255,255));
+	textSprite->SetTransform (lScale);
+	textSprite->Draw (loadingTex, NULL, NULL, NULL, 0xffffffff);
+	textSprite->Draw (texTex, NULL, NULL, elPos, 0xffffffff);
+	//DrawText("Loading textures...", curwidth/2-100, curheight/2, D3DCOLOR_XRGB(255,255,255));
 	textSprite->End();
 	renderSystem->EndScene();  
 
@@ -868,7 +904,10 @@ bool InitD3D(HWND hWnd)
 
 	renderSystem->BeginScene();    
 	textSprite->Begin(D3DXSPRITE_ALPHABLEND);
-	DrawText("Loading effects...", curwidth/2-100, curheight/2, D3DCOLOR_XRGB(255,255,255));
+	textSprite->SetTransform (lScale);
+	textSprite->Draw (loadingTex, NULL, NULL, NULL, 0xffffffff);
+	textSprite->Draw (effectTex, NULL, NULL, elPos, 0xffffffff);
+	//DrawText("Loading effects...", curwidth/2-100, curheight/2, D3DCOLOR_XRGB(255,255,255));
 	textSprite->End();
 	renderSystem->EndScene();  
 
@@ -883,6 +922,14 @@ bool InitD3D(HWND hWnd)
 	pl.y = -0.64f;
 	pl.z = 3.91f;
 	plsize = 0.18f;
+
+	loadingTex = NULL;
+	modelTex = NULL;
+	texTex = NULL;
+	effectTex = NULL;
+
+	if (renderSystem->GetDevice()!=NULL)
+		renderSystem->GetDevice()->Clear(0,NULL,D3DCLEAR_TARGET|D3DCLEAR_ZBUFFER,D3DCOLOR_XRGB(0,0,0),1.0f,0);
 
     return true;
 }
