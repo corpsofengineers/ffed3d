@@ -147,7 +147,7 @@
 				OutputFile="$(OutDir)\FFE D3D.exe"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories="F:\devzone\EliteD3D\ffed3d\lib"
-				GenerateDebugInformation="true"
+				GenerateDebugInformation="false"
 				SubSystem="2"
 				OptimizeReferences="0"
 				EnableCOMDATFolding="0"
