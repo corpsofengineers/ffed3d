@@ -59,7 +59,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="bass.lib glu32.lib d3dx9.lib d3d9.lib dxguid.lib dinput.lib dsound.lib winmm.lib odbc32.lib odbccp32.lib"
+				AdditionalDependencies="Lua.lib bass.lib glu32.lib d3dx9.lib d3d9.lib dxguid.lib dinput.lib dsound.lib winmm.lib odbc32.lib odbccp32.lib"
 				OutputFile="$(OutDir)\FFE D3D_D.exe"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories="F:\devzone\EliteD3D\ffed3d\lib"
@@ -143,7 +143,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				AdditionalDependencies="bass.lib glu32.lib d3dx9.lib d3d9.lib dxguid.lib dinput.lib dsound.lib winmm.lib odbc32.lib odbccp32.lib"
+				AdditionalDependencies="Lua.lib bass.lib glu32.lib d3dx9.lib d3d9.lib dxguid.lib dinput.lib dsound.lib winmm.lib odbc32.lib odbccp32.lib"
 				OutputFile="$(OutDir)\FFE D3D.exe"
 				LinkIncremental="1"
 				AdditionalLibraryDirectories="F:\devzone\EliteD3D\ffed3d\lib"
@@ -195,7 +195,7 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Building ffe.asm"
-						CommandLine="copy $(SolutionDir)..\ffedat.asm $(ProjectDir)ffedat.asm&#x0D;&#x0A;&#x0D;&#x0A;F:\devzone\nasm\nasm.exe -f win32 -o $(IntDir)\ffe.obj $(InputPath)"
+						CommandLine="copy $(SolutionDir)..\ffedat.asm $(ProjectDir)ffedat.asm&#x0D;&#x0A;&#x0D;&#x0A;F:\devzone\nasm\nasm.exe -f win32 -o $(IntDir)\ffe.obj $(InputPath)&#x0D;&#x0A;"
 						Outputs="$(IntDir)\ffe.obj"
 					/>
 				</FileConfiguration>
@@ -205,7 +205,7 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Building ffe.asm"
-						CommandLine="copy $(SolutionDir)..\ffedat.asm $(ProjectDir)ffedat.asm&#x0D;&#x0A;&#x0D;&#x0A;F:\devzone\nasm\nasm.exe -f win32 -o $(IntDir)\ffe.obj $(InputPath)"
+						CommandLine="copy $(SolutionDir)..\ffedat.asm $(ProjectDir)ffedat.asm&#x0D;&#x0A;&#x0D;&#x0A;F:\devzone\nasm\nasm.exe -f win32 -o $(IntDir)\ffe.obj $(InputPath)&#x0D;&#x0A;"
 						Outputs="$(IntDir)\ffe.obj"
 					/>
 				</FileConfiguration>
@@ -219,7 +219,7 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Building ffebmp.obj"
-						CommandLine="F:\devzone\nasm\nasm.exe -f win32 -o $(IntDir)\ffebmp.obj $(InputPath)"
+						CommandLine="F:\devzone\nasm\nasm.exe -f win32 -o $(IntDir)\ffebmp.obj $(InputPath)&#x0D;&#x0A;"
 						Outputs="$(IntDir)\ffebmp.obj"
 					/>
 				</FileConfiguration>
@@ -229,7 +229,7 @@
 					<Tool
 						Name="VCCustomBuildTool"
 						Description="Building ffebmp.obj"
-						CommandLine="F:\devzone\nasm\nasm.exe -f win32 -o $(IntDir)\ffebmp.obj $(InputPath)"
+						CommandLine="F:\devzone\nasm\nasm.exe -f win32 -o $(IntDir)\ffebmp.obj $(InputPath)&#x0D;&#x0A;"
 						Outputs="$(IntDir)\ffebmp.obj"
 					/>
 				</FileConfiguration>
