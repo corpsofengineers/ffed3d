@@ -3,7 +3,7 @@
 	ProjectType="Visual C++"
 	Version="8,00"
 	Name="ffed3d"
-	ProjectGUID="{E9CA3CE7-549F-45F6-AE63-5472D3510EE4}"
+	ProjectGUID="{B0B4DAB3-9A28-4240-B870-7EA568968035}"
 	RootNamespace="ffed3d"
 	>
 	<Platforms>
@@ -17,7 +17,7 @@
 		<Configuration
 			Name="Debug|Win32"
 			OutputDirectory="$(SolutionDir)..\..\bin"
-			IntermediateDirectory="obj\$(ConfigurationName)"
+			IntermediateDirectory="$(SolutionDir)..\..\obj\$(ConfigurationName)"
 			ConfigurationType="1"
 			CharacterSet="2"
 			>
@@ -39,8 +39,8 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="F:\devzone\EliteD3D\ffed3d\win;F:\devzone\EliteD3D\ffed3d\Utils"
-				PreprocessorDefinitions="__FFEWIN__;_CRT_SECURE_NO_WARNINGS"
+				AdditionalIncludeDirectories="F:\devzone\EliteD3D\ffed3d\Utils;F:\devzone\EliteD3D\ffed3d\win"
+				PreprocessorDefinitions="__FFEWIN__;WIN32"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -59,12 +59,11 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				UseLibraryDependencyInputs="false"
-				AdditionalDependencies="bass.lib lua5.1.lib lua51.lib glu32.lib d3dx9.lib d3d9.lib dinput.lib dxguid.lib dsound.lib winmm.lib odbc32.lib odbccp32.lib"
+				AdditionalDependencies="bass.lib glu32.lib d3dx9.lib d3d9.lib dxguid.lib dinput.lib dsound.lib winmm.lib odbc32.lib odbccp32.lib"
+				OutputFile="$(OutDir)\FFE D3D_D.exe"
+				LinkIncremental="1"
 				AdditionalLibraryDirectories="F:\devzone\EliteD3D\ffed3d\lib"
-				GenerateDebugInformation="false"
-				GenerateMapFile="false"
-				MapFileName=""
+				GenerateDebugInformation="true"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -94,11 +93,11 @@
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
-			IntermediateDirectory="$(ConfigurationName)"
+			OutputDirectory="$(SolutionDir)..\..\bin"
+			IntermediateDirectory="$(SolutionDir)..\..\obj\$(ConfigurationName)"
 			ConfigurationType="1"
 			CharacterSet="2"
-			WholeProgramOptimization="1"
+			WholeProgramOptimization="0"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -117,10 +116,21 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				Optimization="0"
+				InlineFunctionExpansion="0"
+				FavorSizeOrSpeed="0"
+				WholeProgramOptimization="false"
+				AdditionalIncludeDirectories="F:\devzone\EliteD3D\ffed3d\Utils;F:\devzone\EliteD3D\ffed3d\win"
+				PreprocessorDefinitions="__FFEWIN__;WIN32"
+				StringPooling="false"
+				MinimalRebuild="false"
+				BasicRuntimeChecks="3"
 				RuntimeLibrary="2"
+				EnableFunctionLevelLinking="false"
+				ExpandAttributedSource="false"
 				WarningLevel="3"
-				Detect64BitPortabilityProblems="true"
-				DebugInformationFormat="3"
+				Detect64BitPortabilityProblems="false"
+				DebugInformationFormat="4"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -133,9 +143,15 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
+				AdditionalDependencies="bass.lib glu32.lib d3dx9.lib d3d9.lib dxguid.lib dinput.lib dsound.lib winmm.lib odbc32.lib odbccp32.lib"
+				OutputFile="$(OutDir)\FFE D3D.exe"
+				LinkIncremental="1"
+				AdditionalLibraryDirectories="F:\devzone\EliteD3D\ffed3d\lib"
 				GenerateDebugInformation="true"
-				OptimizeReferences="2"
-				EnableCOMDATFolding="2"
+				SubSystem="2"
+				OptimizeReferences="0"
+				EnableCOMDATFolding="0"
+				OptimizeForWindows98="0"
 				TargetMachine="1"
 			/>
 			<Tool
@@ -178,9 +194,18 @@
 					>
 					<Tool
 						Name="VCCustomBuildTool"
-						Description="Assembling ffe.asm..."
-						CommandLine="&quot;F:\devzone\nasm\nasm.exe&quot; -f win32 -o $(IntDir)\ffe.obj $(InputPath)&#x0D;&#x0A;"
-						AdditionalDependencies=""
+						Description="Building ffe.asm"
+						CommandLine="copy $(SolutionDir)..\ffedat.asm $(ProjectDir)ffedat.asm&#x0D;&#x0A;&#x0D;&#x0A;F:\devzone\nasm\nasm.exe -f win32 -o $(IntDir)\ffe.obj $(InputPath)"
+						Outputs="$(IntDir)\ffe.obj"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCustomBuildTool"
+						Description="Building ffe.asm"
+						CommandLine="copy $(SolutionDir)..\ffedat.asm $(ProjectDir)ffedat.asm&#x0D;&#x0A;&#x0D;&#x0A;F:\devzone\nasm\nasm.exe -f win32 -o $(IntDir)\ffe.obj $(InputPath)"
 						Outputs="$(IntDir)\ffe.obj"
 					/>
 				</FileConfiguration>
@@ -193,27 +218,25 @@
 					>
 					<Tool
 						Name="VCCustomBuildTool"
-						Description="Assembling ffebmp.asm..."
-						CommandLine="&quot;F:\devzone\nasm\nasm.exe&quot; -f win32 -o $(IntDir)\ffebmp.obj  $(InputPath)&#x0D;&#x0A;"
+						Description="Building ffebmp.obj"
+						CommandLine="F:\devzone\nasm\nasm.exe -f win32 -o $(IntDir)\ffebmp.obj $(InputPath)"
 						Outputs="$(IntDir)\ffebmp.obj"
 					/>
 				</FileConfiguration>
-			</File>
-			<File
-				RelativePath="..\..\ffedat.asm"
-				>
 				<FileConfiguration
-					Name="Debug|Win32"
-					ExcludedFromBuild="true"
+					Name="Release|Win32"
 					>
 					<Tool
 						Name="VCCustomBuildTool"
+						Description="Building ffebmp.obj"
+						CommandLine="F:\devzone\nasm\nasm.exe -f win32 -o $(IntDir)\ffebmp.obj $(InputPath)"
+						Outputs="$(IntDir)\ffebmp.obj"
 					/>
 				</FileConfiguration>
 			</File>
 		</Filter>
 		<Filter
-			Name="Base"
+			Name="base"
 			>
 			<File
 				RelativePath="..\..\ffeapi.h"
@@ -228,39 +251,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\ffemisc.c"
-				>
-			</File>
-			<File
 				RelativePath="..\..\hmp.cpp"
-				>
-			</File>
-		</Filter>
-		<Filter
-			Name="CModel"
-			>
-			<File
-				RelativePath="..\..\win\CModel\CAllocateHierarchy.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\win\CModel\CAllocateHierarchy.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\win\CModel\CModel.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\win\CModel\CModel.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\win\CModel\DerivedStructs.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\win\CModel\Macros.h"
 				>
 			</File>
 		</Filter>
@@ -273,22 +264,6 @@
 			</File>
 			<File
 				RelativePath="..\..\win\ini\INI.H"
-				>
-			</File>
-		</Filter>
-		<Filter
-			Name="Object3D"
-			>
-			<File
-				RelativePath="..\..\win\Object3D\Defines.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\win\Object3D\Object3D.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\win\Object3D\Object3D.h"
 				>
 			</File>
 		</Filter>
@@ -349,7 +324,15 @@
 			>
 		</File>
 		<File
+			RelativePath="..\..\win\bbs.cpp"
+			>
+		</File>
+		<File
 			RelativePath="..\..\win\ffe3d.h"
+			>
+		</File>
+		<File
+			RelativePath="..\..\win\ffemisc.cpp"
 			>
 		</File>
 		<File
@@ -365,11 +348,31 @@
 			>
 		</File>
 		<File
+			RelativePath="..\..\win\market.cpp"
+			>
+		</File>
+		<File
+			RelativePath="..\..\win\misc.h"
+			>
+		</File>
+		<File
+			RelativePath="..\..\win\missions.cpp"
+			>
+		</File>
+		<File
 			RelativePath="..\..\win\planet.cpp"
 			>
 		</File>
 		<File
 			RelativePath="..\..\win\planet.h"
+			>
+		</File>
+		<File
+			RelativePath="..\..\win\ships.cpp"
+			>
+		</File>
+		<File
+			RelativePath="..\..\win\sysgen.cpp"
 			>
 		</File>
 		<File
