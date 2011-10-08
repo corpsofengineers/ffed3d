@@ -15,6 +15,7 @@
 #include "ini/ini.h"
 #include "Render/RenderSystem.h"
 #include <assert.h>
+#include <ffescr.h>
 
 D3DXVECTOR3 pl;
 float plsize;
@@ -402,8 +403,32 @@ static LRESULT CALLBACK WndProc (HWND wnd, UINT msg, WPARAM wparam, LPARAM lpara
 
 static UCHAR pPalTable[3][64];
 
+char* lTip = NULL;
+int lpX, lpY;
+int TipColor;
+bool showTip = false;
+
+int showLoadingTip (void)
+{
+	lTip = scriptSystem::getSingleton()->getAsString (2);
+	lpX = scriptSystem::getSingleton()->getAsInteger (3);
+	lpY = scriptSystem::getSingleton()->getAsInteger (4);
+	TipColor = scriptSystem::getSingleton()->getAsInteger (5);
+	showTip = true;
+
+	return 0;
+}
+
 void VideoInit()
 {
+	scriptSystem* scr = scriptSystem::getSingleton();
+
+	scr->newClass();
+	scr->newChildFunction ("showTip", showLoadingTip);
+	scr->registerClass ("lTip");
+
+	scr->doPreLaunchScripts();
+
 	CfgStruct cfg;
 	int pPalBase[3] = { 0, 0, 0 };
 	int step, i, j, col;
@@ -846,6 +871,7 @@ bool InitD3D(HWND hWnd)
 	D3DXMatrixScaling (lScale, sx, sy, 1);
 	
 	D3DXVECTOR3 *elPos = new D3DXVECTOR3 (curwidth/2/sx-128, curheight/2/sy-32, 0);
+	D3DXVECTOR3 *tipPos = new D3DXVECTOR3 (0, 0, 0);
 	
 	char buf[1000];
 	sprintf_s(buf,"textures/loading/Loadscreen.png");
@@ -879,6 +905,7 @@ bool InitD3D(HWND hWnd)
 	textSprite->SetTransform (lScale);
 	textSprite->Draw (loadingTex, NULL, NULL, NULL, 0xffffffff);
 	textSprite->Draw (modelTex, NULL, NULL, elPos, 0xffffffff);
+	if (showTip) {DrawText (lTip, lpX, lpY, TipColor);}
 	//DrawText("Loading models...", curwidth/2-100, curheight/2, D3DCOLOR_XRGB(255,255,255));
 	textSprite->End();
 	renderSystem->EndScene();
@@ -893,6 +920,7 @@ bool InitD3D(HWND hWnd)
 	textSprite->SetTransform (lScale);
 	textSprite->Draw (loadingTex, NULL, NULL, NULL, 0xffffffff);
 	textSprite->Draw (texTex, NULL, NULL, elPos, 0xffffffff);
+	if (showTip) {DrawText (lTip, lpX, lpY, TipColor);}
 	//DrawText("Loading textures...", curwidth/2-100, curheight/2, D3DCOLOR_XRGB(255,255,255));
 	textSprite->End();
 	renderSystem->EndScene();  
@@ -907,6 +935,7 @@ bool InitD3D(HWND hWnd)
 	textSprite->SetTransform (lScale);
 	textSprite->Draw (loadingTex, NULL, NULL, NULL, 0xffffffff);
 	textSprite->Draw (effectTex, NULL, NULL, elPos, 0xffffffff);
+	if (showTip) {DrawText (lTip, lpX, lpY, TipColor);}
 	//DrawText("Loading effects...", curwidth/2-100, curheight/2, D3DCOLOR_XRGB(255,255,255));
 	textSprite->End();
 	renderSystem->EndScene();  
@@ -974,7 +1003,7 @@ void CreateLocalFont() {
     hFont = CreateFont(nHeight, 0, 0, 0, nWeight, dwItalic, dwUnderlined, 
 		0, ANSI_CHARSET, 0, 0, 0, 0, "Arial");
     
-    D3DXCreateFont(renderSystem->GetDevice(), nHeight,0,nWeight,1,false,ANSI_CHARSET,0,0,0,"Arial", &m_pFont);
+    D3DXCreateFont(renderSystem->GetDevice(), nHeight,0,nWeight,1,false,DEFAULT_CHARSET,0,0,0,"Arial", &m_pFont);
 
 }
 
