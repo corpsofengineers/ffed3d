@@ -71,7 +71,7 @@ LPDIRECT3DTEXTURE9 textures[1000];
 LPDIRECT3DTEXTURE9 skyboxtex[6];
 D3DMATERIAL9 m_matMaterial;
 D3DLIGHT9 d3dLight;
-LPD3DXFONT m_pFont;
+LPD3DXFONT m_pFont, m_tFont;
 
 VERTEXTYPE vertexType[MAXVERT];
 int vertexNum=0;
@@ -899,6 +899,11 @@ bool InitD3D(HWND hWnd)
 
 	CreateLocalFont();
 	D3DXCreateSprite(renderSystem->GetDevice(),&textSprite);
+	RECT tRect;
+	tRect.left = lpX;
+	tRect.top = lpY;
+	tRect.right = 0;
+	tRect.bottom = 0;
 
 	if (renderSystem->GetDevice()!=NULL)
 		renderSystem->GetDevice()->Clear(0,NULL,D3DCLEAR_TARGET|D3DCLEAR_ZBUFFER,D3DCOLOR_XRGB(0,0,0),1.0f,0);	
@@ -908,7 +913,7 @@ bool InitD3D(HWND hWnd)
 	textSprite->SetTransform (lScale);
 	textSprite->Draw (loadingTex, NULL, NULL, NULL, 0xffffffff);
 	textSprite->Draw (modelTex, NULL, NULL, elPos, 0xffffffff);
-	if (showTip) {DrawText (lTip, lpX, lpY, TipColor);}
+	if (showTip) {m_tFont->DrawTextA(textSprite,lTip, -1, &tRect, DT_NOCLIP, TipColor);}
 	//DrawText("Loading models...", curwidth/2-100, curheight/2, D3DCOLOR_XRGB(255,255,255));
 	textSprite->End();
 	renderSystem->EndScene();
@@ -923,7 +928,7 @@ bool InitD3D(HWND hWnd)
 	textSprite->SetTransform (lScale);
 	textSprite->Draw (loadingTex, NULL, NULL, NULL, 0xffffffff);
 	textSprite->Draw (texTex, NULL, NULL, elPos, 0xffffffff);
-	if (showTip) {DrawText (lTip, lpX, lpY, TipColor);}
+	if (showTip) {m_tFont->DrawTextA(textSprite,lTip, -1, &tRect, DT_NOCLIP, TipColor);}
 	//DrawText("Loading textures...", curwidth/2-100, curheight/2, D3DCOLOR_XRGB(255,255,255));
 	textSprite->End();
 	renderSystem->EndScene();  
@@ -938,7 +943,7 @@ bool InitD3D(HWND hWnd)
 	textSprite->SetTransform (lScale);
 	textSprite->Draw (loadingTex, NULL, NULL, NULL, 0xffffffff);
 	textSprite->Draw (effectTex, NULL, NULL, elPos, 0xffffffff);
-	if (showTip) {DrawText (lTip, lpX, lpY, TipColor);}
+	if (showTip) {m_tFont->DrawTextA(textSprite,lTip, -1, &tRect, DT_NOCLIP, TipColor);}
 	//DrawText("Loading effects...", curwidth/2-100, curheight/2, D3DCOLOR_XRGB(255,255,255));
 	textSprite->End();
 	renderSystem->EndScene();  
@@ -959,6 +964,7 @@ bool InitD3D(HWND hWnd)
 	modelTex = NULL;
 	texTex = NULL;
 	effectTex = NULL;
+	m_tFont = NULL;
 
 	if (renderSystem->GetDevice()!=NULL)
 		renderSystem->GetDevice()->Clear(0,NULL,D3DCLEAR_TARGET|D3DCLEAR_ZBUFFER,D3DCOLOR_XRGB(0,0,0),1.0f,0);
@@ -1007,6 +1013,7 @@ void CreateLocalFont() {
 		0, ANSI_CHARSET, 0, 0, 0, 0, "Arial");
     
     D3DXCreateFont(renderSystem->GetDevice(), nHeight,0,nWeight,1,false,DEFAULT_CHARSET,0,0,0,"Arial", &m_pFont);
+	D3DXCreateFont (renderSystem->GetDevice(), 22, 0, FW_NORMAL, 1, false, DEFAULT_CHARSET, 0,0,0,"Arial", &m_tFont);
 
 }
 
