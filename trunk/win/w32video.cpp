@@ -427,7 +427,10 @@ void VideoInit()
 	scr->newChildFunction ("showTip", showLoadingTip);
 	scr->registerClass ("lTip");
 
-	scr->doPreLaunchScripts();
+	if(scr->doPreLaunchScripts())
+	{
+		MessageBox (0, scr->getLastError(), "Lua Error", MB_OK);
+	}
 
 	CfgStruct cfg;
 	int pPalBase[3] = { 0, 0, 0 };

@@ -110,16 +110,24 @@ void scriptSystem::BuildScriptsTable (void)
 
 }
 
-void scriptSystem::doPreLaunchScripts (void)
+int scriptSystem::doPreLaunchScripts (void)
 {
+	int ret = 0;
+
 	for (int i=0;i<fs;i++)
-		doScript (firstscripts[i]);
+		if (doScript (firstscripts[i])) {ret = 1;}
+
+	return ret;
 }
 
-void scriptSystem::doAutoScripts (void)
+int scriptSystem::doAutoScripts (void)
 {
+
+	int ret = 0;
 	for (int i=0; i<as;i++)
-		doScript (autoscripts[i]);
+		if(doScript (autoscripts[i])) {ret = 1;}
+
+	return ret;
 }
 
 int scriptSystem::doString (char* string)

@@ -15,8 +15,8 @@ public:
 	int doString (char* string);
 	const char* getLastError (void);
 
-	void doPreLaunchScripts();
-	void doAutoScripts();
+	int doPreLaunchScripts();
+	int doAutoScripts();
 
 	//LUA METHODS
 	static int randomize (lua_State* L);
