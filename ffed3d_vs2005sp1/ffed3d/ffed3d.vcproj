@@ -336,6 +336,10 @@
 			>
 		</File>
 		<File
+			RelativePath="..\..\win\ffescr.h"
+			>
+		</File>
+		<File
 			RelativePath="..\..\win\gfx.cpp"
 			>
 		</File>

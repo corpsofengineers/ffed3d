@@ -1,81 +1,276 @@
-#include "lua/lua.hpp"
+#include <ffescr.h>
+#include <time.h>
+#include <d3d9.h>
 
-lua_State* luaVM;
+#define LUA_DIR "Scripts/"
+scriptSystem* scriptSystem::_self = NULL;
 
-void LuaStart(void)
+scriptSystem* scriptSystem::getSingleton (void)
+{
+	if (!_self)
+		_self = new scriptSystem;
+
+	return _self;
+}
+
+void scriptSystem::FreeInst (void)
+{
+	delete this;
+}
+
+scriptSystem::scriptSystem (void):
+	luaVM(0),
+	error(0)
 {
 	luaVM = lua_open();
-	luaL_openlibs(luaVM);
+	
+	//luaL_openlibs (luaVM); Not Need for now
+
+	//Pushind Basic Methods
+	lua_pushcfunction (luaVM, scriptSystem::randomize); lua_setglobal (luaVM, "Randomize");
+	lua_pushcfunction (luaVM, scriptSystem::setColor); lua_setglobal (luaVM, "ColorRGB");
+
+	//BuildScriptTable and
+	BuildScriptsTable();
 }
 
-void LuaClose(void)
+scriptSystem::~scriptSystem (void)
 {
-	lua_close(luaVM);
+	lua_close (luaVM);
 }
 
-void SpawnPirates(int pirateLevel, int bInitial)
-{/*
-	float piratePct, maxGroup, groupSize;
-	float playerCargoValue, avgPrice;
-	char numPirates, numSpawned;
-	char i, j;
-	int numFreeSlots;
+int scriptSystem::doScript (char* scriptName)
+{
+	int ret = 0;
+	
+	char* call = new char [strlen(LUA_DIR)+strlen(scriptName)];
+	strcpy (call, LUA_DIR);
+	strcat (call, scriptName);
 
-	numFreeSlots = GetNumFreeSlots();
-
-	// first, find out the value of the player's cargo.
-	// this determines how many pirates will be after him
-	playerCargoValue = 0;
-
-	for (i = 0; i <= 32; i++)
+	if (luaL_dofile (luaVM, call))
 	{
-		if (DATA_NumStarports > 0)
+		error = lua_tostring (luaVM, -1);
+		ret = 1;
+	}
+
+	return ret;
+}
+
+void scriptSystem::BuildScriptsTable (void)
+{
+	WIN32_FIND_DATA fData;
+	char* fPath = new char [strlen(LUA_DIR)+1];
+	strcpy (fPath, LUA_DIR);
+	strcat (fPath, "*");
+	char* fName = NULL;
+
+	HANDLE handle = FindFirstFile (fPath, &fData);
+
+	fs = 0;
+	as = 0;
+
+	while (FindNextFile (handle, &fData))
+	{
+		if (!(fData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
 		{
-			// if the system has starports, find the item's
-			// avg. price per tonne between them all
-			// otherwise, just use the base price
-			avgPrice = 0;
-			for (j = 0; j < DATA_NumStarports; j++)
-				avgPrice += ((DATA_StarportArray[j].marketData[i].price) / 10.0);
-			
-			avgPrice /= (float)DATA_NumStarports;
+			fName = fData.cFileName;
 
-			playerCargoValue += avgPrice * DATA_PlayerCargo[i];
+			if (fName[0] == '#') {fs++;}
+			if (fName[0] == '!') {as++;}
 		}
-		else
-			playerCargoValue += MarketData[i].basePrice * DATA_PlayerCargo[i];
 	}
 
-	piratePct = 0.3 + 0.7*(1 - exp(-playerCargoValue/61000.0));
-	piratePct *= 0.5 + FloatRandom();
+	firstscripts = new char* [fs];
+	autoscripts = new char* [as];
+	int f = 0;
+	int a = 0;
 
+	handle = FindFirstFile (fPath, &fData);
 
-	numPirates = PirateLevels[pirateLevel]*piratePct;
-
-	// OK, now let's spawn the psychos
-	maxGroup = sqrt(numPirates);
-
-	if (!bInitial)
-		numPirates *= 0.1;
-
-	if (numPirates > numFreeSlots)
-		numPirates = numFreeSlots;
-
-	while (numPirates > 0)
+	while (FindNextFile (handle, &fData))
 	{
-		groupSize = FloatRandom();
-		groupSize *= maxGroup;	// mult by groupsize for fewer large groups
-		groupSize += 1.0;
+		if (!(fData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
+		{
+			fName = fData.cFileName;
 
-		if (numPirates < groupSize)
-			groupSize = numPirates;
-
-		numSpawned = SpawnHostileGroup(groupSize, 0, 0, 0xa, 0xfb);
-		if (numSpawned < (char)groupSize)
-			return;	// no more object handles
-
-		numPirates -= numSpawned;
+			if (fName[0] == '#')
+			{
+				firstscripts[f] = new char [strlen(fName)];
+				strcpy (firstscripts[f], fName);
+				f++;
+			}
+			if (fName[0] == '!')
+			{
+				autoscripts[a] = new char [strlen(fName)];
+				strcpy (autoscripts[a], fName);
+				a++;
+			}
+		}
 	}
-*/
-	return; 
+
+}
+
+void scriptSystem::doPreLaunchScripts (void)
+{
+	for (int i=0;i<fs;i++)
+		doScript (firstscripts[i]);
+}
+
+void scriptSystem::doAutoScripts (void)
+{
+	for (int i=0; i<as;i++)
+		doScript (autoscripts[i]);
+}
+
+int scriptSystem::doString (char* string)
+{
+	int ret = 0;
+	if (luaL_dostring (luaVM, string))
+	{
+		error = lua_tostring (luaVM, -1);
+		ret = 1;
+	}
+
+	return ret;
+}
+
+const char* scriptSystem::getLastError (void)
+{
+	return error;
+}
+
+//LUA basic Methods
+int scriptSystem::randomize (lua_State* L)
+{
+	int f = lua_tointeger (L, 1);
+	int t = lua_tointeger (L, 2);
+
+	srand (time (NULL));
+	int res = f + rand()%t;
+
+	lua_pushinteger (L, res);
+	return 1;
+}
+
+int scriptSystem::setColor (lua_State *L)
+{
+	int r, g, b;
+	r = lua_tointeger (L, 1);
+	g = lua_tointeger (L, 2);
+	b = lua_tointeger (L, 3);
+
+	int res = D3DCOLOR_XRGB (r, g, b);
+
+	lua_pushinteger (L, res);
+	return 1;
+}
+
+//LUA PUSHING METHODS
+
+void scriptSystem::newInteger (char *varName, int arg)
+{
+	lua_pushinteger (luaVM, arg); lua_setglobal (luaVM, varName);
+}
+
+void scriptSystem::newNumber (char* varName, float arg)
+{
+	lua_pushnumber (luaVM, arg); lua_setglobal (luaVM, varName);
+}
+
+void scriptSystem::newString (char* varName, char* arg)
+{
+	lua_pushstring (luaVM, arg); lua_setglobal (luaVM, varName);
+}
+
+void scriptSystem::newFunction (char* funcName, CFunction func)
+{
+	lua_CFunction luaFunc;
+	luaFunc = (lua_CFunction)func;
+	lua_pushcfunction (luaVM, luaFunc); lua_setglobal (luaVM, funcName);
+}
+
+void scriptSystem::newClass (void)
+{
+	lua_newtable (luaVM);
+	_top = lua_gettop (luaVM);
+}
+
+void scriptSystem::newChildInteger (char* varName, int arg)
+{
+	lua_pushstring (luaVM, varName);
+	lua_pushinteger (luaVM, arg);
+	lua_settable (luaVM, _top);
+}
+
+void scriptSystem::newChildNumber(char *varName, float arg)
+{
+	lua_pushstring (luaVM, varName);
+	lua_pushnumber (luaVM, arg);
+	lua_settable (luaVM, _top);
+}
+
+void scriptSystem::newChildString(char *varName, char *arg)
+{
+	lua_pushstring (luaVM, varName);
+	lua_pushstring (luaVM, arg);
+	lua_settable (luaVM, _top);
+}
+
+void scriptSystem::newChildFunction (char* funcName, CFunction arg)
+{
+	lua_CFunction luaFunc;
+	luaFunc = (lua_CFunction)arg;
+	lua_pushstring (luaVM, funcName);
+	lua_pushcfunction (luaVM, luaFunc);
+	lua_settable (luaVM, _top);
+}
+
+void scriptSystem::registerClass (char* className)
+{
+	lua_setglobal (luaVM, className);
+}
+
+//LUA GET METHOD`S
+
+char* scriptSystem::getAsString (int arg_id)
+{
+	const char* lua_res = lua_tostring (luaVM, arg_id);
+	char* res = new char [strlen (lua_res)];
+	strcpy (res, lua_res);
+	return res;
+}
+
+int scriptSystem::getAsInteger (int arg_id)
+{
+	int res = lua_tointeger (luaVM, arg_id);
+	return res;
+}
+
+float scriptSystem::getAsNumber (int arg_id)
+{
+	float res = lua_tonumber (luaVM, arg_id);
+	return res;
+}
+
+char* scriptSystem::getParentAsString (char* varName)
+{
+	lua_getfield (luaVM, 1, varName);
+	const char* lua_res = lua_tostring (luaVM, -1);
+	char* res = new char [strlen (lua_res)];
+	strcpy (res, lua_res);
+	return res;
+}
+
+int scriptSystem::getParentAsInteger (char* varName)
+{
+	lua_getfield (luaVM, 1, varName);
+	int res = lua_tointeger (luaVM, -1);
+	return res;
+}
+
+float scriptSystem::getParentAsNumber (char* varName)
+{
+	lua_getfield (luaVM, 1, varName);
+	float res = lua_tonumber (luaVM, -1);
+	return res;
 }
