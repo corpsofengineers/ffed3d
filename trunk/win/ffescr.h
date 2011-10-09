@@ -1,4 +1,4 @@
-#include <lua/lua.hpp>
+#include "lua/lua.hpp"
 #include <windows.h>
 
 typedef int (*CFunction) (void);
