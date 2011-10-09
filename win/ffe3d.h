@@ -1,6 +1,8 @@
-#pragma once
 #include <vector>
 #include "xmath.h"
+#include "XFile/Utility.h"
+#include "XFile/XfileEntity.h"
+#include <process.h>
 
 #define MAXVERT	3000000
 
@@ -257,3 +259,104 @@ struct Sprite
 
 extern std::vector<Sprite> sprites;
 
+struct xModel
+{
+	int id;
+	std::string filename;
+	CXFileEntity* object;
+	LPDIRECT3DTEXTURE9 skin[10];
+	MODELCONFIG config;
+	__int64 counter;
+	bool needLoad;
+	bool haveFile;
+
+	xModel(int idx)
+	{
+		id = idx;
+		filename="";
+		object = NULL;
+		for(int i=0;i<10;i++)
+			skin[i] = NULL;
+		counter = 0;
+		needLoad = false;
+		haveFile = false;
+	}
+
+	int xModel::GetNumAnimationSets()
+	{
+		return object->GetNumAnimationSets();
+	}
+
+	void xModel::SetAnimationSet(unsigned int index)
+	{
+		return object->SetAnimationSet(index);
+	}
+
+	double xModel::GetAnimationSetLength(unsigned int index)
+	{
+		return object->GetAnimationSetLength(index);
+	}
+
+	void xModel::FrameMove(bool mode, float elapsedTime,const D3DXMATRIX *matWorld)
+	{
+		return object->FrameMove(mode, elapsedTime, matWorld);
+	}
+
+	void xModel::SetEffect(ID3DXEffect* effectF)
+	{
+		return object->SetEffect(effectF);
+	}
+
+	void xModel::Render()
+	{
+		return object->Render();
+	}
+
+	bool Exist()
+	{
+		if (needLoad == false && object)
+			return true;
+		else
+			return false;
+	}
+
+	void loadSkins()
+	{
+		if (object) {
+			char buf[1000];
+			std::string dir;
+			for(int j=0; j<10; j++) 
+			{
+				dir = CUtility::GetTheCurrentDirectory();
+				if (j==0)
+					sprintf_s(buf,"%s\\models\\%i\\skin.png",dir.c_str(),id);
+				else
+					sprintf_s(buf,"%s\\models\\%i\\skin%i.png",dir.c_str(),id,j);
+				if (CUtility::DoesFileExist(buf)) {
+					if (FAILED(D3DXCreateTextureFromFile(renderSystem->GetDevice(), buf, &skin[j]))) {
+						skin[j]=NULL;
+					}
+				}
+			}
+		}
+	}
+
+	void DropModel()
+	{
+		if (object) {
+			delete object;
+			object = NULL;
+		}
+		for(int i=0;i<10;i++) {
+			if (skin[i]) {
+				skin[i]->Release();
+				skin[i] = NULL;
+			}
+		}
+	}
+
+	~xModel()
+	{
+		DropModel();
+	}
+};
