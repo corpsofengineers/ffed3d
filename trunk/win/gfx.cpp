@@ -125,11 +125,8 @@ extern int maxsprite;
 D3DXVECTOR3 mainModelCoord;
 extern D3DXVECTOR3 playerLightPos;
 extern bool playerLightPosEnable;
-extern MODELCONFIG modelconfig[500];
 
-//extern CMD2Model g_model[500];
-extern CXFileEntity *objectList[500];
-extern CXFileEntity *splineList[500];
+extern xModel* objectList[500];
 
 extern "C" unsigned int **textColor;
 extern "C" unsigned char **ambColor;
@@ -3137,15 +3134,13 @@ extern void drawModel(int num, float *origin, unsigned char orient, int scale)
 					*/
 
 					gluTessBeginContour (tobj);
-					if (!splineList[currentModel]) {
-						if (!zzz) {
-							for(n=startpoly;n<vcount;n++) {
-								gluTessVertex (tobj, &ver[n][0], &ver[n][0]);
-							}
-						} else {
-							for(n=vcount-1;n!=startpoly;n--) {
-								gluTessVertex (tobj, &ver[n][0], &ver[n][0]);
-							}
+					if (!zzz) {
+						for(n=startpoly;n<vcount;n++) {
+							gluTessVertex (tobj, &ver[n][0], &ver[n][0]);
+						}
+					} else {
+						for(n=vcount-1;n!=startpoly;n--) {
+							gluTessVertex (tobj, &ver[n][0], &ver[n][0]);
 						}
 					}
 					gluTessEndContour (tobj);
@@ -3261,15 +3256,13 @@ extern void drawModel(int num, float *origin, unsigned char orient, int scale)
 
 					// Тесселируем
 					gluTessBeginContour (tobj);
-					if (!splineList[currentModel]) {
-						if (!zzz) {
-							for(n=startpoly;n<vcount;n++) {
-								gluTessVertex (tobj, &ver[n][0], &ver[n][0]);
-							}
-						} else {
-							for(n=vcount-1;n!=startpoly;n--) {
-								gluTessVertex (tobj, &ver[n][0], &ver[n][0]);
-							}
+					if (!zzz) {
+						for(n=startpoly;n<vcount;n++) {
+							gluTessVertex (tobj, &ver[n][0], &ver[n][0]);
+						}
+					} else {
+						for(n=vcount-1;n!=startpoly;n--) {
+							gluTessVertex (tobj, &ver[n][0], &ver[n][0]);
 						}
 					}
 					gluTessEndContour (tobj);					
@@ -5406,6 +5399,8 @@ float atmoR;
 void DrawAtmosphere(char *ptr, float c=1.0f) 
 {
 
+	return;
+
 		D3DXMATRIX atm, pposMatrix;
 		float scal=1.0f;
 		
@@ -5418,7 +5413,6 @@ void DrawAtmosphere(char *ptr, float c=1.0f)
 		modelList[modelNum].index=445;
 		modelList[modelNum].doMatrix=1;
 		modelList[modelNum].subObject=false;
-
 		transparent=false;
 		doLight=true;
 
@@ -5757,16 +5751,16 @@ extern "C" int C_Break(char *ptr, unsigned short *cmd)
 //	if (modelconfig[mainObjectNum].skip)
 //		return 0;
 
-	if (subObject==true && objNum<3 && modelconfig[mainObjectNum].notdrawtext)
+	if (subObject==true && objNum<3 && objectList[mainObjectNum]->config.notdrawtext)
 		return 0;
 
-	if (subObject==true && objNum<3 && modelconfig[previousModel].notdrawtext)
+	if (subObject==true && objNum<3 && objectList[previousModel]->config.notdrawtext)
 		return 0;
 
-	//if (subObject==true && objNum>=3 && modelconfig[mainObjectNum].notdrawsubmodels)
+	//if (subObject==true && objNum>=3 && objectList[mainObjectNum]->config.notdrawsubmodels)
 	//	return 0;
 
-	if (subObject==true && objNum>=3 && modelconfig[previousModel].notdrawsubmodels)
+	if (subObject==true && objNum>=3 && objectList[previousModel]->config.notdrawsubmodels)
 		skipCurrentModel=true;
 
 	if (objNum>=233 && objNum<=235)
@@ -5898,13 +5892,13 @@ extern "C" int C_Break(char *ptr, unsigned short *cmd)
 			modelList[modelNum].material=SUN;
 	}
 
-	modelList[modelNum].ambientR=currentAmbientR*17/2+128;
-	modelList[modelNum].ambientG=currentAmbientG*17/2+128;
-	modelList[modelNum].ambientB=currentAmbientB*17/2+128;
+	modelList[modelNum].ambientR=currentAmbientR*32;
+	modelList[modelNum].ambientG=currentAmbientG*32;
+	modelList[modelNum].ambientB=currentAmbientB*32;
 
-	modelList[modelNum].localR=*(unsigned char*)(ptr+0xf4)*17;
-	modelList[modelNum].localG=*(unsigned char*)(ptr+0xf5)*17;
-	modelList[modelNum].localB=*(unsigned char*)(ptr+0xf6)*17;
+	modelList[modelNum].localR=*(unsigned char*)(ptr+0xf4)*32;
+	modelList[modelNum].localG=*(unsigned char*)(ptr+0xf5)*32;
+	modelList[modelNum].localB=*(unsigned char*)(ptr+0xf6)*32;
 
 	// Получаем позицию источника света для текущей модели
 	modelList[modelNum].lightPos.x=-(float)*(int*)(ptr+308)*1500;
@@ -5934,14 +5928,14 @@ extern "C" int C_Break(char *ptr, unsigned short *cmd)
 
 
 	// Если существует внешняя модель, то пропускаем отрисовку из скрипта
-	if (exportb[currentModel]==false && (objectList[currentModel] || modelconfig[currentModel].skip!=0)) {
+	if (exportb[currentModel]==false && (objectList[currentModel]->Exist() || objectList[currentModel]->config.skip!=0)) {
 		skipCurrentModel=true;
 	}
 //	} else {
 //		skipCurrentModel=false;
 //	}
 	
-	if ((currentModel==186 || currentModel==187) && objectList[mainObjectNum])
+	if ((currentModel==186 || currentModel==187) && objectList[mainObjectNum]->Exist())
 		skipCurrentModel=true;
 
 	if (objNum==166) { // starmap grid
@@ -5950,17 +5944,20 @@ extern "C" int C_Break(char *ptr, unsigned short *cmd)
 		int a=0;
 	}
 
-	if (Planet(currentModel)==true) {
-		D3DXMatrixIdentity(&mainRotMatrix);
+	if (Planet(currentModel) || Rings(currentModel) || currentModel==154) {
+		if (Planet(currentModel))
+			D3DXMatrixIdentity(&mainRotMatrix);
 		//D3DXMatrixIdentity(&posMatrix);
-		
+
 		if (currentModel!=445 && currentModel!=447 && currentModel!=449) {
-			if (dis > radius2*1.04) {
-				scale2=0.01f;//*(*(int*)(ptr+0x130));
+				scale2=*(int*)(ptr+0x130);
 				posMatrix[12]*=scale2;
 				posMatrix[13]*=scale2;
 				posMatrix[14]*=scale2;
-
+				//posMatrix[12]*=0.01f;
+				//posMatrix[13]*=0.01f;
+				//posMatrix[14]*=0.01f;
+			if (dis > radius2*1.04) {
 				if (pos.z<0)
 					return 0;
 				if ((currentModel<134 && currentModel>137) && currentModel!=148 && currentModel!=445) {
@@ -5973,10 +5970,10 @@ extern "C" int C_Break(char *ptr, unsigned short *cmd)
 			//modelList[modelNum].zclear=true;
 			//modelList[modelNum].zwrite=false;
 
-			scale2=0.03f;
-			posMatrix[12]*=scale2;
-			posMatrix[13]*=scale2;
-			posMatrix[14]*=scale2;
+			//scale2=0.03f;
+			//posMatrix[12]*=scale2;
+			//posMatrix[13]*=scale2;
+			//posMatrix[14]*=scale2;
 		}
 /*
 		//if (!incabin) {
@@ -5996,27 +5993,28 @@ extern "C" int C_Break(char *ptr, unsigned short *cmd)
 			//modelList[modelNum].zclear=true;
 	}
 
-  	if (mainObjectNum==154) { // 
-		scale2=100;//*(int*)(ptr+0x148);
-		posMatrix[12]*=scale2;
-		posMatrix[13]*=scale2;
-		posMatrix[14]*=scale2;
-	}
-  	if (currentModel==314) { // planet ring
-		scale2=0.01f*(*(int*)(ptr+0x130));
-		posMatrix[12]*=scale2;
-		posMatrix[13]*=scale2;
-		posMatrix[14]*=scale2;
 
-		if (dis > lastPlanetRadius*2) {
-			//modelList[modelNum].zclear=true;
-		}
-		scale2*=50;
-		posMatrix[12]*=50;
-		posMatrix[13]*=50;
-		posMatrix[14]*=50;
-		//modelList[modelNum].zclear=true;
-	}
+ // 	if (mainObjectNum==154) { // 
+	//	scale2=100;//*(int*)(ptr+0x148);
+	//	posMatrix[12]*=scale2;
+	//	posMatrix[13]*=scale2;
+	//	posMatrix[14]*=scale2;
+	//}
+ // 	if (currentModel==314) { // planet ring
+	//	scale2=0.01f*(*(int*)(ptr+0x130));
+	//	posMatrix[12]*=scale2;
+	//	posMatrix[13]*=scale2;
+	//	posMatrix[14]*=scale2;
+
+	//	if (dis > lastPlanetRadius*2) {
+	//		//modelList[modelNum].zclear=true;
+	//	}
+	//	scale2*=50;
+	//	posMatrix[12]*=50;
+	//	posMatrix[13]*=50;
+	//	posMatrix[14]*=50;
+	//	//modelList[modelNum].zclear=true;
+	//}
 
 	// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!PARSING!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 	//if (skipCurrentModel==false) {

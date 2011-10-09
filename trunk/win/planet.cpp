@@ -448,6 +448,9 @@ void inline DrawCustomTriangle2(CUSTOMVERTEX *p1, CUSTOMVERTEX *p2, CUSTOMVERTEX
 		colAdd=50;
 		colDiv=1;
 	}
+		//colMult=32;
+		//colAdd=0;
+		//colDiv=1;
 
 	b=(p1->color&0x00FF0000)>>16;
 	g=(p1->color&0x0000FF00)>>8;
@@ -521,21 +524,41 @@ void inline DrawCustomTriangle2(CUSTOMVERTEX *p1, CUSTOMVERTEX *p2, CUSTOMVERTEX
 #define FFE_TWOPI 6.283185308
 #define M_1_PI 0.318309886183790671538
 
-void SphereMap2(double x,double y,double z,float &u,float &v)
+void SphereMap2(ffeVertex* v1, ffeVertex* v2, ffeVertex* v3, CUSTOMVERTEX* cv1, CUSTOMVERTEX* cv2, CUSTOMVERTEX* cv3)
 {
-	D3DXVECTOR3 p;
-	D3DXMATRIX tmpMatrix,tmpMatrix2;
+	D3DXVECTOR3 p1, p2, p3;
+	D3DXMATRIX tmpMatrix;
 
-	p.x=x/DIVIDER;
-	p.y=y/DIVIDER;
-	p.z=z/DIVIDER;
-	D3DXVec3Normalize(&p, &p);
-	
+	p1.x = (float)((double)(v1->nx - originptr->nx) / DIVIDER);
+	p1.y = (float)((double)(v1->ny - originptr->ny) / DIVIDER);
+	p1.z = (float)((double)(v1->nz - originptr->nz) / DIVIDER);
+
+	p2.x = (float)((double)(v2->nx - originptr->nx) / DIVIDER);
+	p2.y = (float)((double)(v2->ny - originptr->ny) / DIVIDER);
+	p2.z = (float)((double)(v2->nz - originptr->nz) / DIVIDER);
+
+	p3.x = (float)((double)(v3->nx - originptr->nx) / DIVIDER);
+	p3.y = (float)((double)(v3->ny - originptr->ny) / DIVIDER);
+	p3.z = (float)((double)(v3->nz - originptr->nz) / DIVIDER);
+
+	D3DXVec3Normalize(&p1, &p1);
+	D3DXVec3Normalize(&p2, &p2);
+	D3DXVec3Normalize(&p3, &p3);
+
 	D3DXMatrixInverse(&tmpMatrix,NULL, &mainRotMatrixO);
-	D3DXVec3TransformCoord(&p, &p, &tmpMatrix);
+	D3DXVec3TransformCoord(&p1, &p1, &tmpMatrix);
+	D3DXVec3TransformCoord(&p2, &p2, &tmpMatrix);
+	D3DXVec3TransformCoord(&p3, &p3, &tmpMatrix);
 
-	u = asinf(p.x)/D3DX_PI+0.5f; 
-	v = 1.0f-(asinf(p.y)/D3DX_PI+0.5f);
+	cv1->tu = (float)(0.5*(1.0 - atan2(p1.x, p1.z) * M_1_PI));
+	cv1->tv = (float)(acos(p1.y) * M_1_PI);
+
+	cv2->tu = (float)(0.5*(1.0 - atan2(p2.x, p2.z) * M_1_PI));
+	cv2->tv = (float)(acos(p2.y) * M_1_PI);
+
+	cv3->tu = (float)(0.5*(1.0 - atan2(p3.x, p3.z) * M_1_PI));
+	cv3->tv = (float)(acos(p3.y) * M_1_PI);
+
 }
 
 inline int classify_point2D(ffeVertex *p0, ffeVertex *p1, ffeVertex *p2) {
@@ -1479,14 +1502,26 @@ inline void C_FUNC_001869(ffeVertex *A8, ffeVertex *Ac, ffeVertex *A10, ffeVerte
 												*(int*)(esi + 0x1a) = 0x1ff; // 511
 											}
 											*/
-											tessVerts[vn1].tu=0;
-											tessVerts[vn1].tv=0;
-											tessVerts[vn2].tu=1;
-											tessVerts[vn2].tv=0;
-											tessVerts[vn3].tu=0;
-												vv3 = (V1->x_2 >> 0x12) & 65535;
-												vv3 = vv3 > 0x1ff ? 0x1ff : vv3;
-											tessVerts[vn3].tv=1.0f/511*vv3;
+											SphereMap2(V1, V2, V3, &tessVerts[vn1], &tessVerts[vn2], &tessVerts[vn3]);
+
+										//	tessVerts[vn1].tu=0;
+										//	tessVerts[vn2].tu=1;
+										//	tessVerts[vn3].tu=0;
+
+										//tessVerts[vn1].tv=0;
+										//tessVerts[vn2].tv=0;
+										////tessVerts[vn1].tv = ((V1->x_2 >> 0x10) & 0x7ff) * (1.0f / 0x7ff);
+										////tessVerts[vn2].tv = ((V2->x_2 >> 0x10) & 0x7ff) * (1.0f / 0x7ff);
+										//tessVerts[vn3].tv = ((V3->x_2 >> 0x10) & 0x7ff) * (1.0f / 0x7ff);
+
+											//tessVerts[vn1].tu=0;
+											//tessVerts[vn1].tv=0;
+											//tessVerts[vn2].tu=1;
+											//tessVerts[vn2].tv=0;
+											//tessVerts[vn3].tu=0;
+											//	vv3 = (V1->x_2 >> 0x12) & 65535;
+											//	vv3 = vv3 > 0x1ff ? 0x1ff : vv3;
+											//tessVerts[vn3].tv=1.0f/511*vv3;
 
 											etex=94;
 										} else { // вода
@@ -1498,9 +1533,7 @@ inline void C_FUNC_001869(ffeVertex *A8, ffeVertex *Ac, ffeVertex *A10, ffeVerte
 											//tessVerts[2].tu=1;
 											//tessVerts[2].tv=1;
 											
-											SphereMap2(V1->nx-originptr->nx, V1->ny-originptr->ny, V1->nz-originptr->nz, tessVerts[vn1].tu, tessVerts[vn1].tv);
-											SphereMap2(V2->nx-originptr->nx, V2->ny-originptr->ny, V2->nz-originptr->nz, tessVerts[vn2].tu, tessVerts[vn2].tv);
-											SphereMap2(V3->nx-originptr->nx, V3->ny-originptr->ny, V3->nz-originptr->nz, tessVerts[vn3].tu, tessVerts[vn3].tv);
+											SphereMap2(V1, V2, V3, &tessVerts[vn1], &tessVerts[vn2], &tessVerts[vn3]);
 											tessVerts[vn1].tu*=1000;
 											tessVerts[vn1].tv*=1000;
 											tessVerts[vn2].tu*=1000;
@@ -1537,16 +1570,27 @@ inline void C_FUNC_001869(ffeVertex *A8, ffeVertex *Ac, ffeVertex *A10, ffeVerte
 												*(int*)(local1 + 0x1a) = 0x1ff;
 											}
 											*/
-											tessVerts[vn1].tu=0;
-												vv1 = (V1->x_2 >> 0x12) & 65535;
-												vv1 = vv1 > 0x1ff ? 0x1ff : vv1;
-											tessVerts[vn1].tv=1.0f/511*vv1;
-											tessVerts[vn2].tu=1;
-												vv2 = (V2->x_2 >> 0x12);
-												vv2 = vv2 > 0x1ff ? 0x1ff : vv2;
-											tessVerts[vn2].tv=1.0f/511*vv2;
-											tessVerts[vn3].tu=1;
-											tessVerts[vn3].tv=0;
+											SphereMap2(V1, V2, V3, &tessVerts[vn1], &tessVerts[vn2], &tessVerts[vn3]);
+
+										//	tessVerts[vn1].tu=0;
+										//	tessVerts[vn2].tu=1;
+										//	tessVerts[vn3].tu=1;
+
+										//tessVerts[vn1].tv = ((V1->x_2 >> 0x10) & 0x7ff) * (1.0f / 0x7ff);
+										//tessVerts[vn2].tv = ((V2->x_2 >> 0x10) & 0x7ff) * (1.0f / 0x7ff);
+										////tessVerts[vn3].tv = ((V3->x_2 >> 0x10) & 0x7ff) * (1.0f / 0x7ff);
+										//tessVerts[vn3].tv=0;
+
+											//tessVerts[vn1].tu=0;
+											//	vv1 = (V1->x_2 >> 0x12) & 65535;
+											//	vv1 = vv1 > 0x1ff ? 0x1ff : vv1;
+											//tessVerts[vn1].tv=1.0f/511*vv1;
+											//tessVerts[vn2].tu=1;
+											//	vv2 = (V2->x_2 >> 0x12);
+											//	vv2 = vv2 > 0x1ff ? 0x1ff : vv2;
+											//tessVerts[vn2].tv=1.0f/511*vv2;
+											//tessVerts[vn3].tu=1;
+											//tessVerts[vn3].tv=0;
 
 											etex=94;
 										} else { 
@@ -1557,17 +1601,15 @@ inline void C_FUNC_001869(ffeVertex *A8, ffeVertex *Ac, ffeVertex *A10, ffeVerte
 											//tessVerts[vn3].tu=0;
 											//tessVerts[vn3].tv=1;
 
-											SphereMap2(V1->nx-originptr->nx, V1->ny-originptr->ny, V1->nz-originptr->nz, tessVerts[vn1].tu, tessVerts[vn1].tv);
-											SphereMap2(V2->nx-originptr->nx, V2->ny-originptr->ny, V2->nz-originptr->nz, tessVerts[vn2].tu, tessVerts[vn2].tv);
-											SphereMap2(V3->nx-originptr->nx, V3->ny-originptr->ny, V3->nz-originptr->nz, tessVerts[vn3].tu, tessVerts[vn3].tv);
-											tessVerts[vn1].tu*=1000;
-											tessVerts[vn1].tv*=1000;
-											tessVerts[vn2].tu*=1000;
-											tessVerts[vn2].tv*=1000;
-											tessVerts[vn3].tu*=1000;
-											tessVerts[vn3].tv*=1000;
+											SphereMap2(V1, V2, V3, &tessVerts[vn1], &tessVerts[vn2], &tessVerts[vn3]);
+											//tessVerts[vn1].tu*=1000;
+											//tessVerts[vn1].tv*=1000;
+											//tessVerts[vn2].tu*=1000;
+											//tessVerts[vn2].tv*=1000;
+											//tessVerts[vn3].tu*=1000;
+											//tessVerts[vn3].tv*=1000;
 
-											etex=64;
+											etex=94;
 										}
 								} else {
 									if (V1->x_2 - V3->x_2 >= 0x400000) {
@@ -1588,18 +1630,28 @@ inline void C_FUNC_001869(ffeVertex *A8, ffeVertex *Ac, ffeVertex *A10, ffeVerte
 											*(int*)(esi + 0x1a) = 0x1ff;
 										}
 										*/
-										tessVerts[vn1].tu=0;
-											vv1 = (V1->x_2 >> 0x12) & 65535;
-											vv1 = vv1 > 0x1ff ? 0x1ff : vv1;
-										tessVerts[vn1].tv=1.0f/511*vv1;
-										tessVerts[vn2].tu=1;
-											vv2 = (V2->x_2 >> 0x12) & 65535;
-											vv2 = vv2 > 0x1ff ? 0x1ff : vv2;
-										tessVerts[vn2].tv=1.0f/511*vv2;
-										tessVerts[vn3].tu=0;
-											vv3 = (V3->x_2 >> 0x12);
-											vv3 = vv3 > 0x1ff ? 0x1ff : vv3;
-										tessVerts[vn3].tv=1.0f/511*vv3;
+										SphereMap2(V1, V2, V3, &tessVerts[vn1], &tessVerts[vn2], &tessVerts[vn3]);
+
+										//tessVerts[vn1].tu=0;
+										//tessVerts[vn2].tu=1;
+										//tessVerts[vn3].tu=0;
+
+										//tessVerts[vn1].tv = ((V1->x_2 >> 0x10) & 0x7ff) * (1.0f / 0x7ff);
+										//tessVerts[vn2].tv = ((V2->x_2 >> 0x10) & 0x7ff) * (1.0f / 0x7ff);
+										//tessVerts[vn3].tv = ((V3->x_2 >> 0x10) & 0x7ff) * (1.0f / 0x7ff);
+
+										//tessVerts[vn1].tu=0;
+										//	vv1 = (V1->x_2 >> 0x12) & 65535;
+										//	vv1 = vv1 > 0x1ff ? 0x1ff : vv1;
+										//tessVerts[vn1].tv=1.0f/511*vv1;
+										//tessVerts[vn2].tu=1;
+										//	vv2 = (V2->x_2 >> 0x12) & 65535;
+										//	vv2 = vv2 > 0x1ff ? 0x1ff : vv2;
+										//tessVerts[vn2].tv=1.0f/511*vv2;
+										//tessVerts[vn3].tu=0;
+										//	vv3 = (V3->x_2 >> 0x12);
+										//	vv3 = vv3 > 0x1ff ? 0x1ff : vv3;
+										//tessVerts[vn3].tv=1.0f/511*vv3;
 
 										etex=94;
 									} else { // ровная поверхность
@@ -1611,17 +1663,15 @@ inline void C_FUNC_001869(ffeVertex *A8, ffeVertex *Ac, ffeVertex *A10, ffeVerte
 											//tessVerts[vn3].tu=1;
 											//tessVerts[vn3].tv=1;
 
-											SphereMap2(V1->nx-originptr->nx, V1->ny-originptr->ny, V1->nz-originptr->nz, tessVerts[vn1].tu, tessVerts[vn1].tv);
-											SphereMap2(V2->nx-originptr->nx, V2->ny-originptr->ny, V2->nz-originptr->nz, tessVerts[vn2].tu, tessVerts[vn2].tv);
-											SphereMap2(V3->nx-originptr->nx, V3->ny-originptr->ny, V3->nz-originptr->nz, tessVerts[vn3].tu, tessVerts[vn3].tv);
-											tessVerts[vn1].tu*=1000;
-											tessVerts[vn1].tv*=1000;
-											tessVerts[vn2].tu*=1000;
-											tessVerts[vn2].tv*=1000;
-											tessVerts[vn3].tu*=1000;
-											tessVerts[vn3].tv*=1000;
+											SphereMap2(V1, V2, V3, &tessVerts[vn1], &tessVerts[vn2], &tessVerts[vn3]);
+											//tessVerts[vn1].tu*=1000;
+											//tessVerts[vn1].tv*=1000;
+											//tessVerts[vn2].tu*=1000;
+											//tessVerts[vn2].tv*=1000;
+											//tessVerts[vn3].tu*=1000;
+											//tessVerts[vn3].tv*=1000;
 
-											etex=64;
+											etex=94;
 										//}
 									}
 								}
@@ -1630,47 +1680,45 @@ inline void C_FUNC_001869(ffeVertex *A8, ffeVertex *Ac, ffeVertex *A10, ffeVerte
 								//A10 = old_A10;
 							} else {
 
-								SphereMap2(A8->nx-originptr->nx, A8->ny-originptr->ny, A8->nz-originptr->nz, tessVerts[0].tu, tessVerts[0].tv);
-								SphereMap2(Ac->nx-originptr->nx, Ac->ny-originptr->ny, Ac->nz-originptr->nz, tessVerts[1].tu, tessVerts[1].tv);
-								SphereMap2(A10->nx-originptr->nx, A10->ny-originptr->ny, A10->nz-originptr->nz, tessVerts[2].tu, tessVerts[2].tv);																
+								SphereMap2(A8, Ac, A10, &tessVerts[0], &tessVerts[1], &tessVerts[2]);																
+								etex=94;
+								//if (abs(tessVerts[0].tu-tessVerts[1].tu) >= 0.5 && abs(tessVerts[0].tu-tessVerts[2].tu) >= 0.5) {
+								//	if (tessVerts[0].tu>=0.5)
+								//		tessVerts[0].tu-=1;
+								//	else
+								//		tessVerts[0].tu+=1;
+								//}
+								//if (abs(tessVerts[1].tu-tessVerts[0].tu) >= 0.5 && abs(tessVerts[1].tu-tessVerts[2].tu) >= 0.5) {
+								//	if (tessVerts[1].tu>=0.5)
+								//		tessVerts[1].tu-=1;
+								//	else
+								//		tessVerts[1].tu+=1;
+								//}
+								//if (abs(tessVerts[2].tu-tessVerts[0].tu) >= 0.5 && abs(tessVerts[2].tu-tessVerts[1].tu) >= 0.5) {
+								//	if (tessVerts[2].tu>=0.5)
+								//		tessVerts[2].tu-=1;
+								//	else
+								//		tessVerts[2].tu+=1;
+								//}
 
-								if (abs(tessVerts[0].tu-tessVerts[1].tu) >= 0.5 && abs(tessVerts[0].tu-tessVerts[2].tu) >= 0.5) {
-									if (tessVerts[0].tu>=0.5)
-										tessVerts[0].tu-=1;
-									else
-										tessVerts[0].tu+=1;
-								}
-								if (abs(tessVerts[1].tu-tessVerts[0].tu) >= 0.5 && abs(tessVerts[1].tu-tessVerts[2].tu) >= 0.5) {
-									if (tessVerts[1].tu>=0.5)
-										tessVerts[1].tu-=1;
-									else
-										tessVerts[1].tu+=1;
-								}
-								if (abs(tessVerts[2].tu-tessVerts[0].tu) >= 0.5 && abs(tessVerts[2].tu-tessVerts[1].tu) >= 0.5) {
-									if (tessVerts[2].tu>=0.5)
-										tessVerts[2].tu-=1;
-									else
-										tessVerts[2].tu+=1;
-								}
-
-								if (abs(tessVerts[0].tv-tessVerts[1].tv) >= 0.5 && abs(tessVerts[0].tv-tessVerts[2].tv) >= 0.5) {
-									if (tessVerts[0].tv>=0.5)
-										tessVerts[0].tv-=1;
-									else
-										tessVerts[0].tv+=1;
-								}
-								if (abs(tessVerts[1].tv-tessVerts[0].tv) >= 0.5 && abs(tessVerts[1].tv-tessVerts[2].tv) >= 0.5) {
-									if (tessVerts[1].tv>=0.5)
-										tessVerts[1].tv-=1;
-									else
-										tessVerts[1].tv+=1;
-								}
-								if (abs(tessVerts[2].tv-tessVerts[0].tv) >= 0.5 && abs(tessVerts[2].tv-tessVerts[1].tv) >= 0.5) {
-									if (tessVerts[2].tv>=0.5)
-										tessVerts[2].tv-=1;
-									else
-										tessVerts[2].tv+=1;
-								}
+								//if (abs(tessVerts[0].tv-tessVerts[1].tv) >= 0.5 && abs(tessVerts[0].tv-tessVerts[2].tv) >= 0.5) {
+								//	if (tessVerts[0].tv>=0.5)
+								//		tessVerts[0].tv-=1;
+								//	else
+								//		tessVerts[0].tv+=1;
+								//}
+								//if (abs(tessVerts[1].tv-tessVerts[0].tv) >= 0.5 && abs(tessVerts[1].tv-tessVerts[2].tv) >= 0.5) {
+								//	if (tessVerts[1].tv>=0.5)
+								//		tessVerts[1].tv-=1;
+								//	else
+								//		tessVerts[1].tv+=1;
+								//}
+								//if (abs(tessVerts[2].tv-tessVerts[0].tv) >= 0.5 && abs(tessVerts[2].tv-tessVerts[1].tv) >= 0.5) {
+								//	if (tessVerts[2].tv>=0.5)
+								//		tessVerts[2].tv-=1;
+								//	else
+								//		tessVerts[2].tv+=1;
+								//}
 							}
 
 							//SphereMap2((A8->nx-originptr->nx), (A8->ny-originptr->ny), (A8->nz-originptr->nz), tessVerts[0].tu, tessVerts[0].tv);

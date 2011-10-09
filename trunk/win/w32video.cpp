@@ -9,9 +9,7 @@
 #include "../ffecfg.h"
 #include "win32api.h"
 #include "ffe3d.h"
-#include "XFile/XfileEntity.h"
 #include "Macros.h"
-#include "XFile/Utility.h"
 #include "ini/ini.h"
 #include "Render/RenderSystem.h"
 #include <assert.h>
@@ -69,6 +67,7 @@ sVertexBuffer vertexBuffer;
 sVertexBuffer spriteVB;
 LPDIRECT3DTEXTURE9 textures[1000];
 LPDIRECT3DTEXTURE9 skyboxtex[6];
+LPDIRECT3DTEXTURE9 starstex;
 D3DMATERIAL9 m_matMaterial;
 D3DLIGHT9 d3dLight;
 LPD3DXFONT m_pFont, m_tFont;
@@ -106,6 +105,10 @@ void loadTextures();
 void loadDirectXModel();
 void checkExport();
 void DrawText(LPSTR pText, int x, int y, D3DCOLOR rgbFontColour);
+extern bool Planet(int modelNum);
+extern bool Rings(int modelNum);
+
+CXFileEntity* LoadModel(const std::string &filename, CXFileEntity* obj);
 
 static FILE *pLog = NULL;
 
@@ -121,6 +124,34 @@ extern "C" char *DATA_008835;
 extern "C" char *DATA_008809;
 extern "C" char *DATA_008810;
 extern "C" char *DATA_009054;
+
+xModel* objectList[500];
+
+unsigned int __stdcall Thread1(void* p)
+{
+	while(1)
+	{
+		for(int i=3;i<500;i++) {
+			if (objectList[i]) {
+				if (objectList[i]->haveFile && objectList[i]->needLoad) {
+					objectList[i]->object = LoadModel(objectList[i]->filename, objectList[i]->object);
+					objectList[i]->loadSkins();
+					objectList[i]->needLoad = false;
+					objectList[i]->counter = 500;
+				} else if (objectList[i]->Exist()) {
+					if (objectList[i]->counter > 0)
+						objectList[i]->counter--;
+					else if (objectList[i]->counter <= 0)
+						objectList[i]->DropModel();
+				}
+			}
+			Sleep(1);
+		} 
+		Sleep(100);
+	}
+	return 0;
+}
+
 int WINAPI WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	LPSTR lpCmdLine, int nCmdShow)
 {
@@ -133,7 +164,13 @@ int WINAPI WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	QueryPerformanceFrequency(&time);
 	ticks = time.QuadPart;
 
-	return asmmain(0, NULL);
+	_beginthreadex(NULL, 0, &Thread1, NULL, 0, NULL);
+
+	int res;
+
+	res = asmmain(0, NULL);
+
+	return res;
 }
 
 void Win32MsgHandler (void)
@@ -643,26 +680,114 @@ bool FFED3DCreateTextureFromFileRT(LPDIRECT3DDEVICE9 pDevice, LPCTSTR buf, LPDIR
 //CMD2Model g_model[500];
 //Object3D objectList[500];
 //Object3D splineList[500];
-CXFileEntity* panelObj;
-CXFileEntity* sphereObj;
-CXFileEntity* atmoObj;
+CXFileEntity* panelObj = NULL;
+CXFileEntity* sphereObj = NULL;
+CXFileEntity* atmoObj = NULL;
+CXFileEntity* nebulaObj = NULL;
+CXFileEntity* starsObj = NULL;
 LPDIRECT3DTEXTURE9 aviTex;
 LPDIRECT3DTEXTURE9 panelTex, battlepanel, navigatepanel, voidbutton;
 LPDIRECT3DTEXTURE9 loadingTex, modelTex, texTex, effectTex;
 LPDIRECT3DTEXTURE9 panelIcons[4];
+LPDIRECT3DTEXTURE9 permTexture;
+LPDIRECT3DTEXTURE9 permTexture2d;
 int panelnum=0;
-CXFileEntity* objectList[500];
-CXFileEntity* splineList[500];
+
 ID3DXEffect* effectList[500];
+ID3DXEffect* effectPlanet;
+ID3DXEffect* effectCurrent;
 
-LPDIRECT3DTEXTURE9 skin[500][10];
-MODELCONFIG modelconfig[500];
 
+// permutation table
+static int perm[] = { 151,160,137,91,90,15,
+131,13,201,95,96,53,194,233,7,225,140,36,103,30,69,142,8,99,37,240,21,10,23,
+190, 6,148,247,120,234,75,0,26,197,62,94,252,219,203,117,35,11,32,57,177,33,
+88,237,149,56,87,174,20,125,136,171,168, 68,175,74,165,71,134,139,48,27,166,
+77,146,158,231,83,111,229,122,60,211,133,230,220,105,92,41,55,46,245,40,244,
+102,143,54, 65,25,63,161, 1,216,80,73,209,76,132,187,208, 89,18,169,200,196,
+135,130,116,188,159,86,164,100,109,198,173,186, 3,64,52,217,226,250,124,123,
+5,202,38,147,118,126,255,82,85,212,207,206,59,227,47,16,58,17,182,189,28,42,
+223,183,170,213,119,248,152, 2,44,154,163, 70,221,153,101,155,167, 43,172,9,
+129,22,39,253, 19,98,108,110,79,113,224,232,178,185, 112,104,218,246,97,228,
+251,34,242,193,238,210,144,12,191,179,162,241, 81,51,145,235,249,14,239,107,
+49,192,214, 31,181,199,106,157,184, 84,204,176,115,121,50,45,127, 4,150,254,
+138,236,205,93,222,114,67,29,24,72,243,141,128,195,78,66,215,61,156,180
+};
+
+int perm2d(int i) 
+{ 
+	return perm[i % 256]; 
+} 
+
+void GeneratePermTexture() 
+{ 
+	HRESULT res;
+	res = D3DXCreateTexture(renderSystem->GetDevice(), 256, 1, 1, 0, D3DFMT_L8, D3DPOOL_MANAGED, &permTexture);
+	assert(res == D3D_OK);
+
+	byte data[256];
+
+	 for (int x = 0; x < 256; x++) 
+			data[x] = (byte)(perm[x]);
+
+	D3DLOCKED_RECT sLockedRect;
+	res = permTexture->LockRect(0, &sLockedRect, 0, 0);
+	assert(res == D3D_OK);
+
+	memcpy(sLockedRect.pBits, data, 256);
+
+	permTexture->UnlockRect(0);
+}
+
+void GeneratePermTexture2d() 
+{ 
+	HRESULT res;
+	res = D3DXCreateTexture(renderSystem->GetDevice(), 256, 256, 16, 0, D3DFMT_A8R8G8B8, D3DPOOL_MANAGED, &permTexture2d);
+	assert(res == D3D_OK);
+
+	unsigned int data[256*256];
+
+	D3DLOCKED_RECT sLockedRect; 
+
+	for (int l = 0;; l++)
+	{
+		res = permTexture2d->LockRect(l, &sLockedRect, 0, 0);
+		if (res != D3D_OK) break;
+
+		int w = 0;
+		int h = 0;
+		for (int x = 0; x < 256; x+= 1 << l) 
+		{ 
+			w = 0;
+			for (int y = 0; y < 256; y+= 1 << l) 
+			{ 
+				int A = perm2d(x) + y; 
+				int AA = perm2d(A); 
+				int AB = perm2d(A + 1); 
+				int B = perm2d(x + 1) + y; 
+				int BA = perm2d(B); 
+				int BB = perm2d(B + 1); 
+				data[w + (h * (256 >> l))] = D3DCOLOR_ARGB((byte)(AA)>>(l>>1), 
+														   (byte)(AB)>>(l>>1), 
+														   (byte)(BA)>>(l>>1), 
+														   (byte)(BB)>>(l>>1));
+				w++;
+			}
+			h++;
+		} 
+
+		memcpy(sLockedRect.pBits, data, (256 >> l) * (256 >> l) * 4);
+		permTexture2d->UnlockRect(l);
+	}
+}
 
 extern bool exportb[500];
 
 void loadTextures() {
 	char buf[1000];
+
+	GeneratePermTexture();
+	GeneratePermTexture2d();
 
 	sprintf_s(buf,"textures/panelicons/panel.png");
 	if (FAILED(FFED3DCreateTextureFromFileRT(renderSystem->GetDevice(), buf, &panelTex))) {
@@ -698,9 +823,12 @@ void loadTextures() {
 	for (int i=0;i<1000;i++) {
 		sprintf_s(buf,"textures/tex%i.png",i);
 		if (FAILED(FFED3DCreateTextureFromFile(renderSystem->GetDevice(), buf, &textures[i]))) {
-			sprintf_s(buf,"textures/tex%i.tga",i);
-			if (FAILED(D3DXCreateTextureFromFile(renderSystem->GetDevice(), buf, &textures[i]))) {
-				textures[i]=NULL;
+			sprintf_s(buf,"textures/tex%i.dds",i);
+			if (FAILED(FFED3DCreateTextureFromFile(renderSystem->GetDevice(), buf, &textures[i]))) {
+				sprintf_s(buf,"textures/tex%i.tga",i);
+				if (FAILED(D3DXCreateTextureFromFile(renderSystem->GetDevice(), buf, &textures[i]))) {
+					textures[i]=NULL;
+				}
 			}
 		}
 	}
@@ -710,21 +838,9 @@ void loadTextures() {
 			skyboxtex[i]=NULL;
 		}
 	}
-
-	for(int i=3;i<500;i++) {
-		sprintf_s(buf,"models\\%i\\skin.png",i);
-		if (FAILED(D3DXCreateTextureFromFile(renderSystem->GetDevice(), buf, &skin[i][0]))) {
-			sprintf_s(buf,"models\\%i\\skin.tga",i);
-			if (FAILED(D3DXCreateTextureFromFile(renderSystem->GetDevice(), buf, &skin[i][0]))) {
-				skin[i][0]=NULL;
-			}
-		}
-		for(int j=1; j<10; j++) {
-			sprintf_s(buf,"models\\%i\\skin%i.png",i,(j+1));
-			if (FAILED(D3DXCreateTextureFromFile(renderSystem->GetDevice(), buf, &skin[i][j]))) {
-				skin[i][j]=NULL;
-			}
-		}
+	sprintf_s(buf,"textures/stars.tga");
+	if (FAILED(D3DXCreateTextureFromFile(renderSystem->GetDevice(), buf, &starstex))) {
+		starstex=NULL;
 	}
 }
 
@@ -755,25 +871,41 @@ void loadEffects() {
 	char* data=NULL;
 
 	for(int i=3;i<500;i++) {
-		sprintf_s(buf,"models/%i/effect.fx",i);
-			if ( FAILED(D3DXCreateEffectFromFileA(renderSystem->GetDevice(), (LPCSTR)buf, 0, 0, 0, 0, &effectList[i], &err))) {
-				effectList[i]=NULL;
-				if (err) {
-					char *tempString = (char*)err->GetBufferPointer();
-					if (tempString != NULL) {
-						printf("Modifier shader: %s",tempString);
-						MessageBox(0, tempString, 0, 0);
-					}
+		if (Planet(i)) {
+			sprintf_s(buf,"models/planet.fx");
+		} else {
+			sprintf_s(buf,"models/%i/effect.fx",i);
+		}
+		if ( FAILED(D3DXCreateEffectFromFileA(renderSystem->GetDevice(), (LPCSTR)buf, 0, 0, 0, 0, &effectList[i], &err))) {
+			effectList[i]=NULL;
+			if (err) {
+				char *tempString = (char*)err->GetBufferPointer();
+				if (tempString != NULL) {
+					printf("Modifier shader: %s",tempString);
+					MessageBox(0, tempString, 0, 0);
 				}
 			}
+		}
 	}
+}
+
+xModel* initXModel(const std::string &filename, int id)
+{
+	xModel* model = new xModel(id);
+	if (CUtility::DoesFileExist(CUtility::GetTheCurrentDirectory()+filename)) {
+		//model->object = new CXFileEntity();
+		model->filename = filename;
+		model->haveFile = true;
+	}
+	return model;
 }
 
 CXFileEntity* LoadModel(const std::string &filename, CXFileEntity* obj)
 {
 	obj = NULL;
 	if (CUtility::DoesFileExist(CUtility::GetTheCurrentDirectory()+filename)) {
-		obj = new CXFileEntity();
+		if (obj == NULL)
+			obj = new CXFileEntity();
 		if (!obj->LoadXFile(CUtility::GetTheCurrentDirectory()+filename,0)) {
 			SAFE_DELETE(obj);
 		}
@@ -789,69 +921,34 @@ void loadModels()
 	panelObj = LoadModel("/models/panel.x", panelObj);
 	sphereObj = LoadModel("/models/sphere.x", sphereObj);
 	atmoObj = LoadModel("/models/atmo.x", atmoObj);
+	starsObj = LoadModel("/models/stars.x", starsObj);
+	nebulaObj = LoadModel("/models/nebula.x", nebulaObj);
 
-	for(int i=3;i<500;i++) {
-		sprintf_s(buf,"/models/%i/spline.x",i);
-		splineList[i] = LoadModel(buf, splineList[i]);
-	
+	for(int i=0;i<500;i++) {
 		sprintf_s(buf,"/models/%i/model.x",i);
-		objectList[i] = LoadModel(buf, objectList[i]);
+		objectList[i] = initXModel(buf,i);
 		if (objectList[i]) {			
 			sprintf_s(buf,"models\\%i\\tris.ini",i);
 			file.SetFileName (buf);
-			file.GetIntValue (modelconfig[i].skip,"MODEL", "skip");
-			file.GetIntValue (modelconfig[i].notdrawtext,"MODEL", "notdrawtext");
-			file.GetIntValue (modelconfig[i].notdrawsubmodels,"MODEL", "notdrawsubmodels");
-			file.GetFloatValue (modelconfig[i].scale,"MODEL", "scale");
-			file.GetFloatValue (modelconfig[i].scale_x,"MODEL", "scale_x");
-			file.GetFloatValue (modelconfig[i].scale_y,"MODEL", "scale_y");
-			file.GetFloatValue (modelconfig[i].scale_z,"MODEL", "scale_z");
-			modelconfig[i].scale = modelconfig[i].scale > 0 ? modelconfig[i].scale : 1.0f;
-			modelconfig[i].scale_x = modelconfig[i].scale_x > 0 ? modelconfig[i].scale_x : 1.0f;
-			modelconfig[i].scale_y = modelconfig[i].scale_y > 0 ? modelconfig[i].scale_y : 1.0f;
-			modelconfig[i].scale_z = modelconfig[i].scale_z > 0 ? modelconfig[i].scale_z : 1.0f;
-			file.GetFloatValue (modelconfig[i].offset_x,"MODEL", "offset_x");
-			file.GetFloatValue (modelconfig[i].offset_y,"MODEL", "offset_y");
-			file.GetFloatValue (modelconfig[i].offset_z,"MODEL", "offset_z");
-			file.GetIntValue (modelconfig[i].cullmode,"MODEL", "cullmode");
-
-			file.GetFloatValue (modelconfig[i].missile_scale,"MODEL", "missile_scale");
-
-			file.GetFloatValue (modelconfig[i].missile[0].x,"MISSILE0", "x");
-			file.GetFloatValue (modelconfig[i].missile[0].y,"MISSILE0", "y");
-			file.GetFloatValue (modelconfig[i].missile[0].z,"MISSILE0", "z");
-			file.GetFloatValue (modelconfig[i].missile[1].x,"MISSILE1", "x");
-			file.GetFloatValue (modelconfig[i].missile[1].y,"MISSILE1", "y");
-			file.GetFloatValue (modelconfig[i].missile[1].z,"MISSILE1", "z");
-			file.GetFloatValue (modelconfig[i].missile[2].x,"MISSILE2", "x");
-			file.GetFloatValue (modelconfig[i].missile[2].y,"MISSILE2", "y");
-			file.GetFloatValue (modelconfig[i].missile[2].z,"MISSILE2", "z");
-			file.GetFloatValue (modelconfig[i].missile[3].x,"MISSILE3", "x");
-			file.GetFloatValue (modelconfig[i].missile[3].y,"MISSILE3", "y");
-			file.GetFloatValue (modelconfig[i].missile[3].z,"MISSILE3", "z");
-			file.GetFloatValue (modelconfig[i].missile[4].x,"MISSILE4", "x");
-			file.GetFloatValue (modelconfig[i].missile[4].y,"MISSILE4", "y");
-			file.GetFloatValue (modelconfig[i].missile[4].z,"MISSILE4", "z");
-			file.GetFloatValue (modelconfig[i].missile[5].x,"MISSILE5", "x");
-			file.GetFloatValue (modelconfig[i].missile[5].y,"MISSILE5", "y");
-			file.GetFloatValue (modelconfig[i].missile[5].z,"MISSILE5", "z");
-			file.GetFloatValue (modelconfig[i].missile[6].x,"MISSILE6", "x");
-			file.GetFloatValue (modelconfig[i].missile[6].y,"MISSILE6", "y");
-			file.GetFloatValue (modelconfig[i].missile[6].z,"MISSILE6", "z");
-			file.GetFloatValue (modelconfig[i].missile[7].x,"MISSILE7", "x");
-			file.GetFloatValue (modelconfig[i].missile[7].y,"MISSILE7", "y");
-			file.GetFloatValue (modelconfig[i].missile[7].z,"MISSILE7", "z");
-			file.GetFloatValue (modelconfig[i].missile[8].x,"MISSILE8", "x");
-			file.GetFloatValue (modelconfig[i].missile[8].y,"MISSILE8", "y");
-			file.GetFloatValue (modelconfig[i].missile[8].z,"MISSILE8", "z");
-			file.GetFloatValue (modelconfig[i].missile[9].x,"MISSILE9", "x");
-			file.GetFloatValue (modelconfig[i].missile[9].y,"MISSILE9", "y");
-			file.GetFloatValue (modelconfig[i].missile[9].z,"MISSILE9", "z");
-
+			file.GetIntValue (objectList[i]->config.skip,"MODEL", "skip");
+			file.GetIntValue (objectList[i]->config.notdrawtext,"MODEL", "notdrawtext");
+			file.GetIntValue (objectList[i]->config.notdrawsubmodels,"MODEL", "notdrawsubmodels");
+			file.GetFloatValue (objectList[i]->config.scale,"MODEL", "scale");
+			file.GetFloatValue (objectList[i]->config.scale_x,"MODEL", "scale_x");
+			file.GetFloatValue (objectList[i]->config.scale_y,"MODEL", "scale_y");
+			file.GetFloatValue (objectList[i]->config.scale_z,"MODEL", "scale_z");
+			objectList[i]->config.scale = objectList[i]->config.scale > 0 ? objectList[i]->config.scale : 1.0f;
+			objectList[i]->config.scale_x = objectList[i]->config.scale_x > 0 ? objectList[i]->config.scale_x : 1.0f;
+			objectList[i]->config.scale_y = objectList[i]->config.scale_y > 0 ? objectList[i]->config.scale_y : 1.0f;
+			objectList[i]->config.scale_z = objectList[i]->config.scale_z > 0 ? objectList[i]->config.scale_z : 1.0f;
+			file.GetFloatValue (objectList[i]->config.offset_x,"MODEL", "offset_x");
+			file.GetFloatValue (objectList[i]->config.offset_y,"MODEL", "offset_y");
+			file.GetFloatValue (objectList[i]->config.offset_z,"MODEL", "offset_z");
+			file.GetIntValue (objectList[i]->config.cullmode,"MODEL", "cullmode");
 		} else {
 			sprintf_s(buf,"models\\%i\\tris.ini",i);
 			file.SetFileName (buf);
-			file.GetIntValue (modelconfig[i].skip,"MODEL", "skip");
+			file.GetIntValue (objectList[i]->config.skip,"MODEL", "skip");
 		}
 	}
 	
@@ -1465,10 +1562,21 @@ void drawModelPrimitives(int startVert, int endVert)
 			tn = vertexType[i].textNum;
 			effectList[currModIndex]->SetTexture("tex",textures[vertexType[i].textNum]);
 			effectList[currModIndex]->SetValue("tangent", &vertexType[i].tangent, D3DX_DEFAULT);
-			if (vertexType[i].textNum==720)
+			if (Planet(currModIndex)) {
+				effectList[currModIndex]->SetTexture("wave1",textures[722]);
+				effectList[currModIndex]->SetTexture("wave2",textures[723]);
+				effectList[currModIndex]->SetTexture("permTexture",permTexture);
+				effectList[currModIndex]->SetTexture("permTexture2d",permTexture2d);
+			}
+			if (vertexType[i].textNum==720) // water
 				effectList[currModIndex]->BeginPass(1);
-			else
+			else if (vertexType[i].textNum==699 || vertexType[i].textNum==700) // atmo
+				effectList[currModIndex]->BeginPass(3);
+			else if (vertexType[i].textNum == 94) // noise land
+				effectList[currModIndex]->BeginPass(2);
+			else {
 				effectList[currModIndex]->BeginPass(0);
+			}
 		}
 
 		// primitives
@@ -1762,6 +1870,7 @@ void PreparePanel(void)
 	renderSystem->GetDevice()->SetDepthStencilSurface(zSurface);
 }
 
+bool t_work = false;
 
 extern float dist;
 extern float radius;
@@ -1774,8 +1883,6 @@ extern unsigned char currentAmbientB;
 
 extern int incabin;
 extern bool clearBeforeRender;
-extern bool Planet(int modelNum);
-extern bool Rings(int modelNum);
 
 //extern int lastPlanetLod;
 
@@ -1924,13 +2031,13 @@ void Render()
 	renderSystem->SetRenderState(D3DRS_ZWRITEENABLE, false);
 	renderSystem->SetRenderState(D3DRS_ZENABLE, false);
 
+	//renderSystem->SetRenderState(D3DRS_LIGHTING, FALSE);
 	// nebula
-	if (objectList[315] && (*(unsigned char*)(DATA_008804+0x20)!=0 || *(unsigned char*)(DATA_008804+0x21)!=0 || *(unsigned char*)(DATA_008804+0x22)!=0))
+	if (nebulaObj && (*(unsigned char*)(DATA_008804+0x20)!=0 || *(unsigned char*)(DATA_008804+0x21)!=0 || *(unsigned char*)(DATA_008804+0x22)!=0))
 	for(int m=0;m<modelNum;m++) {
 		if (modelList[m].index==315 || 
 			modelList[m].index==444) {
 			if (modelList[m].material!=NOTDRAW) {
-				currMod=m;
 
 				/*
 				renderSystem->SetRenderState(D3DRS_CULLMODE, modelList[m].cull);
@@ -1952,20 +2059,20 @@ void Render()
 				doMatrixes(mdworld);
 
 				renderSystem->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
-				objectList[315]->FrameMove(0, 0,&mdworld);
+				nebulaObj->FrameMove(0, 0,&mdworld);
 
 				renderSystem->GetDevice()->SetTexture(0, skyboxtex[0]);
-				objectList[315]->Render(0,24,0,2);
+				nebulaObj->Render(0,24,0,2);
 				renderSystem->GetDevice()->SetTexture(0, skyboxtex[1]);
-				objectList[315]->Render(0,24,2,2);
+				nebulaObj->Render(0,24,2,2);
 				renderSystem->GetDevice()->SetTexture(0, skyboxtex[2]);
-				objectList[315]->Render(0,24,4,2);
+				nebulaObj->Render(0,24,4,2);
 				renderSystem->GetDevice()->SetTexture(0, skyboxtex[3]);
-				objectList[315]->Render(0,24,6,2);
+				nebulaObj->Render(0,24,6,2);
 				renderSystem->GetDevice()->SetTexture(0, skyboxtex[4]);
-				objectList[315]->Render(0,24,8,2);
+				nebulaObj->Render(0,24,8,2);
 				renderSystem->GetDevice()->SetTexture(0, skyboxtex[5]);
-				objectList[315]->Render(0,24,10,2);
+				nebulaObj->Render(0,24,10,2);
 				break;
 			}
 		}
@@ -1984,8 +2091,7 @@ void Render()
 		}
 	}
 	*/
-	int starMod=316;
-	for(int m=0;objectList[starMod] && m<modelNum;m++) {
+	for(int m=0;starsObj && m<modelNum;m++) {
 		if (modelList[m].index==315 || 
 			modelList[m].index==444) {
 			D3DXMATRIX mdscale, mdworld, mdrotate;
@@ -2004,11 +2110,11 @@ void Render()
 			doMatrixes(mdworld);
 			
 
-			renderSystem->GetDevice()->SetTexture(0, skin[starMod][0]);
+			renderSystem->GetDevice()->SetTexture(0, starstex);
 			//renderSystem->GetDevice()->SetRenderState(D3DRS_CULLMODE, g_model[starMod].cullmode);
 			renderSystem->SetRenderState(D3DRS_CULLMODE, D3DCULL_NONE);
-			objectList[starMod]->FrameMove(0,0,&mdworld);
-			objectList[starMod]->Render();
+			starsObj->FrameMove(0,0,&mdworld);
+			starsObj->Render();
 			//doMatrixes(modelList[m].world);
 			break;
 		}
@@ -2256,94 +2362,76 @@ void Render()
 			selectMaterial(modelList[m].material, modelList[m].ambientR, modelList[m].ambientG, modelList[m].ambientB);
 			renderSystem->GetDevice()->SetMaterial(&m_matMaterial);
 
-			// Сплайны
-			if (splineList[currModIndex]) {
-
-				if (effectList[currModIndex]) {
-					effectList[currModIndex]->SetMatrix("worldmat",&modelList[m].world);
-
-					effectList[currModIndex]->Begin(&pass,0);
-					effectList[currModIndex]->BeginPass(0);
-				}
-
-				selectMaterial(SPLINE, modelList[m].splineR, modelList[m].splineG, modelList[m].splineB);
-				renderSystem->GetDevice()->SetMaterial(&m_matMaterial);
-				renderSystem->GetDevice()->SetTexture(0, 0);
-				splineList[currModIndex]->FrameMove(0,0,&modelList[m].world);
-				splineList[currModIndex]->Render();
-				selectMaterial(modelList[m].material, modelList[m].ambientR, modelList[m].ambientG, modelList[m].ambientB);
-				renderSystem->GetDevice()->SetMaterial(&m_matMaterial);
-
-				if (effectList[currModIndex]) {
-					effectList[currModIndex]->EndPass();
-					effectList[currModIndex]->End();
-				}
-			}
-
-			if (effectList[currModIndex]) {
-				effectList[currModIndex]->SetTexture("skin8",skin[modelList[m].index][7]);
-				effectList[currModIndex]->SetTexture("skin9",skin[modelList[m].index][8]);
-				effectList[currModIndex]->SetTexture("skin10",skin[modelList[m].index][9]);
-			}
-
 			// Внешние модели
-			if (objectList[currModIndex]) {
+			if (objectList[currModIndex]->Exist()) {
+
 				D3DXMatrixIdentity(&mdworld);				
-				mdworld[12]+=modelconfig[modelList[m].index].offset_x;
-				mdworld[13]+=modelconfig[modelList[m].index].offset_y;
-				mdworld[14]+=modelconfig[modelList[m].index].offset_z;
+				mdworld[12]+=objectList[currModIndex]->config.offset_x;
+				mdworld[13]+=objectList[currModIndex]->config.offset_y;
+				mdworld[14]+=objectList[currModIndex]->config.offset_z;
 				
 				D3DXMatrixMultiply(&mdworld, &mdworld, &modelList[m].world);
 				
-				scale=modelconfig[modelList[m].index].scale;
+				scale=objectList[currModIndex]->config.scale;
 				D3DXMatrixScaling(&mdscale, scale, scale, scale);
 				D3DXMatrixMultiply(&mdworld, &mdscale, &mdworld);
 
-				scale_x=modelconfig[modelList[m].index].scale_x;
-				scale_y=modelconfig[modelList[m].index].scale_y;
-				scale_z=modelconfig[modelList[m].index].scale_z;
+				scale_x=objectList[currModIndex]->config.scale_x;
+				scale_y=objectList[currModIndex]->config.scale_y;
+				scale_z=objectList[currModIndex]->config.scale_z;
 				D3DXMatrixScaling(&mdscale, scale_x, scale_y, scale_z);
 				D3DXMatrixMultiply(&mdworld, &mdscale, &mdworld);
 
-				renderSystem->GetDevice()->SetTexture(0, skin[modelList[m].index][0]);
+				renderSystem->GetDevice()->SetTexture(0, objectList[currModIndex]->skin[0]);
 
 				//find the time difference
 				QueryPerformanceCounter(&nowtime);
 				dtime = ((nowtime.QuadPart - starttime)/ticks);
 				if ((currModIndex > 14 && currModIndex < 70) || currModIndex==227 || currModIndex==234 || currModIndex==236) {
-					if (modelList[m].landingGear>0 || objectList[modelList[m].index]->GetNumAnimationSets()==1) {
-						objectList[modelList[m].index]->SetAnimationSet(0);
+					if (modelList[m].landingGear>0 || objectList[currModIndex]->GetNumAnimationSets()==1) {
+						objectList[currModIndex]->SetAnimationSet(0);
 						if (modelList[m].index==227) {
 							char cBuff[32];
 							sprintf(cBuff,"FFED3D: %i", modelList[m].landingGear);
 							SetWindowText(hWnd,cBuff);
-							lG = ((float)modelList[m].landingGear/65535)*objectList[modelList[m].index]->GetAnimationSetLength(0);
+							lG = ((float)modelList[m].landingGear/65535)*objectList[currModIndex]->GetAnimationSetLength(0);
 						}
 						else
-							lG = (float)modelList[m].landingGear/65536*objectList[modelList[m].index]->GetAnimationSetLength(0);
+							lG = (float)modelList[m].landingGear/65536*objectList[currModIndex]->GetAnimationSetLength(0);
 						objectList[currModIndex]->FrameMove(0, lG,&mdworld);
 					} else {
 						objectList[currModIndex]->SetAnimationSet(1);
 						objectList[currModIndex]->FrameMove(1, dtime,&mdworld);
 					}
 				} else {
-					objectList[modelList[m].index]->SetAnimationSet(0);
-					objectList[modelList[m].index]->FrameMove(1, dtime,&mdworld);
+					objectList[currModIndex]->SetAnimationSet(0);
+					objectList[currModIndex]->FrameMove(1, dtime,&mdworld);
 				}
 				starttime = nowtime.QuadPart;
-
+		
 				if (effectList[currModIndex]) {
-					effectList[currModIndex]->SetTexture("skin",skin[modelList[m].index][0]);
+					effectList[currModIndex]->SetTexture("skin",objectList[currModIndex]->skin[0]);
+					char buf[100];
+					for(int i=1;i<10;i++) {
+						if (objectList[currModIndex]->skin[i]) {
+							sprintf(buf,"skin%i",i);
+							effectList[currModIndex]->SetTexture(buf,objectList[currModIndex]->skin[i]);
+						}
+					}
 				}
-				
+
 				objectList[currModIndex]->SetEffect(effectList[currModIndex]);
 				objectList[currModIndex]->Render();
-			} 
-			//else 
+				objectList[currModIndex]->counter++;
+			} else {
+				objectList[currModIndex]->needLoad = true;
+			}
+
 			{
 
 				// Отрисовываем внутренние модели
 				doMatrixes(modelList[m].world);
+
 				if (effectList[currModIndex]) {
 					effectList[currModIndex]->SetMatrix("worldmat",&modelList[m].world);
 					effectList[currModIndex]->Begin(&pass,0);
@@ -2525,8 +2613,6 @@ void Render()
 		textSprite->Draw(textures[spriteList[i].tex],NULL,NULL,&spos,0xFFFFFFFF);
 	}
 	
-
-
 	textSprite->End();
 	//renderSystem->SetRenderState( D3DRS_ALPHATESTENABLE, false);
 	renderSystem->EndScene();    

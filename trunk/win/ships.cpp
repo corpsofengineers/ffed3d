@@ -137,11 +137,12 @@ extern "C" INT32 DoShipDamage(INT8 *ship, INT32 damage, INT8 bContinuous)
 	INT16 *shields, *hull, totalShields, totalHull;
 	INT8  idx, numDamages;
 	INT8 *pTemp;
-	INT32 rand, iProbability, iResult, vol;
-
+	INT32 rand, iProbability, iResult = 0, vol;
 
 	idx = ((ship == DATA_PlayerObject) ? 1 : 0);
-	
+
+	//if (idx) return 0; // god mode
+
 	shields = INT16_PTR(ship+0xe0);
 	totalShields = INT16_AT(ship+0xe2);
 	hull = INT16_PTR(ship+0xe4);

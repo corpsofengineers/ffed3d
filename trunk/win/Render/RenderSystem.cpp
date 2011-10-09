@@ -59,13 +59,13 @@ bool RenderSystem::Initialize(int xScr,int yScr,int mode,HWND hWnd,int RefreshRa
 	d3dpp.AutoDepthStencilFormat = D3DFMT_D24S8;
 
 	if(FAILED(lpD3D->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, hWnd,
-		D3DCREATE_HARDWARE_VERTEXPROCESSING, &d3dpp, &lpD3DDevice))) 
+		D3DCREATE_HARDWARE_VERTEXPROCESSING | D3DCREATE_MULTITHREADED, &d3dpp, &lpD3DDevice))) 
 	{
 		if(FAILED(lpD3D->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, hWnd,
-			D3DCREATE_SOFTWARE_VERTEXPROCESSING, &d3dpp, &lpD3DDevice)))
+			D3DCREATE_SOFTWARE_VERTEXPROCESSING | D3DCREATE_MULTITHREADED, &d3dpp, &lpD3DDevice)))
 		{
 			if(FAILED(lpD3D->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_REF, hWnd,
-				D3DCREATE_SOFTWARE_VERTEXPROCESSING, &d3dpp, &lpD3DDevice))) {
+				D3DCREATE_SOFTWARE_VERTEXPROCESSING | D3DCREATE_MULTITHREADED, &d3dpp, &lpD3DDevice))) {
 					MessageBox (NULL, "Failed CreateDevice",
 						"WinFFE startup error", MB_OK | MB_ICONWARNING);
 					return false;
