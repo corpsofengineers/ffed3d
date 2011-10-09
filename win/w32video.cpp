@@ -13,7 +13,7 @@
 #include "ini/ini.h"
 #include "Render/RenderSystem.h"
 #include <assert.h>
-#include <ffescr.h>
+#include "ffescr.h"
 
 D3DXVECTOR3 pl;
 float plsize;

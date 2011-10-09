@@ -179,6 +179,7 @@
     <ClInclude Include="ffecfg.h" />
     <ClInclude Include="win\bass.h" />
     <ClInclude Include="win\ffe3d.h" />
+    <ClInclude Include="win\ffescr.h" />
     <ClInclude Include="win\Macros.h" />
     <ClInclude Include="win\misc.h" />
     <ClInclude Include="win\planet.h" />
