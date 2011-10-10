@@ -39,7 +39,8 @@
 #define CULL_CW					0x02
 #define CULL_CCW				0x03
 
-extern ModelInstance_t* GetInstance(int index, ModelInstance_t *list);
+extern ModelInstance_t *GetInstance(int index, ModelInstance_t *list);
+extern Model_t *GetModel(int index);
 
 struct CUSTOMVERTEX {
 	D3DXVECTOR3 p;	// позиция вершины

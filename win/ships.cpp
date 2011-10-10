@@ -147,7 +147,7 @@ extern "C" INT32 DoShipDamage(ModelInstance_t *ship, INT32 damage, INT8 bContinu
 	totalShields = ship->globalvars.max_shields;
 	hull = ship->mass_x4;
 	
-	ship_def = FUNC_001538_GetModelPtr(ship->model_num)->Shipdef_ptr;
+	ship_def = GetModel(ship->model_num)->Shipdef_ptr;
 	totalHull = ship_def->Mass * 4;
 	
 	oldHull = hull + HullDiff[idx];
@@ -304,7 +304,7 @@ extern "C" ModelInstance_t *AIChooseEquipment(ModelInstance_t *ship, INT32 shipT
 	ship->globalvars.laser_front = 0;
 	ship->globalvars.shields = ship->globalvars.max_shields = 0;
 
-	ship_def = FUNC_001538_GetModelPtr(ship->model_num)->Shipdef_ptr;
+	ship_def = GetModel(ship->model_num)->Shipdef_ptr;
 	hullMass = ship_def->Mass * 4;
 	spaceAvail = ship_def->Capacity;
 
@@ -469,7 +469,7 @@ extern "C" INT32 GetShipWorth(ModelInstance_t *ship)
 	
 	ShipDef_t *ship_def;
 
-	ship_def = FUNC_001538_GetModelPtr(ship->model_num)->Shipdef_ptr;
+	ship_def = GetModel(ship->model_num)->Shipdef_ptr;
 	shipCost = ship_def->Price * 900;	// used ship
 
 	driveType = ship_def->Drive;
@@ -525,7 +525,7 @@ extern "C" void RegenerateHull()
 	if (totalAlloys == 0)
 		return;
 
-	ship_def = FUNC_001538_GetModelPtr(ship->model_num)->Shipdef_ptr;
+	ship_def = GetModel(ship->model_num)->Shipdef_ptr;
 	maxHull = ship_def->Mass * 4;
 	
 	// hull regeneration rate here
@@ -564,7 +564,7 @@ extern "C" void RegenerateShields(ModelInstance_t *ship)
 	float sfArea, radius, volume, realGain;
 	ShipDef_t *ship_def;
 
-	ship_def = FUNC_001538_GetModelPtr(ship->model_num)->Shipdef_ptr;
+	ship_def = GetModel(ship->model_num)->Shipdef_ptr;
 
 	shipIdx = ship->index;
 	shields = ship->globalvars.shields;
@@ -608,7 +608,7 @@ extern "C" INT32 AIGetMissileToFire(ModelInstance_t *ship)
 	targetIdx = ship->dest_index;
 	target = GetInstance(targetIdx, DATA_ObjectArray);
 
-	ship_def = FUNC_001538_GetModelPtr(ship->model_num)->Shipdef_ptr;
+	ship_def = GetModel(ship->model_num)->Shipdef_ptr;
 	maxCargo = ship_def->Capacity;
 	maxHull = ship_def->Mass;
 	thrust = ship_def->ForwardThrust;
@@ -681,7 +681,7 @@ extern "C" INT32 GetBounty(ModelInstance_t *ship)
 	if (rand & 0x1)
 		return 0;
 
-	ship_def = FUNC_001538_GetModelPtr(ship->model_num)->Shipdef_ptr;
+	ship_def = GetModel(ship->model_num)->Shipdef_ptr;
 
 	cashFactor = 7*exp(ship_def->Price / -2000.0);
 	cashFactor = pow((rand&0x7fff)/32768.0, cashFactor);

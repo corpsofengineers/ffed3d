@@ -140,7 +140,7 @@ extern "C" ffeVertex* FUNC_001470_getVertex(void *a, int num);
 extern "C" ffeVertex* FUNC_001471(void *a, int num);
 extern "C" ffeVertex* FUNC_001472(void *a, int num);
 //extern "C" ModelInstance_t * FUNC_001532_GetModelInstancePtr(unsigned char, void *);
-extern "C" Model_t * FUNC_001538_GetModelPtr(int);
+//extern "C" Model_t * FUNC_001538_GetModelPtr(int);
 extern "C" void FUNC_001674_MatBuildOdd(void *, int, int);
 extern "C" void FUNC_001341_Int64ArithShift(__int64 *, int);
 extern "C" void FUNC_000574 (int *, __int64 *, void *, void *);

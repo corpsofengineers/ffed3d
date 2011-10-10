@@ -1725,8 +1725,6 @@ void VoidButton(int x, int y)
 	textSprite->Draw(voidbutton,&rectsize,NULL,&spos,0xFFFFFFFF);
 }
 
-extern "C" Model_t * FUNC_001538_GetModelPtr(int);
-
 extern void DrawClipSprite(int index, int x, int y, int z, int h, int w, float NPx1, float NPx2, float NPy1, float NPy2);
 
 extern "C" void ResetAviFrame(void)
@@ -1789,7 +1787,7 @@ void PreparePanel(void)
 	if (instance==NULL)
 		return;
 
-	model = FUNC_001538_GetModelPtr(instance->model_num);
+	model = GetModel(instance->model_num);
 
 	if (model->Shipdef_ptr==NULL)
 		return;

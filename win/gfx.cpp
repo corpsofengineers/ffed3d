@@ -52,7 +52,7 @@ extern "C" unsigned short* FUNC_GraphNull(void *a, void *b, short cmd);
 extern "C" unsigned short FUNC_001474_getRadius(void *a, int cmd);
 extern "C" int FUNC_000853_GetNumstars(int,int,int);
 //extern "C" unsigned char * FUNC_001532_GetModelInstancePtr(unsigned char, void *);
-extern "C" Model_t * FUNC_001538_GetModelPtr(int);
+//extern "C" Model_t * FUNC_001538_GetModelPtr(int);
 
 //extern "C" char *FUNC_001344_StringExpandFFCode(char *dest, int ffcode, StrVars *vars);
 //extern "C" char *FUNC_001345_StringExpandFF40Code(char *dest, int stridx);
@@ -5726,7 +5726,7 @@ extern "C" int C_Break(DrawMdl_t *drawModel, unsigned short *cmd)
 
     //planet = GetInstance (prevIndex, objectList);
 	//modelNum = *(unsigned short *)((char *)planet+0x82);
-   // planetModel = FUNC_001538_GetModelPtr ((int)modelNum);    
+   // planetModel = GetModel ((int)modelNum);    
 
 	
 	// for debug
@@ -5735,7 +5735,7 @@ extern "C" int C_Break(DrawMdl_t *drawModel, unsigned short *cmd)
 		ModelInstance_t *zaza;
 		Model_t *zazamodel;
 		zaza=GetInstance(*DATA_008874, instanceList);
-		zazamodel=FUNC_001538_GetModelPtr(zaza->model_num);
+		zazamodel=GetModel(zaza->model_num);
 
 		if (zaza==inst) {
 			sprintf(txt, "%f", dis);
