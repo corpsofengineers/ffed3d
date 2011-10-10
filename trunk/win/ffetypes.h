@@ -86,77 +86,62 @@ typedef union
 	u16 time;					// FIRST GLOBAL VAR, starTime >> 10
 	u16 landingState;			// VAR1:Starmap Display:10=Trade;80=Text; 
 								// 0 < <0x20 is cargo type; & 1: landing gear down
-	u32 unique_Id;
-	u16 num_stars_in_sector;	// GLOBAL[4]; may also be dword:forced scale?
-								// may also be:laser color selector
-	u8 TypeOfStar;				// for star sector model
-	u8 NumMultipleStar;			// for star sector model
-	u32 local_Startime;
-	u32 local_Stardate;
-	u16 ScaledWord_B0;			// planet_t.orbitalradius
-	u16 ushort_B2;				// angle?
-	u16 ushort_B4;				// rotation value x shr 16?
-	u16 ushort_B6;				// rotation value y shr 16?
-								// current top thrust?
-	u16 ushort_B8;				// rotation value z shr 16?
-								// current side thrust?
-	u16 Current_Main_Thrust;
-	u16 Thrust_BC;				// = minus rear thrust from model
-	u16 Thrust_BE;				// = rear thrust from model
-								// planet: dword = orbit angle << 10h
-	u16 Thrust_C0;				// = minus rear thrust from model
-	u16 Thrust_C2;				// = rear thrust from model
-	u16 Max_Main_Thrust;
-	u16 Thrust_C6;				// = rear thrust from model
-								// planet_t.longitude
-	u8 BitwiseEquip_0;			// planet_t.rotspeed
-								// 04=Camera
-								// 20=Navigation Computer
-								// 40=Combat Computer
-	u8 BitwiseEquip_1;			// Also Traffic Control Busy flag #1
-								// FFh=Busy with Vipers
-								// 02=Missile Viewer
-								// 08=Chaff dispenser
-	u8 BitwiseEquip_2;			// 02=Cargo Bay Life Support
-								// 04=Scanner (draws the stalks)
-								// 08=(!? ECM? See Con_UpdateVariousButtons)
-								// 10=Fuel Scoop ??
-								// 20=Cargo Scoop ??
-								// 40=Radar mapper
-								// 80=Naval ECM
-								// Also Traffic Control Busy with model #
-	u8 BitwiseEquip_3;			// 01:Hyp.Analyser
-								// 04:Energy Bomb
-								// 40:Cargo scoop?
-								// planet_t.field_3f
-	u16 negative_equipment_bits;// [!!??] gets un-set when you get a camera
-								// planet_t.field42 (local rotation?)
-	u16 TurretRot_1;			// ?? cant be rite. For Starports: WORD num_landingpads
-	u8 current_hyperdrive;		// for starports: 1st of landing pads in use
-	u8 num_gunmountings;		// from model
-	u8 FrontGun;
-	u8 RearGun;
-	u8 TopTurretGun;			// in primitives: Ball Radius
-	u8 BottomTurretGun;
-	union 
-	{
-		struct
-		{
-			u8 missile_0;
-			u8 missile_1;
-			u8 missile_2;				// Also Traffic Control ready time?
-			u8 missile_3;
-			u8 missile_4;
-			u8 missile_5;
-			u8 missile_6;				// word:number of Vipers in starport
-			u8 missile_7;
-			u8 missile_8;				// Starport:dw 0 ->Launched Vipers
-			u8 missile_9;
+	u32 unique_Id;				// also used for random seed
+	u32 mass;					// mass (planets only?) ffp val
+	u32 local_Startime;			// creation time, tics
+	u32 local_Stardate;			// creation time, days (used for arrival/departure)
+	union {
+		// flying objects
+		struct {
+			u16 ScaledWord_B0;			// pitch rate	(x rotation)
+			u16 ushort_B2;				// roll rate	(z rotation)
+			u16 ushort_B4;				// yaw rate	(y rotation)
+			u16 ushort_B6;				// x accel rate
+			u16 ushort_B8;				// y accel rate
+			u16 Current_Main_Thrust;	// z accel rate
+			u16 Thrust_BC;				// main thruster accel
+			u16 Thrust_BE;				// retro thruster accel
+			u16 Thrust_C0;				// top thruster accel
+			u16 Thrust_C2;				// bottom thruster accel
+			u16 Max_Main_Thrust;		// right thruster accel
+			u16 Thrust_C6;				// left thruster accel
+			u32 equip;					// equipment flags
+			u32 dam_equip;				// damaged equipment flags
+			u8 drive;					// drive type
+			u8 num_gunmountings;		// number of gun mountings
+			u8 laser_front;				// front laser
+			u8 laser_rear;				// rear laser
+			u8 laser_top;				// top turret laser
+			u8 laser_bottom;			// bottom turret laser
+			u8 missiles[10];
+			u16 shields;
+			u16 max_shields;
 		};
-		u8 missiles[10];
+		// orbitals
+		struct {
+			u32	radius;
+			u16	velocity_x;
+			u16	velocity_y;
+			u16	velocity_z;
+			u32 angle_x;
+			u32 angle_y;
+			u32 angle_velocity;
+			u16 eccentricity;
+			u8 rotation_speed;
+			u8 docking_state;
+			u8 docking_obj_index;
+			u8 sysval1;					// set to 0x3f sysobj val
+			u16 orientation;
+			u16 pads;					// number of pads for starport
+			u8 docking_obj[8];			// first docked object index, starport only
+			u16 traffic_control;
+			u16 FOR_weighting;
+			u16 sysval2;				// 0xce * 8 + 8
+			u16 sysval3;				// 
+			u16 temp;					// temp in kelvin <0x116 => wind
+			u16 sysval4;
+		};
 	};
-	u16 shields;
-	u16 max_shields;
   };
   s16 raw[36];
 } GlobalVars;

@@ -256,7 +256,7 @@ extern "C" INT32 GetInitialFuel(ModelInstance_t *ship, INT8 driveType)
 	if (ship->object_type== 0xf4 || driveType == 0x1)
 		return 0;
 
-	driveType = ship->globalvars.current_hyperdrive;
+	driveType = ship->globalvars.drive;
 	randSeed = ship->globalvars.unique_Id;
 	
 	randSeed2 = randSeed = (randSeed << 16) | (randSeed >> 16);
@@ -301,7 +301,7 @@ extern "C" ModelInstance_t *AIChooseEquipment(ModelInstance_t *ship, INT32 shipT
 
 	ship->bounty = oldSystem;
 
-	ship->globalvars.FrontGun = 0;
+	ship->globalvars.laser_front = 0;
 	ship->globalvars.shields = ship->globalvars.max_shields = 0;
 
 	ship_def = FUNC_001538_GetModelPtr(ship->model_num)->Shipdef_ptr;
@@ -321,7 +321,7 @@ extern "C" ModelInstance_t *AIChooseEquipment(ModelInstance_t *ship, INT32 shipT
 	else if (shipType == 0xf)
 		driveType = 0x1;
 
-	ship->globalvars.current_hyperdrive = driveType;
+	ship->globalvars.drive = driveType;
 
 	usedWeight = DATA_DriveMasses[driveType];
 	spaceAvail -= usedWeight;
@@ -396,12 +396,12 @@ extern "C" ModelInstance_t *AIChooseEquipment(ModelInstance_t *ship, INT32 shipT
 			usedWeight = DATA_AILasers[i].weight;
 		}
 
-	ship->globalvars.FrontGun = laserID;
+	ship->globalvars.laser_front = laserID;
 
 	spaceUsed += usedWeight;
 	spaceAvail -= usedWeight;
 
-	ship->globalvars.BitwiseEquip_0 &= ~0x880000;
+	ship->globalvars.equip &= ~0x880000;
 
 	// install misc. equipment
 	// allow up to 50% of the remaining space.
@@ -410,13 +410,13 @@ extern "C" ModelInstance_t *AIChooseEquipment(ModelInstance_t *ship, INT32 shipT
 	
 	if (allowedWeight >= DATA_NECM_Weight)
 	{
-		ship->globalvars.BitwiseEquip_0 |= 0x800000;
+		ship->globalvars.equip |= 0x800000;
 		usedWeight = DATA_NECM_Weight;
 		allowedWeight -= DATA_NECM_Weight;
 	}
 	else if (allowedWeight >= DATA_ECM_Weight)
 	{
-		ship->globalvars.BitwiseEquip_0 |= 0x80000;
+		ship->globalvars.equip |= 0x80000;
 		usedWeight = DATA_ECM_Weight;
 		allowedWeight -= DATA_ECM_Weight;
 	}
@@ -426,7 +426,7 @@ extern "C" ModelInstance_t *AIChooseEquipment(ModelInstance_t *ship, INT32 shipT
 	// laser cooling booster
 	if (allowedWeight >= 5)
 	{
-		ship->globalvars.BitwiseEquip_0 |= 0x1;
+		ship->globalvars.equip |= 0x1;
 		usedWeight += 5;
 		allowedWeight -= 5;
 	}
@@ -581,7 +581,7 @@ extern "C" void RegenerateShields(ModelInstance_t *ship)
 
 	realGain = (float)DATA_FrameTime * SHIELD_REGEN_RATE * (maxShields / sfArea);	
 
-	if (ship->globalvars.BitwiseEquip_0 & 0x10000000)
+	if (ship->globalvars.equip & 0x10000000)
 		realGain *= 1.65;
 
 	shieldRechargeAccum[shipIdx] += realGain;
