@@ -87,7 +87,7 @@ extern "C" INT32 BBS_MakeSmugglerAd(starport_t *starport, bbsAdvert_t *slot)
 		return 0;
 
 	// use pseudorandom name, same all the time
-	starportObj = FUNC_001532_GetModelInstancePtr(starport->objectIdx, DATA_ObjectArray);
+	starportObj = GetInstance(starport->objectIdx, DATA_ObjectArray);
 	randSeed = starportObj->globalvars.unique_Id;
 	rand = (randSeed >> 0xf) | (randSeed << 0x11);
 

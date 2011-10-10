@@ -338,7 +338,8 @@ extern "C" void FUNC_000048_Unknown(INT32, INT32, INT32);
 extern "C" void FUNC_000034_Unknown(INT32, INT32);
 extern "C" INT32 FUNC_000035_GetSpecialShips(INT32);
 
-extern "C" ModelInstance_t * FUNC_001532_GetModelInstancePtr(u8 index, ModelInstance_t* objectArray);
+extern ModelInstance_t* GetInstance(int index, ModelInstance_t *list);
+//extern "C" ModelInstance_t * FUNC_001532_GetModelInstancePtr(u8 index, ModelInstance_t* objectArray);
 //extern "C" INT8* (*DATA_GetObjectFunc)(int objidx, INT8 *objectArray);	// finds object data
 
 // this function is unreliable, replace
