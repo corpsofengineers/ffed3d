@@ -187,12 +187,12 @@ extern "C" void StringBreak(char* c)
 	return;
 }
 
-extern "C" void MakeCargoString(SINT8 *cargoObj)
+extern "C" void MakeCargoString(ModelInstance_t *cargoObj)
 {
 	char *nameStr, newStr[40];
 	char *inStr, oldStr[40];
 
-	nameStr = cargoObj+0x124;
+	nameStr = (char*)&cargoObj->name;
 
 	inStr = strchr(nameStr, '(');
 
@@ -202,10 +202,10 @@ extern "C" void MakeCargoString(SINT8 *cargoObj)
 
 		strcpy(oldStr, nameStr); // get the beginning
 
-		sprintf(newStr, "%s(%d)", oldStr, INT16_AT(cargoObj+0x116));
+		sprintf(newStr, "%s(%d)", oldStr, cargoObj->cargoAmount);
 	}
 	else
-		sprintf(newStr, "%s (%d)", nameStr, INT16_AT(cargoObj+0x116));
+		sprintf(newStr, "%s (%d)", nameStr, cargoObj->cargoAmount);
 
 	newStr[19] = 0;
 	strncpy(nameStr, newStr, 20);
@@ -229,9 +229,10 @@ extern "C" INT32 CanBribe(INT32 maxFineAmt, INT32 fineAmt, INT32 policeIntegrity
 	return 0;
 }
 
-extern "C" INT32 IsStarportLocked(INT8 *starport)
+extern "C" INT32 IsStarportLocked(ModelInstance_t *starport)
 {
-	INT8 i, *base, baseIdx, specialID;
+	ModelInstance_t *base;
+	INT8 i, baseIdx, specialID;
 
 	// find a photography mission for this system.
 	for (i = 0; i < DATA_NumContracts; i++)
@@ -246,20 +247,21 @@ extern "C" INT32 IsStarportLocked(INT8 *starport)
 			continue;
 
 		baseIdx = DATA_ContractArray[i*52+0x1a];
-		base = DATA_GetObjectFunc(baseIdx, DATA_ObjectArray);
+		base = FUNC_001532_GetModelInstancePtr(baseIdx, DATA_ObjectArray);
 
 		// starports on the same planet as the base are locked down
-		if (INT8_AT(base+0x56) == INT8_AT(starport+0x56))
+		if (base->parent_index == starport->parent_index)
 			return 1;
 	}
 
 	return 0;
 }
 
-extern "C" INT8 *IsCloseToStarport(INT32 offenseIdx)
+extern "C" ModelInstance_t *IsCloseToStarport(INT32 offenseIdx)
 {
+	ModelInstance_t *starportObj, *nearestStarport;
 	SINT8 i;
-	INT8 *starportObj, starportIdx, dist, nearestDist, *nearestStarport;
+	INT8 starportIdx, dist, nearestDist;
 
 	nearestStarport = 0;
 	nearestDist = 255;
@@ -267,9 +269,9 @@ extern "C" INT8 *IsCloseToStarport(INT32 offenseIdx)
 	for (i = (DATA_NumStarports-1); i >= 0; i--)
 	{
 		starportIdx = DATA_StarportArray[i].objectIdx;
-		starportObj = DATA_GetObjectFunc(starportIdx, DATA_ObjectArray);
+		starportObj = FUNC_001532_GetModelInstancePtr(starportIdx, DATA_ObjectArray);
 
-		dist = starportObj[0x88];
+		dist = starportObj->dist;
 
 		if (dist <= nearestDist && !IsStarportLocked(starportObj))
 		{
@@ -315,7 +317,7 @@ extern "C" INT32 ModifyEquipmentPrice(INT32 in)
 extern "C" INT32 ShouldAllowAcceleration(INT32 accel)
 {
 	SINT8 i;
-	INT8 *obj;
+	ModelInstance_t *obj;
 
 	// OK to play or pause
 	if (accel <= 0)
@@ -326,9 +328,9 @@ extern "C" INT32 ShouldAllowAcceleration(INT32 accel)
 		if (INT8_AT(DATA_ObjectArray+i) == 0)
 			continue;
 
-		obj = DATA_GetObjectFunc(i, DATA_ObjectArray);
+		obj = FUNC_001532_GetModelInstancePtr(i, DATA_ObjectArray);
 
-		if (INT8_AT(obj+0xff) == 0x13 || (INT8_AT(obj+0x88) <= 14 && INT8_AT(obj+0xfe) == DATA_PlayerIndex && INT8_AT(obj+0xff) > 0 && INT8_AT(obj+0xff) <= 5))
+		if (obj->attackFlag == 0x13 || (obj->dist <= 14 && obj->destinationIndex == DATA_PlayerIndex && obj->attackFlag > 0 && obj->attackFlag <= 5))
 			return 0;
 	}
 

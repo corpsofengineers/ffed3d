@@ -1069,16 +1069,17 @@ extern "C" void Override_F871(INT32 id, INT32 *d1, INT32 *d2, INT32 *milActivity
 // for instance, Computers will probably be cheaper on an industrial world
 extern "C" void GetStarportSupply(starport_t *starport, INT8 *supply)
 {
-	INT8 *starportObj, *parentObj, worldPorts[ST_MAX];
+	ModelInstance_t *starportObj, *parentObj;
+	INT8 worldPorts[ST_MAX];
 	SINT32 effects[EF_MAX], numWorldPorts;
 
-	starportObj = DATA_GetObjectFunc(starport->objectIdx, DATA_ObjectArray);
-	parentObj = DATA_GetObjectFunc(INT8_AT(starportObj+0x56), DATA_ObjectArray);
+	starportObj = FUNC_001532_GetModelInstancePtr(starport->objectIdx, DATA_ObjectArray);
+	parentObj = FUNC_001532_GetModelInstancePtr(starportObj->parent_index, DATA_ObjectArray);
 
 	srand(INT16_AT(starport+0xa0));
 	memset(effects, 0, sizeof(effects));
 
-	AddPlanetEffects(INT8_AT(parentObj+0x82), INT32_AT(parentObj+0xa0), 1, effects, worldPorts, &numWorldPorts);
+	AddPlanetEffects(parentObj->model_num, parentObj->globalvars.unique_Id, 1, effects, worldPorts, &numWorldPorts);
 	
 	effects[EF_MINING] = (1.0 - DATA_CurrentPopulation/9.0)*effects[EF_INDUSTRY];
 	effects[EF_INDUSTRY] -= effects[EF_MINING];

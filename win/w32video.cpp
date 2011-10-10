@@ -1782,14 +1782,14 @@ void PreparePanel(void)
 {
 	LPDIRECT3DSURFACE9 texSurface, oldSurface, zSurface;
 	D3DXMATRIX mat;
-	char *instance;
+	ModelInstance_t *instance;
 	Model_t *model;
 
-	instance = (char*)*(int*)((int)DATA_008804+0xc8);
+	instance = *(ModelInstance_t**)((int)DATA_008804+0xc8);
 	if (instance==NULL)
 		return;
 
-	model = FUNC_001538_GetModelPtr(*(short*)((int)instance+0x82));
+	model = FUNC_001538_GetModelPtr(instance->model_num);
 
 	if (model->Shipdef_ptr==NULL)
 		return;
@@ -1838,16 +1838,16 @@ void PreparePanel(void)
 		if (model->Shipdef_ptr->Gunmountings < 3)
 			VoidButton(34+(7*52), 595);
 		// missile viewer
-		if ((*(int*)((int)instance+0xc8) & 0x200) == 0)
+		if ((instance->globalvars.BitwiseEquip_0 & 0x200) == 0)
 			VoidButton(34+(9*52), 595);
 		// combat computer
-		if ((*(int*)((int)instance+0xc8) & 0x40) == 0)
+		if ((instance->globalvars.BitwiseEquip_0 & 0x40) == 0)
 			VoidButton(34+(10*52), 595);
 		// escape capsule
-		if ((*(int*)((int)instance+0xc8) & 0x8) == 0 && (*(int*)((int)instance+0xc8) & 0x8000000) == 0)
+		if ((instance->globalvars.BitwiseEquip_0 & 0x8) == 0 && (instance->globalvars.BitwiseEquip_0 & 0x8000000) == 0)
 			VoidButton(34+(11*52), 595);
 		// navigation computer
-		if ((*(int*)((int)instance+0xc8) & 0x20) == 0)
+		if ((instance->globalvars.BitwiseEquip_0 & 0x20) == 0)
 			VoidButton(34+(12*52), 595);
 	} else if (panelnum == 1) {
 		// crew roster

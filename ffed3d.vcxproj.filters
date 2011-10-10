@@ -107,6 +107,9 @@
     <ClInclude Include="win\ffescr.h">
       <Filter>Source Files\win</Filter>
     </ClInclude>
+    <ClInclude Include="win\ffetypes.h">
+      <Filter>Source Files\win</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ffecfg.c">

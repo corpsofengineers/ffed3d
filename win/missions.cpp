@@ -877,7 +877,8 @@ extern "C" void MilitaryBaseInit(INT8 *base, INT8 *mission)
 
 extern "C" void SetBaseShipCounters()
 {
-	INT8 specialID, missionID, *obj, *mission, i;
+	ModelInstance_t *obj;
+	INT8 specialID, missionID, *mission, i;
 
 	// find photo/bombing mission and set base params.
 	for (mission = DATA_ContractArray, i = 0; i < DATA_NumContracts; i++, mission += 52)
@@ -891,7 +892,7 @@ extern "C" void SetBaseShipCounters()
 		if (INT32_AT(mission+6) != DATA_CurrentSystem)
 			continue;
 
-		obj = DATA_GetObjectFunc(INT8_AT(mission+0x1a), DATA_ObjectArray);
+		obj = FUNC_001532_GetModelInstancePtr(INT8_AT(mission+0x1a), DATA_ObjectArray);
 
 		if (obj != 0x0)
 		{
@@ -914,7 +915,8 @@ extern "C" void PlayerDocked()
 
 extern "C" void OnSystemInit()
 {
-	INT8 *obj, i, *starport;
+	ModelInstance_t *obj, *starport;
+	INT8 i;
 
 	DATA_LastAttackedIndex = 0;
 
@@ -929,11 +931,11 @@ extern "C" void OnSystemInit()
 		if (i == DATA_PlayerIndex)
 			continue;
 		
-		obj = DATA_GetObjectFunc(i, DATA_ObjectArray);
+		obj = FUNC_001532_GetModelInstancePtr(i, DATA_ObjectArray);
 
-		if (INT8_AT(obj+0xff) == 0x24)
+		if (obj->attackFlag == 0x24)
 		{
-			starport = DATA_GetObjectFunc(INT8_AT(obj+0xfe), DATA_ObjectArray);
+			starport = FUNC_001532_GetModelInstancePtr(obj->destinationIndex, DATA_ObjectArray);
 
 			if (IsStarportLocked(starport))
 				FUNC_000924_DestroyObject(obj, 0);
@@ -982,15 +984,16 @@ extern "C" void SpawnAssassins(INT32 ships, INT32 missionIdx, INT32 name)
 // called every second by a "+rontier" type object
 // returns 0 if a ship shouldn't be spawned, otherwise it
 // returns a pointer to the appropriate ship table
-extern "C" INT8 *MilitaryBaseTick(INT8 *base)
+extern "C" INT8 *MilitaryBaseTick(ModelInstance_t *base)
 {
-	INT8 maxShips, *shipArray, allegiance, *obj, specialID;
+	ModelInstance_t *obj;
+	INT8 maxShips, *shipArray, allegiance, specialID;
 	INT8 *mission, missionID;
 	INT16 *shipsLeft;
 	SINT32 numFreeSlots, i, numChildShips;
 
 	// too far away
-//	if (INT8_AT(base+0x88) > 0x26)
+//	if (base->dist > 0x26)
 //		return 0;
 	
 	// find the photo/bombing mission linked to this base.
@@ -1005,7 +1008,7 @@ extern "C" INT8 *MilitaryBaseTick(INT8 *base)
 		if (INT32_AT(mission+6) != DATA_CurrentSystem)
 			continue;
 
-		if (INT8_AT(mission+0x1a) == INT8_AT(base+0x86))
+		if (INT8_AT(mission+0x1a) == base->index_number)
 			break;
 	}
 
@@ -1044,8 +1047,8 @@ extern "C" INT8 *MilitaryBaseTick(INT8 *base)
 			numFreeSlots++;
 		else if (INT8_AT(DATA_ObjectArray+i) == 0x4f)
 		{
-			obj = DATA_GetObjectFunc(i, DATA_ObjectArray);
-			if (INT8_AT(obj+0x118) == 0xf5)
+			obj = FUNC_001532_GetModelInstancePtr(i, DATA_ObjectArray);
+			if (obj->ai == 0xf5)
 				numChildShips++;
 		}
 	}
@@ -1056,7 +1059,7 @@ extern "C" INT8 *MilitaryBaseTick(INT8 *base)
 	}
 
 	// shouldn't spawn when too far away
-	if (INT8_AT(base+0x88) >= 0x17)
+	if (base->dist >= 0x17)
 		return 0;
 
 	// go nuts...
@@ -1064,7 +1067,7 @@ extern "C" INT8 *MilitaryBaseTick(INT8 *base)
 
 	maxShips = missionDiffs[missionID].maxShips;
 	// don't spawn unrestricted unless the player is really close
-	if (INT8_AT(base+0x88) > 0x11 && numChildShips >= (maxShips*maxShips/2.0))
+	if (base->dist > 0x11 && numChildShips >= (maxShips*maxShips/2.0))
 		return 0;
 
 	if ((DATA_RandomizerFunc() & 0xff) < missionDiffs[missionID].shipFrequency)
@@ -1076,9 +1079,10 @@ extern "C" INT8 *MilitaryBaseTick(INT8 *base)
 // called when nuclear missile destroys base.
 // hurt all ships in radius, damage inversely proportional
 // to the square of the distance
-extern "C" void DoNukeDamage(INT8 *base)
+extern "C" void DoNukeDamage(ModelInstance_t *base)
 {
-	INT8 i, *obj, expDist;
+	ModelInstance_t *obj;
+	INT8 i, expDist;
 	float dist, temp, damage;
 
 	for (i = 0; i < 0x72; i++)
@@ -1087,26 +1091,26 @@ extern "C" void DoNukeDamage(INT8 *base)
 		{
 			if (i == DATA_PlayerIndex)
 			{
-				expDist = INT8_AT(base+0x88);
+				expDist = base->dist;
 				obj = DATA_PlayerObject;
 			}
 			else
 			{
-				obj = DATA_GetObjectFunc(i, DATA_ObjectArray);
-				expDist = abs((SINT16)INT8_AT(base+0x88) - (SINT16)INT8_AT(obj+0x88));
+				obj = FUNC_001532_GetModelInstancePtr(i, DATA_ObjectArray);
+				expDist = abs((SINT16)base->dist - (SINT16)obj->dist);
 			}
 
-			if (expDist < 16 && INT8_AT(obj+0x82) >= 4 && INT8_AT(obj+0x82) <= 0x47)
+			if (expDist < 16 && obj->model_num >= 4 && obj->model_num <= 0x47)
 			{
-				temp = (SINT64_AT(base+0x3e) - SINT64_AT(obj+0x3e)) / KM_DIST;
+				temp = (base->rel_pos.x - obj->rel_pos.x) / KM_DIST;
 				temp *= temp;
 				dist = temp;
 
-				temp = (SINT64_AT(base+0x46) - SINT64_AT(obj+0x46)) / KM_DIST;
+				temp = (base->rel_pos.y - obj->rel_pos.y) / KM_DIST;
 				temp *= temp;
 				dist += temp;
 
-				temp = (SINT64_AT(base+0x4e) - SINT64_AT(obj+0x4e)) / KM_DIST;
+				temp = (base->rel_pos.z - obj->rel_pos.z) / KM_DIST;
 				temp *= temp;
 				dist += temp;
 

@@ -83,12 +83,12 @@ INT32 PirateLevels[] =
 extern "C" float GetPopulationMult(starport_t *starport)
 {
 	SINT32 randSeed, randSeed2, rand;
-	INT8 *starportObj;
+	ModelInstance_t *starportObj;
 
 	if (DATA_NumStarports > 1)
 	{
-		starportObj = DATA_GetObjectFunc(starport->objectIdx, DATA_ObjectArray);
-		randSeed = INT32_AT(starportObj+0xa0);
+		starportObj = FUNC_001532_GetModelInstancePtr(starport->objectIdx, DATA_ObjectArray);
+		randSeed = starportObj->globalvars.unique_Id;
 	
 		randSeed2 = randSeed = (randSeed << 0x12) | (randSeed >> 0xe);
 
@@ -104,12 +104,12 @@ extern "C" float GetPopulationMult(starport_t *starport)
 extern "C" INT32 GetSupplyLevel(INT32 itemIdx, starport_t *starport)
 {
 	SINT32 randSeed, randSeed2, rand;
-	INT8 *starportObj;
+	ModelInstance_t *starportObj;
 
 	if (DATA_NumStarports > 1)
 	{
-		starportObj = DATA_GetObjectFunc(starport->objectIdx, DATA_ObjectArray);
-		randSeed = INT32_AT(starportObj+0xa0);
+		starportObj = FUNC_001532_GetModelInstancePtr(starport->objectIdx, DATA_ObjectArray);
+		randSeed = starportObj->globalvars.unique_Id;
 	
 		randSeed2 = randSeed = (randSeed << itemIdx) | (randSeed >> (32-itemIdx));
 
@@ -311,7 +311,7 @@ extern "C" INT32 GetCargoWeighting(INT32 idx, INT8 flags)
 
 // fills an array with the cargo stored in this ship.
 // *MUST RETURN THE SAME VALUE EVERY TIME*
-extern "C" void GetCargoAmounts(INT8 *ship, INT32 *cargoAmounts)
+extern "C" void GetCargoAmounts(ModelInstance_t *ship, INT32 *cargoAmounts)
 {
 	INT32 totalCargo;
 	INT32 amountToSpawn, objToSpawn;
@@ -322,7 +322,8 @@ extern "C" void GetCargoAmounts(INT8 *ship, INT32 *cargoAmounts)
 	SINT32 totalWeight, rand, randSeed, randSeed2;
 	INT32 d1, d2, d3, pirates, d5, traders, d7, government;
 	INT32 population, danger, c4;
-	INT8 *stockFlags, *pTemp;
+	INT8 *stockFlags;
+	ShipDef_t *ship_def;
 
 	if (ship == DATA_PlayerObject)
 	{
@@ -337,22 +338,21 @@ extern "C" void GetCargoAmounts(INT8 *ship, INT32 *cargoAmounts)
 		cargoAmounts[i] = 0;
 
 	// missiles have no cargo
-	if (INT8_AT(ship+0x82) <= 0xd)
+	if (ship->model_num <= 0xd)
 		return;
 
 	// police have nothing either
-	if (INT8_AT(ship+0x118) == 0xf4)
+	if (ship->ai == 0xf4)
 		return;
 
-	pTemp = (INT8*)DATA_GetStaticDataFunc( INT32_AT(ship+0x82) );
-	pTemp = (INT8*)VOIDPTR_AT (pTemp+0x38);
+	ship_def = FUNC_001538_GetModelPtr(ship->model_num)->Shipdef_ptr;
 
 	// preliminary: spawn fuel.
-	driveType = INT8_AT(pTemp+0x15);
+	driveType = ship_def->IntegralDrive;
 	if (driveType == 0x80)
-		driveType = INT8_AT(pTemp+0x14);
+		driveType = ship_def->Drive;
 
-	amountToSpawn = INT8_AT(ship+0x119);
+	amountToSpawn = ship->cargo_free_space;
 
 	// totalCargo = radioactives, amountToSpawn = fuel
 	if (driveType >= 0xa)
@@ -380,18 +380,18 @@ extern "C" void GetCargoAmounts(INT8 *ship, INT32 *cargoAmounts)
 		cargoAmounts[0x1d] += totalCargo;
 
 	// "professionals" don't carry cargo besides fuel
-	if (INT8_AT(ship+0x118) >= 0xf4 && INT8_AT(ship+0x118) <= 0xf7)
+	if (ship->ai >= 0xf4 && ship->ai <= 0xf7)
 		return; 
 
 	// get info on the last system docked at.
-	FUNC_000869_GetSystemData(INT32_AT(ship+0x11a), &d1, &d2, &d3, &pirates, &d5, &traders, &d7, &government);
-	FUNC_000870_GetSystemDataExt(INT32_AT(ship+0x11a), &stockFlags, &population, &danger, &c4);
+	FUNC_000869_GetSystemData(ship->destroyBonus, &d1, &d2, &d3, &pirates, &d5, &traders, &d7, &government);
+	FUNC_000870_GetSystemDataExt(ship->destroyBonus, &stockFlags, &population, &danger, &c4);
 
 	if (population < 3)
 		return;
 
 	// spawn real cargo now
-	amountToSpawn = (INT16_AT(ship+0x116) & 0x7fff); // internal capacity
+	amountToSpawn = (ship->cargo_free_space & 0x7fff); // internal capacity
 	
 	totalCargo = 0;
 	if (amountToSpawn > 0)
@@ -419,7 +419,7 @@ extern "C" void GetCargoAmounts(INT8 *ship, INT32 *cargoAmounts)
 			if (totalWeight == 0)
 				return;
 
-			randSeed = INT32_AT(ship+0xa0);
+			randSeed = ship->globalvars.unique_Id;
 	
 			randSeed2 = randSeed = (randSeed << i) | (randSeed >> (32-i));
 
@@ -442,7 +442,7 @@ extern "C" void GetCargoAmounts(INT8 *ship, INT32 *cargoAmounts)
 				j = 32;
 
 			cargoType = j;
-			randSeed = INT32_AT(ship+0xa0);
+			randSeed = ship->globalvars.unique_Id;
 	
 			randSeed2 = randSeed = (randSeed << (32-i)) | (randSeed >> i);
 
@@ -454,7 +454,7 @@ extern "C" void GetCargoAmounts(INT8 *ship, INT32 *cargoAmounts)
 				cargoToSpawn = rand & 0x7;
 			else
 			{
-				randSeed = INT32_AT(ship+0xa0);
+				randSeed = ship->globalvars.unique_Id;
 	
 				randSeed2 = randSeed = (randSeed << (32-i)) | (randSeed >> i);
 
@@ -482,12 +482,12 @@ extern "C" void GetCargoAmounts(INT8 *ship, INT32 *cargoAmounts)
 }
 
 // spawn cargo from a soon-to-be destroyed ship.
-extern "C" void DoSpawnCargo(INT8 *ship)
+extern "C" void DoSpawnCargo(ModelInstance_t *ship)
 {
 	INT8 *cargo_obj;
 	INT32 cargoAmounts[33], i;
 	INT16 hullMass, hullArmorPieces;
-	INT8 *pTemp;
+	ShipDef_t *ship_def;
 
 	GetCargoAmounts(ship, cargoAmounts);
 
@@ -497,9 +497,8 @@ extern "C" void DoSpawnCargo(INT8 *ship)
 			cargo_obj = FUNC_000926_SpawnCargo(0x8e00 + DATA_JettisonedCargoTypes[i], ship, cargoAmounts[i]);
 	}
 
-	pTemp = (INT8*)DATA_GetStaticDataFunc( INT32_AT(ship+0x82) );
-	pTemp = (INT8*)VOIDPTR_AT (pTemp+0x38);
-	hullMass = INT16_AT (pTemp+0x6);
+	ship_def = FUNC_001538_GetModelPtr(ship->model_num)->Shipdef_ptr;
+	hullMass = ship_def->Mass;
 
 	hullArmorPieces = sqrt((float)hullMass) / 8;
 	
@@ -524,13 +523,14 @@ extern "C" void DoSpawnCargo(INT8 *ship)
 
 extern "C" INT32 ShouldCatchSmuggler()
 {
-	INT8 starportIdx, *starportObj;
+	ModelInstance_t *starportObj;
+	INT8 starportIdx;
 	SINT32 randSeed, randSeed2, rand;
 
-	starportIdx = INT8_AT(DATA_PlayerObject+0xfe);
-	starportObj = DATA_GetObjectFunc(starportIdx, DATA_ObjectArray);
+	starportIdx = DATA_PlayerObject->destinationIndex;
+	starportObj = FUNC_001532_GetModelInstancePtr(starportIdx, DATA_ObjectArray);
 
-	randSeed = INT32_AT(starportObj+0xa0);
+	randSeed = starportObj->globalvars.unique_Id;
 	
 	randSeed2 = randSeed = (randSeed << 2) | (randSeed >> 30);
 
@@ -661,13 +661,13 @@ extern "C" void CreateMarketData(starport_t *starport)
 {
 	SINT8 i;
 	SINT32 avail, sqrDistFromCenter;
-	INT8 *starportObj;
+	ModelInstance_t *starportObj;
 	INT64 returnVal;
 	INT8 starportSupply[33];
 
 	GetStarportSupply(starport, starportSupply);
 
-	starportObj = DATA_GetObjectFunc(starport->objectIdx, DATA_ObjectArray);
+	starportObj = FUNC_001532_GetModelInstancePtr(starport->objectIdx, DATA_ObjectArray);
 	sqrDistFromCenter = GetSqrDistFromCenter(DATA_CurrentSystem) - 25;
 
 	for (i = 0; i <= 32; i++)
@@ -699,7 +699,7 @@ extern "C" void CreateMarketData(starport_t *starport)
 	
 	// decide whether this starport should have Bulk Carriers
 	// floating around it (is it an orbiting station?)
-	if (!(INT8_AT(starportObj+0x14c) & 0x20))
+	if (!(starportObj->flags_14C & 0x20))
 		starport->flags |= 0x10;
 	else
 		starport->flags &= ~0x10;
@@ -761,7 +761,7 @@ extern "C" void RefreshMarketData(starport_t *starport)
 }
 
 
-extern "C" INT32 RadarCargoDisplay(INT8 *ship, INT8 *vars)
+extern "C" INT32 RadarCargoDisplay(ModelInstance_t *ship, INT8 *vars)
 {
 	INT32 ypos, i;
 	INT32 cargoAmounts[33];
