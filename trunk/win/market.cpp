@@ -342,7 +342,7 @@ extern "C" void GetCargoAmounts(ModelInstance_t *ship, INT32 *cargoAmounts)
 		return;
 
 	// police have nothing either
-	if (ship->ai == 0xf4)
+	if (ship->object_type == 0xf4)
 		return;
 
 	ship_def = FUNC_001538_GetModelPtr(ship->model_num)->Shipdef_ptr;
@@ -352,7 +352,7 @@ extern "C" void GetCargoAmounts(ModelInstance_t *ship, INT32 *cargoAmounts)
 	if (driveType == 0x80)
 		driveType = ship_def->Drive;
 
-	amountToSpawn = ship->cargo_free_space;
+	amountToSpawn = ship->cargo_space;
 
 	// totalCargo = radioactives, amountToSpawn = fuel
 	if (driveType >= 0xa)
@@ -380,18 +380,18 @@ extern "C" void GetCargoAmounts(ModelInstance_t *ship, INT32 *cargoAmounts)
 		cargoAmounts[0x1d] += totalCargo;
 
 	// "professionals" don't carry cargo besides fuel
-	if (ship->ai >= 0xf4 && ship->ai <= 0xf7)
+	if (ship->object_type >= 0xf4 && ship->object_type <= 0xf7)
 		return; 
 
 	// get info on the last system docked at.
-	FUNC_000869_GetSystemData(ship->destroyBonus, &d1, &d2, &d3, &pirates, &d5, &traders, &d7, &government);
-	FUNC_000870_GetSystemDataExt(ship->destroyBonus, &stockFlags, &population, &danger, &c4);
+	FUNC_000869_GetSystemData(ship->bounty, &d1, &d2, &d3, &pirates, &d5, &traders, &d7, &government);
+	FUNC_000870_GetSystemDataExt(ship->bounty, &stockFlags, &population, &danger, &c4);
 
 	if (population < 3)
 		return;
 
 	// spawn real cargo now
-	amountToSpawn = (ship->cargo_free_space & 0x7fff); // internal capacity
+	amountToSpawn = (ship->cargo_space & 0x7fff); // internal capacity
 	
 	totalCargo = 0;
 	if (amountToSpawn > 0)
@@ -527,7 +527,7 @@ extern "C" INT32 ShouldCatchSmuggler()
 	INT8 starportIdx;
 	SINT32 randSeed, randSeed2, rand;
 
-	starportIdx = DATA_PlayerObject->destinationIndex;
+	starportIdx = DATA_PlayerObject->dest_index;
 	starportObj = FUNC_001532_GetModelInstancePtr(starportIdx, DATA_ObjectArray);
 
 	randSeed = starportObj->globalvars.unique_Id;
@@ -699,7 +699,7 @@ extern "C" void CreateMarketData(starport_t *starport)
 	
 	// decide whether this starport should have Bulk Carriers
 	// floating around it (is it an orbiting station?)
-	if (!(starportObj->flags_14C & 0x20))
+	if (!(starportObj->flags & 0x20))
 		starport->flags |= 0x10;
 	else
 		starport->flags &= ~0x10;

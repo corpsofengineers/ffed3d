@@ -5544,9 +5544,9 @@ extern "C" int C_Break(DrawMdl_t *drawModel, unsigned short *cmd)
 	}
 
 	// Локальный цвет модели
-	localColor[0]=inst->color.r;
-	localColor[1]=inst->color.g;
-	localColor[2]=inst->color.b;
+	localColor[0]=drawModel->localColor.r;
+	localColor[1]=drawModel->localColor.g;
+	localColor[2]=drawModel->localColor.b;
 
 	// Глобальные переменные модели
 	globalvar = inst->globalvars.raw;	

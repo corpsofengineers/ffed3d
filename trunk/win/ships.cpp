@@ -203,17 +203,17 @@ extern "C" INT32 DoShipDamage(ModelInstance_t *ship, INT32 damage, INT8 bContinu
 
 	if (hullAbsorb > 0)
 	{
-		ship->uchar_14E = 10;
+		ship->smoke_timeout = 10;
 		
-		vol = idx ? 0x7e00 : GetVol(ship->dist);
+		vol = idx ? 0x7e00 : GetVol(ship->dist_cam);
 		FUNC_001908_SoundPlaySampleLinVol(0x1d, (INT32)(vol * hullAbsorb) | 0x80000000);
 	}
 
 	if (shieldAbsorb > 0)
 	{
-		ship->flags_151 |= 0x1;
+		ship->laser_flags |= 0x1;
 		
-		vol = idx ? 0x7e00 : GetVol(ship->dist);
+		vol = idx ? 0x7e00 : GetVol(ship->dist_cam);
 		FUNC_001908_SoundPlaySampleLinVol(0x1c, (INT32)(vol * shieldAbsorb) | 0x80000000);
 	}
 
@@ -253,7 +253,7 @@ extern "C" INT32 GetInitialFuel(ModelInstance_t *ship, INT8 driveType)
 	SINT32 rand, randSeed, randSeed2;
 
 	// police have no fuel...
-	if (ship->ai == 0xf4 || driveType == 0x1)
+	if (ship->object_type== 0xf4 || driveType == 0x1)
 		return 0;
 
 	driveType = ship->globalvars.current_hyperdrive;
@@ -299,7 +299,7 @@ extern "C" ModelInstance_t *AIChooseEquipment(ModelInstance_t *ship, INT32 shipT
 		}
 	}
 
-	ship->destroyBonus = oldSystem;
+	ship->bounty = oldSystem;
 
 	ship->globalvars.FrontGun = 0;
 	ship->globalvars.shields = ship->globalvars.max_shields = 0;
@@ -316,7 +316,7 @@ extern "C" ModelInstance_t *AIChooseEquipment(ModelInstance_t *ship, INT32 shipT
 	if (shipType == 0xe)
 	{
 		driveType = 0x1;
-		ship->ai = 0xf4;	// police marking
+		ship->object_type = 0xf4;	// police marking
 	}
 	else if (shipType == 0xf)
 		driveType = 0x1;
@@ -344,7 +344,7 @@ extern "C" ModelInstance_t *AIChooseEquipment(ModelInstance_t *ship, INT32 shipT
 	// Bulk Carriers and other helpers are all about the cargo
 	if (shipType == 0xf)
 	{
-		ship->cargo_free_space = ship_def->Capacity - spaceUsed;
+		ship->cargo_space = ship_def->Capacity - spaceUsed;
 		return ship;
 	}
 
@@ -368,7 +368,7 @@ extern "C" ModelInstance_t *AIChooseEquipment(ModelInstance_t *ship, INT32 shipT
 	if (driveType == 0x1)
 		fuelSpace = 0.0;
 
-	ship->cargoAmount = fuelSpace;
+	ship->cargo_fuel = fuelSpace;
 	spaceAvail -= fuelSpace;
 	spaceUsed += fuelSpace;
 
@@ -445,9 +445,9 @@ extern "C" ModelInstance_t *AIChooseEquipment(ModelInstance_t *ship, INT32 shipT
 	spaceUsed += usedWeight;
 
 	if (ship_def->Capacity < spaceUsed || shipType == 0xe)
-		ship->cargo_free_space = 0;
+		ship->cargo_space = 0;
 	else
-		ship->cargo_free_space = ship_def->Capacity - spaceUsed;
+		ship->cargo_space = ship_def->Capacity - spaceUsed;
 
 	// equip missiles.
 
@@ -518,7 +518,7 @@ extern "C" void RegenerateHull()
 	oldAlloys = *metalAlloys;
 
 	// keep track with unused space
-	extraAlloys = ship->cargo_free_space;
+	extraAlloys = ship->cargo_space;
 
 	totalAlloys = (*metalAlloys)*ALLOY_MULT + extraAlloys;
 
@@ -566,7 +566,7 @@ extern "C" void RegenerateShields(ModelInstance_t *ship)
 
 	ship_def = FUNC_001538_GetModelPtr(ship->model_num)->Shipdef_ptr;
 
-	shipIdx = ship->index_number;
+	shipIdx = ship->index;
 	shields = ship->globalvars.shields;
 	maxShields = ship->globalvars.max_shields;
 
@@ -605,7 +605,7 @@ extern "C" INT32 AIGetMissileToFire(ModelInstance_t *ship)
 
 	float rMult;
 
-	targetIdx = ship->destinationIndex;
+	targetIdx = ship->dest_index;
 	target = FUNC_001532_GetModelInstancePtr(targetIdx, DATA_ObjectArray);
 
 	ship_def = FUNC_001538_GetModelPtr(ship->model_num)->Shipdef_ptr;
@@ -668,7 +668,7 @@ extern "C" INT32 GetBounty(ModelInstance_t *ship)
 	float cashFactor;
 	ShipDef_t *ship_def;
 	
-	if (ship->ai != 0xfb)
+	if (ship->object_type != 0xfb)
 		return 0;
 
 	randSeed = ship->globalvars.unique_Id;
@@ -721,21 +721,21 @@ extern "C" INT8 SpawnHostileGroup(INT8 ships, INT8 *shipArray, INT32 targetName,
 	if (shipObj == 0)
 		return 0;
 
-	shipObj->destinationIndex = DATA_PlayerIndex;
+	shipObj->dest_index = DATA_PlayerIndex;
 	FUNC_000702_Unknown(shipObj, 0x315000);
-	shipObj->attackFlag = 0x5;
-	shipObj->targetIndex = 0x0;
-	shipObj->ai = shipIDByte;
+	shipObj->ai_mode = 0x5;
+	shipObj->target_index = 0x0;
+	shipObj->object_type = shipIDByte;
 
 	if (targetName != 0)
 	{
-		shipObj->destroyBonus = targetName;
-		shipObj->cargoAmount |= 0x8000;
+		shipObj->bounty = targetName;
+		shipObj->cargo_fuel |= 0x8000;
 	}
 
-	FUNC_000048_Unknown(0x17, 0x0, shipObj->index_number);
+	FUNC_000048_Unknown(0x17, 0x0, shipObj->index);
 
-	parentShipIdx = shipObj->index_number;
+	parentShipIdx = shipObj->index;
 
 	// spawn the follower ships.
 	for (i = 1; i < ships; i++)
@@ -748,19 +748,19 @@ extern "C" INT8 SpawnHostileGroup(INT8 ships, INT8 *shipArray, INT32 targetName,
 		if (shipObj == 0)
 			return i;
 
-		shipObj->destinationIndex = parentShipIdx;
-		shipObj->attackFlag = 0xb;
-		shipObj->targetIndex = DATA_PlayerIndex;
-		shipObj->thrustPower++;
-		shipObj->ushort_102 = BoundRandom(2000) - 1000;
-		shipObj->ushort_106 = BoundRandom(2000) - 1000;
-		shipObj->ushort_104 = 0;
-		shipObj->ai = shipIDByte;
+		shipObj->dest_index= parentShipIdx;
+		shipObj->ai_mode = 0xb;
+		shipObj->target_index = DATA_PlayerIndex;
+		shipObj->thrust_power++;
+		shipObj->target_off_x = BoundRandom(2000) - 1000;
+		shipObj->target_off_z = BoundRandom(2000) - 1000;
+		shipObj->target_off_z = 0;
+		shipObj->object_type = shipIDByte;
 
 		if (targetName != 0)
 		{
-			shipObj->destroyBonus = targetName;
-			shipObj->cargoAmount |= 0x8000;
+			shipObj->bounty = targetName;
+			shipObj->cargo_fuel |= 0x8000;
 		}
 
 		
@@ -772,7 +772,7 @@ extern "C" INT8 SpawnHostileGroup(INT8 ships, INT8 *shipArray, INT32 targetName,
 			for (j = (i & 0xfe); j > 0; j--)
 				FUNC_001661_Vec64Add((INT64*)(shipObj+0x3e), tempVec); */
 
-		FUNC_000048_Unknown(0x17, 0x0, shipObj->index_number);
+		FUNC_000048_Unknown(0x17, 0x0, shipObj->index);
 	}
 
 	return ships;
