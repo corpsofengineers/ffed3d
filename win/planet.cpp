@@ -17,7 +17,7 @@ void Vec32to64 (__int64 *dst, int *src) {
 	dst[2] = (__int64)src[2];
 }
 
-extern "C" void C_PlaceStation (ModelInstance_t *starport, int lat, int lon, ModelInstance_t** objectList)
+extern "C" void C_PlaceStation (ModelInstance_t *starport, int lat, int lon, ModelInstance_t* objectList)
 {
 	__int64 vVector[3]; // один из трех векторов матрицы планеты
 	__int64 relPos[3]; // вектор из центра планеты

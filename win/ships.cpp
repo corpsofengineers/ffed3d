@@ -253,7 +253,7 @@ extern "C" INT32 GetInitialFuel(ModelInstance_t *ship, INT8 driveType)
 	SINT32 rand, randSeed, randSeed2;
 
 	// police have no fuel...
-	if (ship->object_type== 0xf4 || driveType == 0x1)
+	if (ship->object_type== OBJTYPE_POLICE || driveType == 0x1)
 		return 0;
 
 	driveType = ship->globalvars.drive;
@@ -316,7 +316,7 @@ extern "C" ModelInstance_t *AIChooseEquipment(ModelInstance_t *ship, INT32 shipT
 	if (shipType == 0xe)
 	{
 		driveType = 0x1;
-		ship->object_type = 0xf4;	// police marking
+		ship->object_type = OBJTYPE_POLICE;	// police marking
 	}
 	else if (shipType == 0xf)
 		driveType = 0x1;
@@ -401,7 +401,7 @@ extern "C" ModelInstance_t *AIChooseEquipment(ModelInstance_t *ship, INT32 shipT
 	spaceUsed += usedWeight;
 	spaceAvail -= usedWeight;
 
-	ship->globalvars.equip &= ~0x880000;
+	ship->globalvars.equip &= ~(EQUIP_ECM | EQUIP_NAVAL_ECM);
 
 	// install misc. equipment
 	// allow up to 50% of the remaining space.
@@ -410,13 +410,13 @@ extern "C" ModelInstance_t *AIChooseEquipment(ModelInstance_t *ship, INT32 shipT
 	
 	if (allowedWeight >= DATA_NECM_Weight)
 	{
-		ship->globalvars.equip |= 0x800000;
+		ship->globalvars.equip |= EQUIP_NAVAL_ECM;
 		usedWeight = DATA_NECM_Weight;
 		allowedWeight -= DATA_NECM_Weight;
 	}
 	else if (allowedWeight >= DATA_ECM_Weight)
 	{
-		ship->globalvars.equip |= 0x80000;
+		ship->globalvars.equip |= EQUIP_ECM;
 		usedWeight = DATA_ECM_Weight;
 		allowedWeight -= DATA_ECM_Weight;
 	}
@@ -426,7 +426,7 @@ extern "C" ModelInstance_t *AIChooseEquipment(ModelInstance_t *ship, INT32 shipT
 	// laser cooling booster
 	if (allowedWeight >= 5)
 	{
-		ship->globalvars.equip |= 0x1;
+		ship->globalvars.equip |= EQUIP_LASER_COOLING_BOOSTER;
 		usedWeight += 5;
 		allowedWeight -= 5;
 	}
@@ -581,7 +581,7 @@ extern "C" void RegenerateShields(ModelInstance_t *ship)
 
 	realGain = (float)DATA_FrameTime * SHIELD_REGEN_RATE * (maxShields / sfArea);	
 
-	if (ship->globalvars.equip & 0x10000000)
+	if (ship->globalvars.equip & EQUIP_ENERGY_BOOSTER)
 		realGain *= 1.65;
 
 	shieldRechargeAccum[shipIdx] += realGain;
@@ -668,7 +668,7 @@ extern "C" INT32 GetBounty(ModelInstance_t *ship)
 	float cashFactor;
 	ShipDef_t *ship_def;
 	
-	if (ship->object_type != 0xfb)
+	if (ship->object_type != OBJTYPE_PIRATE)
 		return 0;
 
 	randSeed = ship->globalvars.unique_Id;
@@ -701,7 +701,7 @@ extern "C" INT32 GetBounty(ModelInstance_t *ship)
 }
 
 // spawns hostile AI ships.
-extern "C" INT8 SpawnHostileGroup(INT8 ships, INT8 *shipArray, INT32 targetName, INT8 shipType, INT8 shipIDByte)
+extern "C" INT8 SpawnHostileGroup(INT8 ships, INT8 *shipArray, INT32 targetName, INT8 shipType, INT8 object_type)
 {
 	ModelInstance_t *shipObj;
 	INT8 parentShipIdx, i;
@@ -723,9 +723,9 @@ extern "C" INT8 SpawnHostileGroup(INT8 ships, INT8 *shipArray, INT32 targetName,
 
 	shipObj->dest_index = DATA_PlayerIndex;
 	FUNC_000702_Unknown(shipObj, 0x315000);
-	shipObj->ai_mode = 0x5;
+	shipObj->ai_mode = AI_PIRATE_PREPARE;
 	shipObj->target_index = 0x0;
-	shipObj->object_type = shipIDByte;
+	shipObj->object_type = object_type;
 
 	if (targetName != 0)
 	{
@@ -749,13 +749,13 @@ extern "C" INT8 SpawnHostileGroup(INT8 ships, INT8 *shipArray, INT32 targetName,
 			return i;
 
 		shipObj->dest_index= parentShipIdx;
-		shipObj->ai_mode = 0xb;
+		shipObj->ai_mode = AI_FORMATION;
 		shipObj->target_index = DATA_PlayerIndex;
 		shipObj->thrust_power++;
 		shipObj->target_off_x = BoundRandom(2000) - 1000;
 		shipObj->target_off_z = BoundRandom(2000) - 1000;
 		shipObj->target_off_z = 0;
-		shipObj->object_type = shipIDByte;
+		shipObj->object_type = object_type;
 
 		if (targetName != 0)
 		{

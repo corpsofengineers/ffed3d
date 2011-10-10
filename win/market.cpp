@@ -286,7 +286,7 @@ extern "C" void SpawnPirates(INT32 pirateLevel, INT32 bInitial)
 		if (numPirates < groupSize)
 			groupSize = numPirates;
 
-		numSpawned = SpawnHostileGroup(groupSize, 0, 0, 0xa, 0xfb);
+		numSpawned = SpawnHostileGroup(groupSize, 0, 0, 0xa, OBJTYPE_PIRATE);
 		if (numSpawned < (INT8)groupSize)
 			return;	// no more object handles
 
@@ -342,7 +342,7 @@ extern "C" void GetCargoAmounts(ModelInstance_t *ship, INT32 *cargoAmounts)
 		return;
 
 	// police have nothing either
-	if (ship->object_type == 0xf4)
+	if (ship->object_type == OBJTYPE_POLICE)
 		return;
 
 	ship_def = FUNC_001538_GetModelPtr(ship->model_num)->Shipdef_ptr;
@@ -380,7 +380,7 @@ extern "C" void GetCargoAmounts(ModelInstance_t *ship, INT32 *cargoAmounts)
 		cargoAmounts[0x1d] += totalCargo;
 
 	// "professionals" don't carry cargo besides fuel
-	if (ship->object_type >= 0xf4 && ship->object_type <= 0xf7)
+	if (ship->object_type >= OBJTYPE_POLICE && ship->object_type <= OBJTYPE_MERCENARY)
 		return; 
 
 	// get info on the last system docked at.

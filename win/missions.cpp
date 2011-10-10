@@ -933,7 +933,7 @@ extern "C" void OnSystemInit()
 		
 		obj = FUNC_001532_GetModelInstancePtr(i, DATA_ObjectArray);
 
-		if (obj->ai_mode == 0x24)
+		if (obj->ai_mode == AI_DOCKED_OR_LANDED)
 		{
 			starport = FUNC_001532_GetModelInstancePtr(obj->dest_index, DATA_ObjectArray);
 
@@ -1048,14 +1048,14 @@ extern "C" INT8 *MilitaryBaseTick(ModelInstance_t *base)
 		else if (INT8_AT(DATA_ObjectArray+i) == 0x4f)
 		{
 			obj = FUNC_001532_GetModelInstancePtr(i, DATA_ObjectArray);
-			if (obj->object_type == 0xf5)
+			if (obj->object_type == OBJTYPE_ARMY)
 				numChildShips++;
 		}
 	}
 
 	if (maxShips <= numFreeSlots && maxShips > 0)
 	{
-		*shipsLeft -= SpawnHostileGroup(BoundRandom(maxShips) + 1, shipArray, 0, 0x13, 0xf7);
+		*shipsLeft -= SpawnHostileGroup(BoundRandom(maxShips) + 1, shipArray, 0, 0x13, OBJTYPE_MERCENARY);
 	}
 
 	// shouldn't spawn when too far away
