@@ -79,7 +79,7 @@ _textColor:
 	dd DATA_007783
 _ambColor:
 	dd DATA_009252
-_model:
+_ffeModelList:
 	dd DATA_004681
 _instanceList:
 	dd DATA_009133	

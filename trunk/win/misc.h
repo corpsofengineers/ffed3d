@@ -1,5 +1,7 @@
 /* Common definitions used in new source */
 
+#include "ffetypes.h"
+
 #pragma warning ( disable: 4244 4133 4305 4761 )
 
 #define INT8 unsigned char
@@ -298,7 +300,7 @@ typedef struct
 #define NUM_ELEMENTS(a) (sizeof(a)/sizeof(a[0]))
 
 extern "C" INT32 (*DATA_RandomizerFunc)();	// randomizer
-extern "C" INT8* DATA_PlayerObject;
+extern "C" ModelInstance_t* DATA_PlayerObject;
 extern "C" stockitem_t DATA_StockData[0x20];
 extern "C" INT8 DATA_CargoFromShip[0x20];
 extern "C" laserdata_t DATA_AILasers[0x9];
@@ -306,7 +308,7 @@ extern "C" INT32 DATA_DriveMasses[];
 extern "C" INT32 DATA_ECM_Weight;
 extern "C" INT32 DATA_NECM_Weight;
 extern "C" INT8 DATA_AIMissiles[0x10];
-extern "C" INT8 *DATA_ObjectArray;
+extern "C" ModelInstance_t** DATA_ObjectArray;
 extern "C" INT8 DATA_FederalShips[16];
 extern "C" INT8 DATA_ImperialShips[16];
 extern "C" INT16 DATA_CurrentAllegiance;
@@ -319,7 +321,8 @@ extern "C" INT16 DATA_PlayerCargo[32];
 extern "C" INT32 DATA_PlayerCargoSpace;
 extern "C" INT8  DATA_LastJettisonedCargoIndex;
 extern "C" INT8  DATA_ExtendedUniverse;
-extern "C" void* (*DATA_GetStaticDataFunc)(int modelidx);	// finds ship static data
+extern "C" Model_t * FUNC_001538_GetModelPtr(int);
+//extern "C" void* (*DATA_GetStaticDataFunc)(int modelidx);	// finds ship static data
 extern "C" INT32* (*DATA_HasEquipmentFunc)(int unknown, INT8 *equip);	// finds ship static data
 extern "C" INT32 (*DATA_FixedRandomFunc)(int num, int *seed1, int *seed2); 
 extern "C" void (*DATA_DrawStringWrapShadowFunc)(INT32 ffcode, void *vars, INT32 col, INT32 xpos, INT32 ypos, INT32 wrapWidth);
@@ -327,15 +330,16 @@ extern "C" void (*DATA_DrawStringWrapShadowFunc)(INT32 ffcode, void *vars, INT32
 extern "C" void FUNC_001907_SoundPlaySampleLogVol(INT32 soundidx, INT32 logVol);
 extern "C" void FUNC_001908_SoundPlaySampleLinVol(INT32 soundidx, INT32 volume);		
 
-extern "C" INT32 FUNC_000952_DestroyEquip(INT8 *ship);
-extern "C" INT32 FUNC_000953_TakeDamage(INT8 *victim, INT32 damage, INT8 inflictorIdx, INT32 bContinuous);
+extern "C" INT32 FUNC_000952_DestroyEquip(ModelInstance_t *ship);
+extern "C" INT32 FUNC_000953_TakeDamage(ModelInstance_t *victim, INT32 damage, INT8 inflictorIdx, INT32 bContinuous);
 
 extern "C" void FUNC_000148_Unknown(INT32, INT32);
 extern "C" void FUNC_000048_Unknown(INT32, INT32, INT32);
 extern "C" void FUNC_000034_Unknown(INT32, INT32);
 extern "C" INT32 FUNC_000035_GetSpecialShips(INT32);
 
-extern "C" INT8* (*DATA_GetObjectFunc)(int objidx, INT8 *objectArray);	// finds object data
+extern "C" ModelInstance_t * FUNC_001532_GetModelInstancePtr(u8 index, ModelInstance_t** objectArray);
+//extern "C" INT8* (*DATA_GetObjectFunc)(int objidx, INT8 *objectArray);	// finds object data
 
 // this function is unreliable, replace
 //extern INT16 (*DATA_BoundRandom)(INT16 max);	// returns a number between 0 and max
@@ -385,8 +389,8 @@ extern "C" packageEntry_t DATA_PackageArray[60];
 
 // cargotype = 0x8e00 + type
 // returns pointer to cargo physobj.
-extern "C"  INT8* FUNC_000926_SpawnCargo(INT32 cargotype, INT8 *ship, INT32 cargoAmount);
-extern "C"  void FUNC_000924_DestroyObject(INT8 *object, INT8 inflictorIdx);
+extern "C"  INT8* FUNC_000926_SpawnCargo(INT32 cargotype, ModelInstance_t *ship, INT32 cargoAmount);
+extern "C"  void FUNC_000924_DestroyObject(ModelInstance_t *object, INT8 inflictorIdx);
 
 // gets amount of specified equipment type owned by ship
 extern "C"  INT32 FUNC_000392_GetEquipmentAmount(char *ship, INT32 equipIdx);
@@ -410,9 +414,9 @@ extern "C"  void FUNC_GetSysGenParams(sysGenParams_t *genParams, INT32 systemcod
 // gets a system of the opposing military power.
 // returns pop. level in eax, return value of F857 in ret
 extern "C"  INT32 FUNC_000625_FindOppositionSystem(INT32 *ret);
-extern "C"  INT8 *FUNC_000772_AIShipSpawn(INT32 type);
-extern "C"  void FUNC_000697_GetBounty(INT8 *ship, INT32 bountyLevel);
-extern "C"  void FUNC_000702_Unknown(INT8 *ship, INT32 v);
+extern "C"  ModelInstance_t *FUNC_000772_AIShipSpawn(INT32 type);
+extern "C"  void FUNC_000697_GetBounty(ModelInstance_t *ship, INT32 bountyLevel);
+extern "C"  void FUNC_000702_Unknown(ModelInstance_t *ship, INT32 v);
 extern "C"  void FUNC_000634_AddToShipyard(INT32 type, starport_t *starport, INT32 **shipyardPtr);
 extern "C"  void FUNC_000688_SpawnTraders();
 
@@ -459,7 +463,7 @@ extern "C" void SpawnAssassins(INT32 ships, INT32 missionIdx, INT32 name);
 
 extern "C" void CreateShips();
 extern "C" void RefreshShips();
-extern "C" INT32 GetInitialFuel(INT8 *ship, INT8 driveType);
+extern "C" INT32 GetInitialFuel(ModelInstance_t *ship, INT8 driveType);
 extern "C" INT32 GetNumFreeSlots();
-extern "C" INT32 IsStarportLocked(INT8 *starport);
+extern "C" INT32 IsStarportLocked(ModelInstance_t *starport);
 extern "C" void GetStarportSupply(starport_t *starport, INT8 *supply);

@@ -17,23 +17,19 @@ void Vec32to64 (__int64 *dst, int *src) {
 	dst[2] = (__int64)src[2];
 }
 
-extern "C" void C_PlaceStation (void *starport, int lat, int lon, void *objectList)
+extern "C" void C_PlaceStation (ModelInstance_t *starport, int lat, int lon, ModelInstance_t** objectList)
 {
 	__int64 vVector[3]; // один из трех векторов матрицы планеты
 	__int64 relPos[3]; // вектор из центра планеты
 	int dist; // дистанция
 	int scaleFactor;
 	int radius;
-	unsigned char *planet;
+	ModelInstance_t *planet;
 	Model_t *planetModel;
-	unsigned char prevIndex;
-	unsigned short modelNum;
 
 	// Получаем указатель на предыдущий объект старпорта, т.е. планету
-	prevIndex = *((unsigned char*)starport+0x56);
-    planet = FUNC_001532_GetModelInstancePtr (prevIndex, objectList);
-	modelNum = *(unsigned short *)((char *)planet+0x82);
-    planetModel = FUNC_001538_GetModelPtr ((int)modelNum);    
+	planet = FUNC_001532_GetModelInstancePtr (starport->parent_index, objectList);
+	planetModel = FUNC_001538_GetModelPtr(planet->model_num);    
 
 	// field_2C он же unknown_2
 	radius = planetModel->field_2C - 1;                // parent "radius"
@@ -45,19 +41,19 @@ extern "C" void C_PlaceStation (void *starport, int lat, int lon, void *objectLi
 	// Vec3 = 0
 	// Предположительно, это максимально возможная позиция вверх (по Y)
 
-	// Передвигает координаты старпорта по широте и долготе
+	// Передвигает координаты старпорта по широте и долготе?
     FUNC_001674_MatBuildOdd (starport, lat, lon);
 
 	// Переводим 32-битные координаты старпорта в 64-битные
-    Vec32to64 (&vVector[0], (int*)starport+3);
+	vVector[0] = starport->rotMatrix._21;
+	vVector[1] = starport->rotMatrix._22;
+	vVector[2] = starport->rotMatrix._23;
 
 	// Часть А, снижаем старпорт до радиуса планеты
 	// relPos - позиция старпорта относительно центра планеты
-
-
-	relPos[0] = vVector[0]*radius;
-	relPos[1] = vVector[1]*radius;
-	relPos[2] = vVector[2]*radius;
+	relPos[0] = vVector[0] * radius;
+	relPos[1] = vVector[1] * radius;
+	relPos[2] = vVector[2] * radius;
 
 	FUNC_001341_Int64ArithShift(&relPos[0], scaleFactor-0x1f);
 	FUNC_001341_Int64ArithShift(&relPos[1], scaleFactor-0x1f);
@@ -110,7 +106,7 @@ extern "C" void C_PlaceStation (void *starport, int lat, int lon, void *objectLi
 	FUNC_001341_Int64ArithShift(&relPos[1], scaleFactor-0x1f);
 	FUNC_001341_Int64ArithShift(&relPos[2], scaleFactor-0x1f);
 
-    memcpy ((char*)starport+0x3e, &relPos[0], 3*8 ); 
+	memcpy ((__int64*)&starport->rel_pos, relPos, 3*8 ); 
 }
 
 // Randomizer
@@ -273,7 +269,7 @@ extern "C" int C_FUNC_001479_doOrtoXY(int *orto_xy, ffeVector *vertex)
 }
 
 extern "C" int FUNC_001876(int, int, int, int, int, int, int, int, int, int, int, int);
-int C_FUNC_001876(int A8, int Ac, char *A10_ModelInstance_t, char *A14_DrawModel_t, int A18, ffeVector *CurrentPlanetPosition, ffePoint *CurrentPlanetMatrix, int A24_extra1, int A28_extra3, int A2c_extra2, int A30_rgbColor, int A34_flag);
+int C_FUNC_001876(int A8, int Ac, ModelInstance_t*, DrawMdl_t*, int A18, ffeVector *CurrentPlanetPosition, ffePoint *CurrentPlanetMatrix, int A24_extra1, int A28_extra3, int A2c_extra2, int A30_rgbColor, int A34_flag);
 
 extern "C" int FUNC_001874_DrawPlanet(unsigned char *DrawMdl, char *cmd)
 {
@@ -297,38 +293,38 @@ ffeVertex *vertex1ptr, *vertex2ptr, *vertex3ptr, *originptr;
 ffePoint center; 
 int diam;
 
-int C_FUNC_001874_DrawPlanet(char *DrawMdl, char *cmd)
+int C_FUNC_001874_DrawPlanet(DrawMdl_t *drawModel, char *cmd)
 {
 	char modOrigin, modv1, modv2, modv3;
 
 	// All vertexes returns transformated
 
 	modOrigin = *(cmd + 2);
-	if (DATA_009200[modOrigin/2].unknown6 == *(DrawMdl + 0xf0)) {
+	if (DATA_009200[modOrigin/2].unknown6 == drawModel->counter) {
 		originptr = &DATA_009200[modOrigin/2];
 	} else {
-		originptr = FUNC_001470_getVertex(DrawMdl, modOrigin);
+		originptr = FUNC_001470_getVertex(drawModel, modOrigin);
 	}
 
 	modv1 = *(cmd + 3);
 	if (DATA_009200[modv1/2].unknown6 != 0) {
 		vertex1ptr = &DATA_009200[modv1/2];
 	} else {
-		vertex1ptr = FUNC_001472(DrawMdl, modv1);
+		vertex1ptr = FUNC_001472(drawModel, modv1);
 	}
 
 	modv2 = *(cmd + 4);
 	if (DATA_009200[modv2/2].unknown6 != 0) {
 		vertex2ptr = &DATA_009200[modv2/2];
 	} else {
-		vertex2ptr = FUNC_001472(DrawMdl, modv2);
+		vertex2ptr = FUNC_001472(drawModel, modv2);
 	}
 
 	modv3 = *(cmd + 5);
 	if (DATA_009200[modv3/2].unknown6 != 0) {
 		vertex3ptr = &DATA_009200[modv3/2];
 	} else {
-		vertex3ptr = FUNC_001472(DrawMdl, modv3);
+		vertex3ptr = FUNC_001472(drawModel, modv3);
 	}
 
 	center.v1x = (vertex1ptr->x - originptr->x);
@@ -342,7 +338,7 @@ int C_FUNC_001874_DrawPlanet(char *DrawMdl, char *cmd)
 	center.v3z = (vertex3ptr->z - originptr->z);
 
 	//return FUNC_001876(0, 0, *(int *)(DrawMdl + 0x14c), (int)DrawMdl, (int)(cmd + 0xc), (int)&originptr->nx, (int)&center.v1x, (int)*(short *)(cmd + 6), (int)*(short *)(cmd + 10), (int)(*(short *)(cmd + 8) << 0x10), (int)*(short*)(cmd), 0);
-    return C_FUNC_001876(0, 0, (char *)*(int *)(DrawMdl + 0x14c), (char *)DrawMdl, (int)(cmd + 0xc), (ffeVector *)&originptr->nx, (ffePoint *)&center.v1x, (int)*(short *)(cmd + 6), (int)*(short *)(cmd + 10), (int)(*(short *)(cmd + 8) << 0x10), (int)*(short*)(cmd), 0);
+	return C_FUNC_001876(0, 0, drawModel->modelInstance, drawModel, (int)(cmd + 0xc), (ffeVector *)&originptr->nx, (ffePoint *)&center.v1x, (int)*(short *)(cmd + 6), (int)*(short *)(cmd + 10), (int)(*(short *)(cmd + 8) << 0x10), (int)*(short*)(cmd), 0);
 }
 
 extern int vertexNum;
@@ -571,7 +567,7 @@ void DrawCustomTriangle(Vect3f *p1, Vect3f *p2, Vect3f *p3, Vect3f *n1, Vect3f *
 
 int C_FUNC_001823(int *A8, short *Ac);
 
-int C_FUNC_001876(int A8, int Ac, char *A10_ModelInstance_t, char *A14_DrawModel_t, int A18, ffeVector *CurrentPlanetPosition, ffePoint *CurrentPlanetMatrix, int A24_extra1, int A28_extra3, int A2c_extra2, int A30_rgbColor, int A34_flag)
+int C_FUNC_001876(int A8, int Ac, ModelInstance_t *inst, DrawMdl_t *drawModel, int A18, ffeVector *CurrentPlanetPosition, ffePoint *CurrentPlanetMatrix, int A24_extra1, int A28_extra3, int A2c_extra2, int A30_rgbColor, int A34_flag)
 //  A8; // 0
 //  Ac; // 0
 //  A10_ModelInstance_t;
@@ -605,7 +601,7 @@ int C_FUNC_001876(int A8, int Ac, char *A10_ModelInstance_t, char *A14_DrawModel
 	memcpy (&faces[0], DATA_007893, 4*6*20);
 	memcpy (&array2[0], DATA_007894, 4*60);
 
-	unique_Id = *(int*)(A10_ModelInstance_t+0xa0);
+	unique_Id = inst->globalvars.unique_Id;
 
 	if (A34_flag != 0) { 
 		// ... not need for call from FUNC_001874
@@ -613,7 +609,7 @@ int C_FUNC_001876(int A8, int Ac, char *A10_ModelInstance_t, char *A14_DrawModel
 		*(int*)DATA_009285 = Ac;
 		*(int*)DATA_009284 = 16384; // 0x4000
 	} else {
-		scaleFactor = *(int*)(A14_DrawModel_t+0x148) - 8; 
+		scaleFactor = drawModel->actualScale - 8; 
 		if (scaleFactor < 0) {
 			A28_extra3 = A28_extra3 >> -scaleFactor;
 		} else {
@@ -700,7 +696,7 @@ int C_FUNC_001876(int A8, int Ac, char *A10_ModelInstance_t, char *A14_DrawModel
 	int counter = 0;
 	ffeVector *icosahedron = (ffeVector *)DATA_007892_Icosahedron; // икосаэдр
 	__int64 mv_x, mv_y, mv_z; // matrix vector column
-	ffeMatrix m;
+	ffeMatrix3x3 m;
 
 	m._11 = CurrentPlanetMatrix->v1x;
 	m._12 = CurrentPlanetMatrix->v1y;
@@ -773,7 +769,7 @@ int C_FUNC_001876(int A8, int Ac, char *A10_ModelInstance_t, char *A14_DrawModel
 			ebx = ebx + 1;
 		} while(ebx < 30);
 
-		ebp_28 = C_FUNC_001833(A14_DrawModel_t, dist1, A24_extra1, A34_flag);
+		ebp_28 = C_FUNC_001833(drawModel, dist1, A24_extra1, A34_flag);
 
 
 		if(A34_flag == 1) { //
@@ -1083,12 +1079,10 @@ extern "C" void FUNC_001715(int);
 extern "C" void FUNC_001716(int);
 extern "C" void FUNC_001847(int);
 
-int C_FUNC_001833(char *DrawModel_t, int dist, int extra1, int flag)
+int C_FUNC_001833(DrawMdl_t *drawModel, int dist, int extra1, int flag)
 {
     int		ebx;
 	int		ecx;
-
-
 
     ebx = (extra1 << 4) + (extra1 << 4) * 2 + (int)DATA_007843;
     if(flag != 0) {
@@ -1100,12 +1094,12 @@ int C_FUNC_001833(char *DrawModel_t, int dist, int extra1, int flag)
         *(int*)DATA_009281 = (int)FUNC_001716;
         *(int*)DATA_009282 = (int)FUNC_001847;
     }
-    ecx = (int)DrawModel_t != 0 ? *(int*)(DrawModel_t + 0x130) : 0; // alt_Scale
+	ecx = drawModel != 0 ? drawModel->actualScale : 0; // alt_Scale
     *(int*)DATA_009264 = 500000000 >> (unsigned char)ecx;
     *(int*)DATA_009270 = *(int*)ebx;
 	shiftCall = (char *(*)(int)) *(int*)((char*)ebx + 4); // pointer to func
     shiftCall(ebx);
-    *(int*)DATA_009261 = (int)DrawModel_t;
+    *(int*)DATA_009261 = (int)drawModel;
     return *(int*)((char*)ebx + 8);
 }
 

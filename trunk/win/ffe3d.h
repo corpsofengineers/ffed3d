@@ -1,8 +1,9 @@
 #include <vector>
+#include <process.h>
 #include "xmath.h"
 #include "XFile/Utility.h"
 #include "XFile/XfileEntity.h"
-#include <process.h>
+#include "ffetypes.h"
 
 #define MAXVERT	3000000
 
@@ -123,51 +124,6 @@ struct Triangle {
 	int p1,p2,p3;
 };
 
-struct ShipDef_t {
-    short ForwardThrust;
-    short RearThrust;
-    char  Gunmountings;
-    char  FuelScoop;
-    short Mass;
-    short Capacity;
-    short Price;
-    short Scale;
-    short Description;
-    short Crew;
-    short Missiles;
-    char  Drive;
-    char  IntegralDrive;
-    short EliteBonus;
-    short frontMount_x, frontMount_y, frontMount_z;
-    short backMount_x, backMount_y, backMount_z;
-    short leftMount_x, leftMount_y, leftMount_z;
-    short rightMount_x, rightMount_y, rightMount_z;
-};
-
-
-struct Model_t {
-    unsigned short * Mesh_ptr;
-    signed char *    Vertices_ptr;
-    int              NumVertices;
-    signed char *    Normals_ptr;
-    int              NumNormals;
-    int              Scale;
-    int              Scale2;
-    int              Radius;
-    int              Primitives;
-    char	         DefaultColorR;
-	char	         DefaultColorG;
-	char	         DefaultColorB;
-    char             padding;
-    int              field_28;
-    int              field_2C;
-    int              field_30;
-    unsigned short * Collision_ptr;
-    ShipDef_t *      Shipdef_ptr;
-    int              DefaultCharacter;
-    unsigned short * Character[1];
-};
-
 struct ffeVector {
 	int x, y, z;
 };
@@ -178,11 +134,6 @@ struct ffePoint {
 	int v3x, v3y, v3z; // 24, 28, 32
 };
 
-struct ffeMatrix {
-	__int64 _11, _12, _13;
-	__int64 _21, _22, _23;
-	__int64 _31, _32, _33;
-};
 /*
 struct ffeVertex {
 	short orto_x;	// 0				36

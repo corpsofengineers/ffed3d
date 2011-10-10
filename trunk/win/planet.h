@@ -139,7 +139,7 @@ int C_FUNC_001465_GetDist(ffeVector* A8);
 extern "C" ffeVertex* FUNC_001470_getVertex(void *a, int num);
 extern "C" ffeVertex* FUNC_001471(void *a, int num);
 extern "C" ffeVertex* FUNC_001472(void *a, int num);
-extern "C" unsigned char * FUNC_001532_GetModelInstancePtr(unsigned char, void *);
+extern "C" ModelInstance_t * FUNC_001532_GetModelInstancePtr(unsigned char, void *);
 extern "C" Model_t * FUNC_001538_GetModelPtr(int);
 extern "C" void FUNC_001674_MatBuildOdd(void *, int, int);
 extern "C" void FUNC_001341_Int64ArithShift(__int64 *, int);
@@ -184,7 +184,7 @@ extern "C" ffeVertex** FUNC_001820(void);
 ffeVertex** C_FUNC_001820_ArrayCreateNewElement(void);
 int C_FUNC_001821_ArrayRemoveElement(ffeVertex** A8);
 extern "C" int FUNC_001833(char *, int, int, int);
-int C_FUNC_001833(char *, int, int, int);
+int C_FUNC_001833(DrawMdl_t *, int, int, int);
 extern "C" void FUNC_001835(ffeVertex *, ffeVertex *, ffeVertex *, ffeVertex **, ffeVertex **, ffeVertex **, int, int, int, int, int);
 void C_FUNC_001835(ffeVertex *, ffeVertex *, ffeVertex *, ffeVertex **, ffeVertex **, ffeVertex **, int, int, int, int, int);
 

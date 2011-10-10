@@ -14,11 +14,6 @@
 #include "Render/RenderSystem.h"
 #include <GL/glu.h>
 
-#define u32 unsigned long
-#define int32 signed long
-#define u16 unsigned short
-#define u8 unsigned char
-
 #define N_0 0.0f
 #define N_1 1.0f
 #define WIDTH 640
@@ -50,9 +45,9 @@ extern "C" void* FUNC_001758_doMath(void *a, void *b, short cmd);
 extern "C" unsigned short* FUNC_001756_SkipIfBitClear(void *a, void *b, short cmd);
 extern "C" unsigned short* FUNC_001757_SkipIfBitSet(void *a, void *b, short cmd);
 extern "C" unsigned short* FUNC_001752_SkipIfNotVisible(void *a, void *b, short cmd);
-extern "C" unsigned short* C_FUNC_001752_SkipIfNotVisible(char *gptr, unsigned short *var2, unsigned short var1);
+extern "C" unsigned short* C_FUNC_001752_SkipIfNotVisible(DrawMdl_t *gptr, unsigned short *var2, unsigned short var1);
 extern "C" unsigned short* FUNC_001755_SkipIfVisible(void *a, void *b, short cmd);
-extern "C" unsigned short* C_FUNC_001755_SkipIfVisible(char *gptr, unsigned short *var2, unsigned short var1);
+extern "C" unsigned short* C_FUNC_001755_SkipIfVisible(DrawMdl_t *gptr, unsigned short *var2, unsigned short var1);
 extern "C" unsigned short* FUNC_GraphNull(void *a, void *b, short cmd);
 extern "C" unsigned short FUNC_001474_getRadius(void *a, int cmd);
 extern "C" int FUNC_000853_GetNumstars(int,int,int);
@@ -62,7 +57,7 @@ extern "C" Model_t * FUNC_001538_GetModelPtr(int);
 //extern "C" char *FUNC_001344_StringExpandFFCode(char *dest, int ffcode, StrVars *vars);
 //extern "C" char *FUNC_001345_StringExpandFF40Code(char *dest, int stridx);
 
-extern int C_FUNC_001874_DrawPlanet(char *DrawMdl, char *cmd);
+extern int C_FUNC_001874_DrawPlanet(DrawMdl_t *DrawMdl, char *cmd);
 
 #define _GLUfuncptr void(__stdcall*)(void)
 
@@ -130,7 +125,7 @@ extern xModel* objectList[500];
 
 extern "C" unsigned int **textColor;
 extern "C" unsigned char **ambColor;
-extern "C" void **model;
+extern "C" Model_t **ffeModelList;
 extern "C" void **textPool;
 extern "C" unsigned int **DATA_007824;
 
@@ -160,8 +155,8 @@ extern bool awaitingRender;
 
 struct Model_t *mod;
 
-char *gptr;
-char *iptr;
+DrawMdl_t* gptr;
+ModelInstance_t* iptr;
 unsigned short *gcmd;
 
 float expVert[3];
@@ -284,9 +279,9 @@ bool ExportMesh(int exp) {
 	return true;
 }
 
-char* C_GetModelInstancePtr(int indexNum, void *list)
+ModelInstance_t* C_GetModelInstancePtr(int indexNum, void *list)
 {
-	return (char*)(indexNum*338+(int)list+116);
+	return (ModelInstance_t*)(indexNum*338+(int)list+116);
 }
 
 int findVertex(Vect3f *curpoint) {
@@ -2183,18 +2178,9 @@ inline void getVertex(float *p, unsigned char num, float *origin, unsigned char 
 	}
 
 	if (currentModel<3) {
-		//p[0]+=getNormal(2).x*10;
-		//p[1]+=getNormal(2).y*10;
-		//p[2]+=getNormal(2).z*10;
-		if (currentModel<3 && (*(int *)(gptr+0xFC)==1902 || *(int *)(gptr+0xFC)==0xbe271aa0)) {
-			//p[0]*=-1;
-			//p[2]-=0.002f*sqrt(posMatrix[12]*posMatrix[12]+posMatrix[13]*posMatrix[13]+posMatrix[14]*posMatrix[14]);
-		} else {
-			//p[2]+=0.002f*sqrt(posMatrix[12]*posMatrix[12]+posMatrix[13]*posMatrix[13]+posMatrix[14]*posMatrix[14]);
-			p[0]+=0.01f;
-			p[1]+=0.01f;
-			p[2]+=0.01f;
-		}
+		p[0]+=0.01f;
+		p[1]+=0.01f;
+		p[2]+=0.01f;
 	}
 	if ((!currentTex && (currentColor.r==0 && currentColor.g==0 && currentColor.b==0)) || 
 		//currentTex==72 || 
@@ -2597,7 +2583,7 @@ float dist, radius;
 
 
 //	Смотри "The Frontier Galaxy VII.htm" от Jongware
-extern void drawModel(int num, float *origin, unsigned char orient, int scale)
+extern void sendToRender(int num, float *origin, unsigned char orient, int scale)
 {
 	int i,numpoly, n, m, startpoly;
 	float p1[3], p2[3], p3[3], p4[3];
@@ -2665,9 +2651,9 @@ extern void drawModel(int num, float *origin, unsigned char orient, int scale)
 	//localColor[0]=mod->DefaultColorR*17;
 	//localColor[1]=mod->DefaultColorG*17;
 	//localColor[2]=mod->DefaultColorB*17;
-	localColor[0]=*(gptr+0xF4);
-	localColor[1]=*(gptr+0xF5);
-	localColor[2]=*(gptr+0xF6);
+	localColor[0]=gptr->localColor.r;
+	localColor[1]=gptr->localColor.g;
+	localColor[2]=gptr->localColor.b;
 
 	if (localColor[0]==localColor[1]==localColor[2]) {
 		localColor[0]=mod->DefaultColorR;
@@ -3489,7 +3475,7 @@ extern void drawModel(int num, float *origin, unsigned char orient, int scale)
 			float radius2;
 			getVertex(p1, getByte(command, 2), origin, scale, orient);
 			getVertex(p2, getByte(command, 3), origin, scale, orient);
-			int scaleFactor = *(char*)((int)gptr+0x148);//(8-currentScale);
+			int scaleFactor = gptr->actualScale;//(8-currentScale);
 			int r1 = (unsigned char)getByte(command, 5);
 			int r2 = (unsigned char)getByte(command, 7);
 			radius = (float)(r1 << (scaleFactor/2))/DIVIDER;
@@ -4960,7 +4946,7 @@ void C_Galaxy(int a, int b, int c, int size) {
     } while(esi >= 0);
 }
 
-extern "C" unsigned short* C_FUNC_001752_SkipIfNotVisible(char *gptr, unsigned short *var2, unsigned short var1) 
+extern "C" unsigned short* C_FUNC_001752_SkipIfNotVisible(DrawMdl_t *gptr, unsigned short *var2, unsigned short var1) 
 {
 	if ((*var2 & 0x8000) == 0 || currentModel==235 || currentModel<3) {
 		return FUNC_001752_SkipIfNotVisible(gptr, var2, var1);
@@ -4969,7 +4955,7 @@ extern "C" unsigned short* C_FUNC_001752_SkipIfNotVisible(char *gptr, unsigned s
 	}
 }
 
-extern "C" unsigned short* C_FUNC_001755_SkipIfVisible(char *gptr, unsigned short *var2, unsigned short var1) 
+extern "C" unsigned short* C_FUNC_001755_SkipIfVisible(DrawMdl_t *gptr, unsigned short *var2, unsigned short var1) 
 {
 	//if ((*var2 & 0x8000) == 0 || currentModel==235) {
 		return FUNC_001755_SkipIfVisible(gptr, var2, var1);
@@ -5396,7 +5382,7 @@ bool inAtmo;
 float atmoW;
 float atmoR;
 
-void DrawAtmosphere(char *ptr, float c=1.0f) 
+void DrawAtmosphere(float c=1.0f) 
 {
 
 	return;
@@ -5421,10 +5407,10 @@ void DrawAtmosphere(char *ptr, float c=1.0f)
 		float dist=sqrtf(pos.x*pos.x+pos.y*pos.y+pos.z*pos.z);
 		float radius2=(float)(*(mod->Vertices_ptr+2)<<currentScale)/DIVIDER;
 		//radius2*=1.04f;
-
-		modelList[modelNum].lightPos.x=-(float)*(int*)(ptr+308)*1500;
-		modelList[modelNum].lightPos.y=-(float)*(int*)(ptr+312)*1500;
-		modelList[modelNum].lightPos.z=-(float)*(int*)(ptr+316)*1500;
+		
+		modelList[modelNum].lightPos.x=-(float)gptr->lpos.x * 1500;
+		modelList[modelNum].lightPos.y=-(float)gptr->lpos.y * 1500;
+		modelList[modelNum].lightPos.z=-(float)gptr->lpos.z * 1500;
 
 
 		modelList[modelNum].ambientR=currentAmbientR*17/2+128;//min(255,currentAmbientR*36);
@@ -5436,7 +5422,7 @@ void DrawAtmosphere(char *ptr, float c=1.0f)
 
 		if (currentModel!=445 && currentModel!=447 && currentModel!=449) {
 			if (dist>radius2*1.04f) {
-				scal=0.01f*(*(int*)(ptr+0x130));
+				scal=0.01f * gptr->scale2;
 				pposMatrix[12]*=scal;
 				pposMatrix[13]*=scal;
 				pposMatrix[14]*=scal;
@@ -5503,26 +5489,22 @@ bool PlanetWithLife(int modelNum)
 
 // Основная функция перехвата трехмерных объектов
 // Получает указатель на структуру DrawMdl_t. Смотри письмо от Jongware.
-extern "C" int C_Break(char *ptr, unsigned short *cmd)
+extern "C" int C_Break(DrawMdl_t *drawModel, unsigned short *cmd)
 {
 	FILE *pLog = NULL;
 	int i=0;
 	int curVer;
-	int objNum;
 	float scale1=1.0f;
 	float scale2=1.0f;
 	float radius2;
 	float dis;
 	unsigned int* oiList=(unsigned int*)*instanceList;
-	
+	ModelInstance_t* inst;
 
 	skipCurrentModel=false;
 	// На всякий пожарный
 	if (vertexNum>MAXVERT-3000)
 		return 0;
-
-	char *iPtr;
-	char *mod3D;
 
 	//if (subObject==false) {
 		for (int ii=0;ii<10;ii++)
@@ -5530,33 +5512,31 @@ extern "C" int C_Break(char *ptr, unsigned short *cmd)
 	//}
 
 
-	// Ссылка на список указателей на модели
-	mod = (Model_t *)*(int *)ptr;
+	// указатель на структуру Model_t. Смотри письмо от Jongware.
+	mod = drawModel->model3d;
 	// указатель на структуру ModelInstance_t. Смотри письмо от Jongware.
-	iPtr = (char *)*(int *)(ptr+0x14c);
-	// Когда-то была нужна
-	mod3D= (char *)*(int *)(iPtr+0);
+	inst = drawModel->modelInstance;
 
 	// Глобальные указатели
-	gptr=ptr;
-	iptr=iPtr;
+	gptr=drawModel;
+	iptr=inst;
 	gcmd=cmd;
 
 	t_DATA_007824 = *(unsigned int*)DATA_007824;
 
 	// Извращенский способ получить точный индекс модели
 	for(i=0;i<=465;i++) {
-		if (*(int *)ptr==*((int *)model+i)) {
-			objNum=i;
+		if (mod==*((Model_t**)ffeModelList+i)) {
+			currentModel=i;
 			break;
 		}
 	}
 
-	modelList[modelNum].landingGear=*(unsigned short *)(iPtr+158);
+	modelList[modelNum].landingGear=inst->globalvars.landingState;
 
-	mainObjectNum=*(unsigned short *)(iPtr+130);
+	mainObjectNum=inst->model_num;
 
-	if (mainObjectNum==objNum) {
+	if (mainObjectNum==currentModel) {
 		subObject=false;
 		mainModelNum=modelNum;
 	} else {
@@ -5564,12 +5544,15 @@ extern "C" int C_Break(char *ptr, unsigned short *cmd)
 	}
 
 	// Локальный цвет модели
-	localColor[0]=*(ptr+244);
-	localColor[1]=*(ptr+245);
-	localColor[2]=*(ptr+246);
+	localColor[0]=inst->color.r;
+	localColor[1]=inst->color.g;
+	localColor[2]=inst->color.b;
+
+	// Глобальные переменные модели
+	globalvar = inst->globalvars.raw;	
 
 	// Локальные переменные модели
-	localvar=(int *)(ptr+0x54);
+	localvar = drawModel->localvars;
 
 	// Запоминаем состояние локальных переменных модели.
 	// Потом надо будет их вернуть.
@@ -5596,12 +5579,6 @@ extern "C" int C_Break(char *ptr, unsigned short *cmd)
 		*/
 	}
 
-	// Глобальные переменные модели
-	globalvar=(short *)(iPtr+156);	
-
-	// Текущая модель
-	currentModel=objNum;
-
 	float origin[3];
 	origin[0]=0;
 	origin[1]=0;
@@ -5610,39 +5587,26 @@ extern "C" int C_Break(char *ptr, unsigned short *cmd)
 	// rotate
 	// Получаем матрицу поворота модели
 	unsigned int dd=0x80009fff;
-	a=D3DXVECTOR3((float)((double)*(int*)(ptr+20)/dd),
-				  (float)((double)*(int*)(ptr+24)/dd),
-				  (float)((double)*(int*)(ptr+28)/dd));
-	b=D3DXVECTOR3((float)((double)*(int*)(ptr+32)/dd),
-				  (float)((double)*(int*)(ptr+36)/dd),
-				  (float)((double)*(int*)(ptr+40)/dd));
-	c=D3DXVECTOR3((float)((double)*(int*)(ptr+44)/dd),
-				  (float)((double)*(int*)(ptr+48)/dd),
-				  (float)((double)*(int*)(ptr+52)/dd));
-	//D3DXVec3Normalize(&a, &a);
-	//D3DXVec3Normalize(&b, &b);
-	//D3DXVec3Normalize(&c, &c);
+	mainRotMatrix._11=mainRotMatrixO._11=(float)((double)drawModel->rotMatrix._11/dd);
+	mainRotMatrix._12=mainRotMatrixO._12=(float)((double)drawModel->rotMatrix._12/dd);
+	mainRotMatrix._13=mainRotMatrixO._13=(float)((double)drawModel->rotMatrix._13/dd);
 
-	mainRotMatrix[0]=mainRotMatrixO[0]=a.x;
-	mainRotMatrix[1]=mainRotMatrixO[1]=a.y;
-	mainRotMatrix[2]=mainRotMatrixO[2]=a.z;
+	mainRotMatrix._21=mainRotMatrixO._21=(float)((double)drawModel->rotMatrix._21/dd);
+	mainRotMatrix._22=mainRotMatrixO._22=(float)((double)drawModel->rotMatrix._22/dd);
+	mainRotMatrix._23=mainRotMatrixO._23=(float)((double)drawModel->rotMatrix._23/dd);
 
-	mainRotMatrix[4]=mainRotMatrixO[4]=b.x;
-	mainRotMatrix[5]=mainRotMatrixO[5]=b.y;
-	mainRotMatrix[6]=mainRotMatrixO[6]=b.z;
+	mainRotMatrix._31=mainRotMatrixO._31=(float)((double)drawModel->rotMatrix._31/dd);
+	mainRotMatrix._32=mainRotMatrixO._32=(float)((double)drawModel->rotMatrix._32/dd);
+	mainRotMatrix._33=mainRotMatrixO._33=(float)((double)drawModel->rotMatrix._33/dd);
 
-	mainRotMatrix[8]=mainRotMatrixO[8]=c.x;
-	mainRotMatrix[9]=mainRotMatrixO[9]=c.y;
-	mainRotMatrix[10]=mainRotMatrixO[10]=c.z;
+	mainRotMatrix._41=mainRotMatrixO._41=0.0f;
+	mainRotMatrix._42=mainRotMatrixO._42=0.0f;
+	mainRotMatrix._43=mainRotMatrixO._43=0.0f;
 
-	mainRotMatrix[12]=mainRotMatrixO[12]=0.0f;
-	mainRotMatrix[13]=mainRotMatrixO[13]=0.0f;
-	mainRotMatrix[14]=mainRotMatrixO[14]=0.0f;
-
-	mainRotMatrix[3]=mainRotMatrixO[3]=0.0f;
-	mainRotMatrix[7]=mainRotMatrixO[7]=0.0f;
-	mainRotMatrix[11]=mainRotMatrixO[11]=0.0f;
-	mainRotMatrix[15]=mainRotMatrixO[15]=1.0f;
+	mainRotMatrix._14=mainRotMatrixO._14=0.0f;
+	mainRotMatrix._24=mainRotMatrixO._24=0.0f;
+	mainRotMatrix._34=mainRotMatrixO._34=0.0f;
+	mainRotMatrix._44=mainRotMatrixO._44=1.0f;
 
 	D3DXMatrixIdentity(&currentMatrix);
 	billboardMatrix=false;
@@ -5654,9 +5618,9 @@ extern "C" int C_Break(char *ptr, unsigned short *cmd)
 		//pos.y=(float)((*(int*)(ptr+8)<<*(int*)(ptr+0x130))>>8)/DIVIDER;
 		//pos.z=(float)((*(int*)(ptr+12)<<*(int*)(ptr+0x130))>>8)/DIVIDER;
 	//} else {
-		pos.x=(float)*(int*)(ptr+4)/DIVIDER;
-		pos.y=(float)*(int*)(ptr+8)/DIVIDER;
-		pos.z=(float)*(int*)(ptr+12)/DIVIDER;
+		pos.x=(float)drawModel->pos.x/DIVIDER;
+		pos.y=(float)drawModel->pos.y/DIVIDER;
+		pos.z=(float)drawModel->pos.z/DIVIDER;
 	//}
 
 	//pos.x=(float)*(int*)(iPtr+0x8C)/DIVIDER;
@@ -5719,9 +5683,9 @@ extern "C" int C_Break(char *ptr, unsigned short *cmd)
 	posMatrix[9]=0.0f;
 	posMatrix[10]=1.0f;
 
-	posMatrix[12]=mainModelCoord.x=pos.x*scale1;
-	posMatrix[13]=mainModelCoord.y=pos.y*scale1;
-	posMatrix[14]=mainModelCoord.z=pos.z*scale1;
+	posMatrix[12]=mainModelCoord.x=pos.x;
+	posMatrix[13]=mainModelCoord.y=pos.y;
+	posMatrix[14]=mainModelCoord.z=pos.z;
 
 	posMatrix[3]=0.0f;
 	posMatrix[7]=0.0f;
@@ -5751,44 +5715,43 @@ extern "C" int C_Break(char *ptr, unsigned short *cmd)
 //	if (modelconfig[mainObjectNum].skip)
 //		return 0;
 
-	if (subObject==true && objNum<3 && objectList[mainObjectNum]->config.notdrawtext)
+	if (subObject==true && currentModel<3 && objectList[mainObjectNum]->config.notdrawtext)
 		return 0;
 
-	if (subObject==true && objNum<3 && objectList[previousModel]->config.notdrawtext)
+	if (subObject==true && currentModel<3 && objectList[previousModel]->config.notdrawtext)
 		return 0;
 
 	//if (subObject==true && objNum>=3 && objectList[mainObjectNum]->config.notdrawsubmodels)
 	//	return 0;
 
-	if (subObject==true && objNum>=3 && objectList[previousModel]->config.notdrawsubmodels)
+	if (subObject==true && currentModel>=3 && objectList[previousModel]->config.notdrawsubmodels)
 		skipCurrentModel=true;
 
-	if (objNum>=233 && objNum<=235)
+	if (currentModel>=233 && currentModel<=235)
 		clearBeforeRender=true;
 
     //planet = FUNC_001532_GetModelInstancePtr (prevIndex, objectList);
 	//modelNum = *(unsigned short *)((char *)planet+0x82);
    // planetModel = FUNC_001538_GetModelPtr ((int)modelNum);    
-	char * zaza;
-	Model_t *zazamodel;
-	int zazaindex;
 
-	char txt[256];
-
+	
+	// for debug
 	if (0 && *DATA_008874!=0) {
+		char txt[256];
+		ModelInstance_t *zaza;
+		Model_t *zazamodel;
 		zaza=C_GetModelInstancePtr(*DATA_008874, oiList);
-		zazaindex=*(unsigned short *)((char *)zaza+0x82);
-		zazamodel=FUNC_001538_GetModelPtr(zazaindex);
+		zazamodel=FUNC_001538_GetModelPtr(zaza->model_num);
 
-		if (zaza==iptr) {
-		sprintf(txt, "%f", dis);
-		C_DrawText (&txt[0], 100, 100, 15, false, 0, 0, 20);
+		if (zaza==inst) {
+			sprintf(txt, "%f", dis);
+			C_DrawText (&txt[0], 100, 100, 15, false, 0, 0, 20);
 
-		sprintf(txt, "x: %i, y: %i, z: %i",*(int*)(ptr+4), *(int*)(ptr+8), *(int*)(ptr+12));
-		C_DrawText (&txt[0], 100, 110, 15, false, 0, 0, 20);
+			sprintf(txt, "x: %i, y: %i, z: %i",drawModel->pos.x, drawModel->pos.y, drawModel->pos.z);
+			C_DrawText (&txt[0], 100, 110, 15, false, 0, 0, 20);
 
-		sprintf(txt, "%i, %i",*(int*)(ptr+0x130), *(int*)(ptr+0x148));
-		C_DrawText (&txt[0], 100, 120, 15, false, 0, 0, 20);
+			sprintf(txt, "%i, %i",drawModel->scale2, drawModel->actualScale);
+			C_DrawText (&txt[0], 100, 120, 15, false, 0, 0, 20);
 
 		}
 
@@ -5837,17 +5800,17 @@ extern "C" int C_Break(char *ptr, unsigned short *cmd)
 	}
 */
 	// Получаем коэффициент ресайза модели
-	currentScale=*(int*)(ptr+0x148);
-	currentScale2=*(int*)(ptr+0x130);
+	currentScale = drawModel->actualScale;
+	currentScale2 = drawModel->scale2;
 
 	radius2=(float)(*(mod->Vertices_ptr+2)<<currentScale)/DIVIDER;
 
 	// Это планета. Добавим атмосферу (если в радиусе, то до планеты).	
 	if (PlanetWithLife(currentModel)) {
 		if (dis <= radius2*1.04f) {
-			DrawAtmosphere(ptr, 1.04f);
+			DrawAtmosphere(1.04f);
 			if (dis <= radius2*1.02f)
-				DrawAtmosphere(ptr, 1.02f);
+				DrawAtmosphere(1.02f);
 		}
 	}
 
@@ -5860,7 +5823,7 @@ extern "C" int C_Break(char *ptr, unsigned short *cmd)
 	modelList[modelNum].backsprite=false;
 	modelList[modelNum].cull=CULL_NONE;
 
-	if (objNum==315 || objNum==444)	{// galaxy background
+	if (currentModel==315 || currentModel==444)	{// galaxy background
 		modelList[modelNum].zwrite=false;
 		modelList[modelNum].material=GALAXY;
 		modelList[modelNum].cull=CULL_CCW;
@@ -5896,26 +5859,24 @@ extern "C" int C_Break(char *ptr, unsigned short *cmd)
 	modelList[modelNum].ambientG=currentAmbientG*32;
 	modelList[modelNum].ambientB=currentAmbientB*32;
 
-	modelList[modelNum].localR=*(unsigned char*)(ptr+0xf4)*32;
-	modelList[modelNum].localG=*(unsigned char*)(ptr+0xf5)*32;
-	modelList[modelNum].localB=*(unsigned char*)(ptr+0xf6)*32;
+	modelList[modelNum].localR=drawModel->localColor.r * 32;
+	modelList[modelNum].localG=drawModel->localColor.g * 32;
+	modelList[modelNum].localB=drawModel->localColor.b * 32;
 
 	// Получаем позицию источника света для текущей модели
-	modelList[modelNum].lightPos.x=-(float)*(int*)(ptr+308)*1500;
-	modelList[modelNum].lightPos.y=-(float)*(int*)(ptr+312)*1500;
-	modelList[modelNum].lightPos.z=-(float)*(int*)(ptr+316)*1500;
+	modelList[modelNum].lightPos.x=-(float)drawModel->lpos.x * 1500;
+	modelList[modelNum].lightPos.y=-(float)drawModel->lpos.y * 1500;
+	modelList[modelNum].lightPos.z=-(float)drawModel->lpos.z * 1500;
 
-
-
-	unsigned short mf;
-	int mn=0;
-	for (i=29;i<=33;i++) {
-		mf=globalvar[i];
-		modelList[modelNum].missile[mn]=mf>>8;
-		mn++;
-		modelList[modelNum].missile[mn]=mf&0xFF;
-		mn++;
-	}
+	//unsigned short mf;
+	//int mn=0;
+	//for (i=29;i<=33;i++) {
+	//	mf=globalvar[i];
+	//	modelList[modelNum].missile[mn]=mf>>8;
+	//	mn++;
+	//	modelList[modelNum].missile[mn]=mf&0xFF;
+	//	mn++;
+	//}
 	
 	// Текущая вершина
 	curVer=vertexNum;
@@ -5938,7 +5899,7 @@ extern "C" int C_Break(char *ptr, unsigned short *cmd)
 	if ((currentModel==186 || currentModel==187) && objectList[mainObjectNum]->Exist())
 		skipCurrentModel=true;
 
-	if (objNum==166) { // starmap grid
+	if (currentModel==166) { // starmap grid
 		//D3DXMatrixRotationX(&mainRotMatrix, 90*(3.14f/180));	
 		//D3DXMatrixIdentity(&mainRotMatrix);
 		int a=0;
@@ -5950,7 +5911,7 @@ extern "C" int C_Break(char *ptr, unsigned short *cmd)
 		//D3DXMatrixIdentity(&posMatrix);
 
 		if (currentModel!=445 && currentModel!=447 && currentModel!=449) {
-				scale2=*(int*)(ptr+0x130);
+				scale2=drawModel->scale2;
 				posMatrix[12]*=scale2;
 				posMatrix[13]*=scale2;
 				posMatrix[14]*=scale2;
@@ -6018,7 +5979,7 @@ extern "C" int C_Break(char *ptr, unsigned short *cmd)
 
 	// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!PARSING!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 	//if (skipCurrentModel==false) {
-		drawModel(objNum, origin, 0, 0);
+		sendToRender(currentModel, origin, 0, 0);
 	//}
 	// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 	
@@ -6056,14 +6017,14 @@ extern "C" int C_Break(char *ptr, unsigned short *cmd)
 	D3DXMATRIX rot;
 	D3DXMatrixIdentity(&rot);
 
-	if (objNum==166) { // starmap grid
+	if (currentModel==166) { // starmap grid
 		//D3DXMatrixRotationX(&mainRotMatrix, 90*(3.14f/180));	
 		//D3DXMatrixIdentity(&mainRotMatrix);
 	}
-	if (objNum==170) { // purple circle
+	if (currentModel==170) { // purple circle
 		//D3DXMatrixRotationX(&rot, 3.14f/2.0f);		
 	}
-	if (objNum==173) { // nebula
+	if (currentModel==173) { // nebula
 		//D3DXMatrixRotationY(&rot, 3.14f/2.0f);		
 	}
 	//if (currentModel<3 && (*(int *)(gptr+0xFC)==1902 || *(int *)(gptr+0xFC)==0xbe271aa0)) {
@@ -6074,7 +6035,7 @@ extern "C" int C_Break(char *ptr, unsigned short *cmd)
 	// end rotate patches
 
 	// effects rotation
-	if (objNum==329 || objNum==330 || objNum==331 || objNum==332) {
+	if (currentModel==329 || currentModel==330 || currentModel==331 || currentModel==332) {
 		D3DXMatrixRotationZ(&rot,  (float)(posMatrix[12] + posMatrix[13] + posMatrix[14])/50);
 	}
 	D3DXMatrixMultiply(&mainRotMatrix, &mainRotMatrix, &rot);
@@ -6130,7 +6091,7 @@ extern "C" int C_Break(char *ptr, unsigned short *cmd)
 	if ((currentModel>=125 && currentModel<=132) || currentModel==449) {
 		radius2=(float)(*(mod->Vertices_ptr+2)<<currentScale)/DIVIDER;
 		if (dis > radius2*1.04f) {
-			DrawAtmosphere(ptr, 1.04f);
+			DrawAtmosphere(1.04f);
 		}
 	}
 
