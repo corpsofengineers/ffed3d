@@ -35,7 +35,7 @@ extern "C" char *DATA_006821;
 extern "C" unsigned char *DATA_008874;
 extern "C" PANELCLICKAREA *DATA_007684;
 extern "C" int *DATA_008804; // game time
-extern "C" unsigned int *instanceList; // 0x006ab9c0
+extern "C" ModelInstance_t *instanceList; // 0x006ab9c0
 
 extern "C" ffeVertex* FUNC_001470_getVertex(void *a, int num);
 extern "C" ffeVertex* FUNC_001471(void *a, int num);
@@ -279,9 +279,9 @@ bool ExportMesh(int exp) {
 	return true;
 }
 
-ModelInstance_t* C_GetModelInstancePtr(int indexNum, void *list)
+ModelInstance_t* C_GetModelInstancePtr(int index, ModelInstance_t *list)
 {
-	return (ModelInstance_t*)(indexNum*338+(int)list+116);
+	return (ModelInstance_t*)((u32)list+sizeof(ModelInstance_t)*index+0x74);
 }
 
 int findVertex(Vect3f *curpoint) {
@@ -5498,7 +5498,6 @@ extern "C" int C_Break(DrawMdl_t *drawModel, unsigned short *cmd)
 	float scale2=1.0f;
 	float radius2;
 	float dis;
-	unsigned int* oiList=(unsigned int*)*instanceList;
 	ModelInstance_t* inst;
 
 	skipCurrentModel=false;
@@ -5740,7 +5739,7 @@ extern "C" int C_Break(DrawMdl_t *drawModel, unsigned short *cmd)
 		char txt[256];
 		ModelInstance_t *zaza;
 		Model_t *zazamodel;
-		zaza=C_GetModelInstancePtr(*DATA_008874, oiList);
+		zaza=C_GetModelInstancePtr(*DATA_008874, instanceList);
 		zazamodel=FUNC_001538_GetModelPtr(zaza->model_num);
 
 		if (zaza==inst) {
@@ -6159,7 +6158,6 @@ extern "C" void C_Break3(unsigned char *ptr) {
 	unsigned char *tmpInstance;
 	unsigned char prevIndex;
 	unsigned char *plptr=(unsigned char*)*(unsigned int*)DATA_008861;
-	unsigned int* oiList=(unsigned int*)*instanceList;
 	if (playerLightPosEnable==false)
 		D3DXMatrixIdentity(&lightRotMatrix);	
 	objNum=*(unsigned short *)(ptr+0x82);
@@ -6174,7 +6172,7 @@ extern "C" void C_Break3(unsigned char *ptr) {
 			//mMatrix();
 			while ((prevIndex = *((unsigned char*)objInstance+0x56))!=0) {				
 				prevIndex = *((unsigned char*)objInstance+0x56);
-				objInstance = FUNC_001532_GetModelInstancePtr (prevIndex, oiList);
+				objInstance = FUNC_001532_GetModelInstancePtr (prevIndex, instanceList);
 				v.x=-(double)*(__int64 *)(objInstance+0x3e)/DIVIDER;
 				v.y=-(double)*(__int64 *)(objInstance+0x46)/DIVIDER;
 				v.z=-(double)*(__int64 *)(objInstance+0x4e)/DIVIDER;

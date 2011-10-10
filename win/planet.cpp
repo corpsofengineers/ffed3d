@@ -16,6 +16,7 @@ void Vec32to64 (__int64 *dst, int *src) {
 	dst[1] = (__int64)src[1];
 	dst[2] = (__int64)src[2];
 }
+extern ModelInstance_t* C_GetModelInstancePtr(int index, ModelInstance_t *list);
 
 extern "C" void C_PlaceStation (ModelInstance_t *starport, int lat, int lon, ModelInstance_t* objectList)
 {
@@ -28,7 +29,8 @@ extern "C" void C_PlaceStation (ModelInstance_t *starport, int lat, int lon, Mod
 	Model_t *planetModel;
 
 	// Получаем указатель на предыдущий объект старпорта, т.е. планету
-	planet = FUNC_001532_GetModelInstancePtr (starport->parent_index, objectList);
+	//planet = FUNC_001532_GetModelInstancePtr (starport->parent_index, objectList);
+	planet = C_GetModelInstancePtr (starport->parent_index, objectList);
 	planetModel = FUNC_001538_GetModelPtr(planet->model_num);    
 
 	// field_2C он же unknown_2
