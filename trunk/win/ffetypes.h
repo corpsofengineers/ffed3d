@@ -300,83 +300,86 @@ struct DrawMdl_t {
 	u8 uchar15B;				// undefined
 };
 
-//Equipment flags (0xc8 dword in PhysObj):
-//
-//0x1			laser cooling booster
-//0x2			auto-refueller
-//0x4			military camera
-//0x8			escape capsule
-//0x10		?energy bomb?
-//0x20		navigation computer
-//0x40		combat computer
-//0x80		autotargeter
-//0x100
-//0x200		missile viewer
-//0x400		cargo scoop
-//0x800		chaff dispensor
-//0x10000
-//0x20000		cargo bay life support
-//0x40000		scanner
-//0x80000		ecm
-//0x100000	fuel scoop
-//0x200000	autopilot
-//0x400000	radar mapper
-//0x800000	naval ecm
-//0x1000000	HS cloud analyser
-//0x2000000
-//0x4000000	energy bomb
-//0x8000000	stowmaster
-//0x10000000	energy booster
-//0x20000000
-//0x40000000	atmos. shield
-//0x80000000	hull auto-repair system
+//Equipment flags
+#define EQUIP_LASER_COOLING_BOOSTER	0x1
+#define	EQUIP_AUTO_REFUELLER		0x2
+#define EQUIP_MILITARY_CAMERA		0x4
+#define EQUIP_ESCAPE_CAPSULE		0x8
+#define EQUIP_UNKNIWN4				0x10
+#define EQUIP_NAV_COMP				0x20
+#define EQUIP_COMBAT_COMP			0x40
+#define EQUIP_AUTOTARGETTER			0x80
+#define EQUIP_UNKNOWN1				0x100
+#define EQUIP_MISSILE_VIEWER		0x200
+#define EQUIP_CARGO_SCOOP			0x400
+#define EQUIP_CHAFF_DISPENSOR		0x800
+#define EQUIP_UNKNOWN2				0x10000
+#define EQUIP_CARGO_LIFE_SUPPORT	0x20000
+#define EQUIP_SCANNER				0x40000
+#define EQUIP_ECM					0x80000
+#define EQUIP_FUEL_SCOOP			0x100000
+#define EQUIP_AUTOPILOT				0x200000
+#define EQUIP_RADAR_MAPPER			0x400000
+#define EQUIP_NAVAL_ECM				0x800000
+#define EQUIP_HS_CLOUD_ANALYSER		0x1000000
+#define EQUIP_UNKNIWN3				0x2000000
+#define EQUIP_ENERGY_BOMB			0x4000000
+#define EQUIP_STOWMASTER			0x8000000
+#define EQUIP_ENERGY_BOOSTER		0x10000000
+#define EQUIP_UNKNOWN5				0x20000000
+#define EQUIP_ATMO_SHIELD			0x40000000
+#define EQUIP_HULL_AUTO_REPAIR		0x80000000
 
 // AI modes:
-//
-//0x0		Basic navigation mode
-//0x1		Attacking - turning towards
-//0x2		Attacking - firing
-//0x3		Attacking - turning away
-//0x4		Pirate interception
-//0x5		Transitional state to 0x4
-//0x6		Static?
-//0x7		travel to HS entry point
-//0x8 	HS exit routine
-//0x9		Bounty hunter interception
-//0xa		Patrol?
-//0xb		Formation navigation
-//0xc		Missile evasion?
-//0xd		Auxiliary ships around station
-//0xe
-//0xf
-//0x10
-//0x11	Delayed HS exit cloud
-//0x12	HS exit cloud
-//0x13	Missile
-//0x14	Mine
-//0x15	Smoking cargo
-//0x16	Normal cargo - abandoned ship?
-//0x17	Static cargo
-//0x18	Dies at small distance from player
-//0x19	Asteroid
-//0x1b	Space dust
-//0x1c	
-//0x1d	HS entrance cloud
-//0x1e	HS cloud remnant
-//0x1f	Request launch
-//0x20	Docked/landed - waiting for traffic control timeout
-//0x21	Launching
-//0x23	Docking/landing
-//0x24	Docked/landed
+#define AI_BASIC				0x0	// Basic navigation mode
+#define AI_ATTACK_FORWARD		0x1	// Attacking - turning towards
+#define AI_ATTACK_FIRING		0x2	// Attacking - firing
+#define AI_ATTACK_AWAY			0x3	// Attacking - turning away
+#define AI_PIRATE_INTERCEPT		0x4	// Pirate interception
+#define AI_PIRATE_PREPARE		0x5	// Transitional state to 0x4
+#define AI_STATIC				0x6	// Static?
+#define AI_TRAVEL_TO_HS			0x7	// travel to HS entry point
+#define AI_HS_EXIT_ROUTINE		0x8	// HS exit routine
+#define AI_INTERCEPT_BHUNTER	0x9	// Bounty hunter interception
+#define AI_PATROL				0xa	// Patrol?
+#define AI_FORMATION			0xb	// Formation navigation
+#define AI_MISSILE_EVASION		0xc	// Missile evasion?
+#define AI_AUX_SHIP				0xd	// Auxiliary ships around station
+#define AI_UNKNOWN1				0xe
+#define AI_UNKNOWN2				0xf
+#define AI_UNKNOWN3				0x10
+#define AI_HS_EXIT_DALAYED		0x11 // Delayed HS exit cloud
+#define AI_HS_EXIT_CLOUD		0x12 // HS exit cloud
+#define AI_MISSILE				0x13 // Missile
+#define AI_MINE					0x14 // Mine
+#define AI_CARGO_SMOKING		0x15 // Smoking cargo
+#define AI_CARGO_NORMAL			0x16 // Normal cargo - abandoned ship?
+#define AI_CARGO_STATIC			0x17 // Static cargo
+#define AI_SUICIDE				0x18 // Dies at small distance from player
+#define AI_ASTEROID				0x19 // Asteroid
+#define AI_SPACE_DUST			0x1b // Space dust
+#define AI_UNKNOWN4				0x1c	
+#define AI_HS_ENTRANCE_CLOUD	0x1d // HS entrance cloud
+#define AI_HS_CLOUD_REMNANT		0x1e // HS cloud remnant
+#define AI_REQUEST_LAUNCH		0x1f // Request launch
+#define AI_TRAFFIC_WAITING		0x20 // Docked/landed - waiting for traffic control timeout
+#define AI_LAUNCHING			0x21 // Launching
+#define AI_DOCKING_OR_LANDING	0x23 // Docking/landing
+#define AI_DOCKED_OR_LANDED		0x24 // Docked/landed
 
-//Object types:	Stores ship table index for non-pirate?
-//
-//0x1		ship after esc. capsule
-//0xfa	cargo
-//0xfb 	pirate
-//0xfd	missile
-//0xfe	HS cloud
-//0xff 	player
+//Object types
+#define OBJTYPE_CAPSULE			0x1
+#define OBJTYPE_POLICE			0xf4
+#define	OBJTYPE_ARMY			0xf5
+#define OBJTYPE_BOUNTY_HUNTER	0xf6
+#define OBJTYPE_MERCENARY		0xf7
+#define	OBJTYPE_CARGO			0xfa
+#define	OBJTYPE_PIRATE			0xfb
+#define	OBJTYPE_MISSILE			0xfd
+#define	OBJTYPE_HS_CLOUD		0xfe
+#define	OBJTYPE_PLAYER			0xff
+
+
 //
 //flags:
 //

@@ -330,7 +330,7 @@ extern "C" INT32 ShouldAllowAcceleration(INT32 accel)
 
 		obj = FUNC_001532_GetModelInstancePtr(i, DATA_ObjectArray);
 
-		if (obj->ai_mode == 0x13 || (obj->dist_cam <= 14 && obj->dest_index == DATA_PlayerIndex && obj->ai_mode > 0 && obj->ai_mode <= 5))
+		if (obj->ai_mode == AI_MISSILE || (obj->dist_cam <= 14 && obj->dest_index == DATA_PlayerIndex && obj->ai_mode > AI_BASIC && obj->ai_mode <= AI_PIRATE_PREPARE))
 			return 0;
 	}
 

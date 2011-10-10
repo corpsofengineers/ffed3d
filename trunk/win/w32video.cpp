@@ -1838,16 +1838,16 @@ void PreparePanel(void)
 		if (model->Shipdef_ptr->Gunmountings < 3)
 			VoidButton(34+(7*52), 595);
 		// missile viewer
-		if ((instance->globalvars.equip & 0x200) == 0)
+		if ((instance->globalvars.equip & EQUIP_MISSILE_VIEWER) == 0)
 			VoidButton(34+(9*52), 595);
 		// combat computer
-		if ((instance->globalvars.equip & 0x40) == 0)
+		if ((instance->globalvars.equip & EQUIP_COMBAT_COMP) == 0)
 			VoidButton(34+(10*52), 595);
 		// escape capsule
-		if ((instance->globalvars.equip & 0x8) == 0 && (instance->globalvars.equip & 0x8000000) == 0)
+		if ((instance->globalvars.equip & EQUIP_ESCAPE_CAPSULE) == 0 && (instance->globalvars.equip & EQUIP_STOWMASTER) == 0)
 			VoidButton(34+(11*52), 595);
 		// navigation computer
-		if ((instance->globalvars.equip & 0x20) == 0)
+		if ((instance->globalvars.equip & EQUIP_NAV_COMP) == 0)
 			VoidButton(34+(12*52), 595);
 	} else if (panelnum == 1) {
 		// crew roster

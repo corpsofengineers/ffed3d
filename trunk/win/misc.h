@@ -308,7 +308,7 @@ extern "C" INT32 DATA_DriveMasses[];
 extern "C" INT32 DATA_ECM_Weight;
 extern "C" INT32 DATA_NECM_Weight;
 extern "C" INT8 DATA_AIMissiles[0x10];
-extern "C" ModelInstance_t** DATA_ObjectArray;
+extern "C" ModelInstance_t* DATA_ObjectArray;
 extern "C" INT8 DATA_FederalShips[16];
 extern "C" INT8 DATA_ImperialShips[16];
 extern "C" INT16 DATA_CurrentAllegiance;
@@ -338,7 +338,7 @@ extern "C" void FUNC_000048_Unknown(INT32, INT32, INT32);
 extern "C" void FUNC_000034_Unknown(INT32, INT32);
 extern "C" INT32 FUNC_000035_GetSpecialShips(INT32);
 
-extern "C" ModelInstance_t * FUNC_001532_GetModelInstancePtr(u8 index, ModelInstance_t** objectArray);
+extern "C" ModelInstance_t * FUNC_001532_GetModelInstancePtr(u8 index, ModelInstance_t* objectArray);
 //extern "C" INT8* (*DATA_GetObjectFunc)(int objidx, INT8 *objectArray);	// finds object data
 
 // this function is unreliable, replace
