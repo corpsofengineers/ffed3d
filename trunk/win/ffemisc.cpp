@@ -247,7 +247,7 @@ extern "C" INT32 IsStarportLocked(ModelInstance_t *starport)
 			continue;
 
 		baseIdx = DATA_ContractArray[i*52+0x1a];
-		base = FUNC_001532_GetModelInstancePtr(baseIdx, DATA_ObjectArray);
+		base = GetInstance(baseIdx, DATA_ObjectArray);
 
 		// starports on the same planet as the base are locked down
 		if (base->parent_index == starport->parent_index)
@@ -269,7 +269,7 @@ extern "C" ModelInstance_t *IsCloseToStarport(INT32 offenseIdx)
 	for (i = (DATA_NumStarports-1); i >= 0; i--)
 	{
 		starportIdx = DATA_StarportArray[i].objectIdx;
-		starportObj = FUNC_001532_GetModelInstancePtr(starportIdx, DATA_ObjectArray);
+		starportObj = GetInstance(starportIdx, DATA_ObjectArray);
 
 		dist = starportObj->dist_cam;
 
@@ -328,7 +328,7 @@ extern "C" INT32 ShouldAllowAcceleration(INT32 accel)
 		if (INT8_AT(DATA_ObjectArray+i) == 0)
 			continue;
 
-		obj = FUNC_001532_GetModelInstancePtr(i, DATA_ObjectArray);
+		obj = GetInstance(i, DATA_ObjectArray);
 
 		if (obj->ai_mode == AI_MISSILE || (obj->dist_cam <= 14 && obj->dest_index == DATA_PlayerIndex && obj->ai_mode > AI_BASIC && obj->ai_mode <= AI_PIRATE_PREPARE))
 			return 0;
@@ -609,4 +609,9 @@ extern "C" INT32 GetNearbySystem(SINT8 bGetOpposing)
 	}
 
 	return 0;
+}
+
+ModelInstance_t* GetInstance(int index, ModelInstance_t *list)
+{
+	return (ModelInstance_t*)((u32)list+sizeof(ModelInstance_t)*index+0x74);
 }

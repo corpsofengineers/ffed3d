@@ -51,7 +51,7 @@ extern "C" unsigned short* C_FUNC_001755_SkipIfVisible(DrawMdl_t *gptr, unsigned
 extern "C" unsigned short* FUNC_GraphNull(void *a, void *b, short cmd);
 extern "C" unsigned short FUNC_001474_getRadius(void *a, int cmd);
 extern "C" int FUNC_000853_GetNumstars(int,int,int);
-extern "C" unsigned char * FUNC_001532_GetModelInstancePtr(unsigned char, void *);
+//extern "C" unsigned char * FUNC_001532_GetModelInstancePtr(unsigned char, void *);
 extern "C" Model_t * FUNC_001538_GetModelPtr(int);
 
 //extern "C" char *FUNC_001344_StringExpandFFCode(char *dest, int ffcode, StrVars *vars);
@@ -277,11 +277,6 @@ bool ExportMesh(int exp) {
 	remove(buf);
 
 	return true;
-}
-
-ModelInstance_t* C_GetModelInstancePtr(int index, ModelInstance_t *list)
-{
-	return (ModelInstance_t*)((u32)list+sizeof(ModelInstance_t)*index+0x74);
 }
 
 int findVertex(Vect3f *curpoint) {
@@ -5729,7 +5724,7 @@ extern "C" int C_Break(DrawMdl_t *drawModel, unsigned short *cmd)
 	if (currentModel>=233 && currentModel<=235)
 		clearBeforeRender=true;
 
-    //planet = FUNC_001532_GetModelInstancePtr (prevIndex, objectList);
+    //planet = GetInstance (prevIndex, objectList);
 	//modelNum = *(unsigned short *)((char *)planet+0x82);
    // planetModel = FUNC_001538_GetModelPtr ((int)modelNum);    
 
@@ -5739,7 +5734,7 @@ extern "C" int C_Break(DrawMdl_t *drawModel, unsigned short *cmd)
 		char txt[256];
 		ModelInstance_t *zaza;
 		Model_t *zazamodel;
-		zaza=C_GetModelInstancePtr(*DATA_008874, instanceList);
+		zaza=GetInstance(*DATA_008874, instanceList);
 		zazamodel=FUNC_001538_GetModelPtr(zaza->model_num);
 
 		if (zaza==inst) {
@@ -6106,7 +6101,6 @@ extern "C" void C_Break2() {
 }
 
 D3DXMATRIX tempRotMatrix;
-unsigned char *objInstance;
 
 void mMatrix(unsigned char* inst) {		
 	D3DXVECTOR3 a, b, c;
@@ -6155,31 +6149,29 @@ extern "C" void C_Break3(unsigned char *ptr) {
 	D3DXVECTOR3 a, b, c;
 	D3DXVECTOR3 v, v2;
 
-	unsigned char *tmpInstance;
+	ModelInstance_t *objInstance;
 	unsigned char prevIndex;
-	unsigned char *plptr=(unsigned char*)*(unsigned int*)DATA_008861;
+	ModelInstance_t *plptr=(ModelInstance_t*)*(ModelInstance_t**)DATA_008861;
+
 	if (playerLightPosEnable==false)
 		D3DXMatrixIdentity(&lightRotMatrix);	
-	objNum=*(unsigned short *)(ptr+0x82);
 
-	if (objNum>=138 && objNum<=148) {
+	if (plptr->model_num >= 138 && plptr->model_num <= 148) {
 		if (playerLightPosEnable==false) {
-			v2.x=-(double)*(__int64 *)(plptr+0x3e)/DIVIDER;
-			v2.y=-(double)*(__int64 *)(plptr+0x46)/DIVIDER;
-			v2.z=-(double)*(__int64 *)(plptr+0x4e)/DIVIDER;
+			v2.x=-(float)((double)(plptr->rel_pos.x)/DIVIDER);
+			v2.y=-(float)((double)(plptr->rel_pos.y)/DIVIDER);
+			v2.z=-(float)((double)(plptr->rel_pos.z)/DIVIDER);
 			
 			objInstance = plptr;
-			//mMatrix();
-			while ((prevIndex = *((unsigned char*)objInstance+0x56))!=0) {				
-				prevIndex = *((unsigned char*)objInstance+0x56);
-				objInstance = FUNC_001532_GetModelInstancePtr (prevIndex, instanceList);
-				v.x=-(double)*(__int64 *)(objInstance+0x3e)/DIVIDER;
-				v.y=-(double)*(__int64 *)(objInstance+0x46)/DIVIDER;
-				v.z=-(double)*(__int64 *)(objInstance+0x4e)/DIVIDER;
+
+			while (prevIndex = objInstance->parent_index != 0) {				
+				objInstance = GetInstance(prevIndex, instanceList);
+				v.x=-(float)((double)(objInstance->rel_pos.x)/DIVIDER);
+				v.y=-(float)((double)(objInstance->rel_pos.y)/DIVIDER);
+				v.z=-(float)((double)(objInstance->rel_pos.z)/DIVIDER);
 				v2.x+=v.x;
 				v2.y+=v.y;
 				v2.z+=v.z;
-				//mMatrix();
 			}
 			//
 			D3DXVec3Normalize(&v2, &v2);
@@ -6188,8 +6180,8 @@ extern "C" void C_Break3(unsigned char *ptr) {
 			playerLightPos.z=v2.z*100000;
 
 			//prevIndex = *((unsigned char*)plptr+0x56);
-			//plptr = FUNC_001532_GetModelInstancePtr (prevIndex, oiList);
-			mMatrix(plptr);
+			//plptr = GetInstance (prevIndex, oiList);
+			mMatrix((u8*)plptr);
 			//D3DXVec3Normalize(&playerLightPos, &playerLightPos);
 
 			D3DXVECTOR4 out;

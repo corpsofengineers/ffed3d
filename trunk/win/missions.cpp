@@ -892,7 +892,7 @@ extern "C" void SetBaseShipCounters()
 		if (INT32_AT(mission+6) != DATA_CurrentSystem)
 			continue;
 
-		obj = FUNC_001532_GetModelInstancePtr(INT8_AT(mission+0x1a), DATA_ObjectArray);
+		obj = GetInstance(INT8_AT(mission+0x1a), DATA_ObjectArray);
 
 		if (obj != 0x0)
 		{
@@ -931,11 +931,11 @@ extern "C" void OnSystemInit()
 		if (i == DATA_PlayerIndex)
 			continue;
 		
-		obj = FUNC_001532_GetModelInstancePtr(i, DATA_ObjectArray);
+		obj = GetInstance(i, DATA_ObjectArray);
 
 		if (obj->ai_mode == AI_DOCKED_OR_LANDED)
 		{
-			starport = FUNC_001532_GetModelInstancePtr(obj->dest_index, DATA_ObjectArray);
+			starport = GetInstance(obj->dest_index, DATA_ObjectArray);
 
 			if (IsStarportLocked(starport))
 				FUNC_000924_DestroyObject(obj, 0);
@@ -1047,7 +1047,7 @@ extern "C" INT8 *MilitaryBaseTick(ModelInstance_t *base)
 			numFreeSlots++;
 		else if (INT8_AT(DATA_ObjectArray+i) == 0x4f)
 		{
-			obj = FUNC_001532_GetModelInstancePtr(i, DATA_ObjectArray);
+			obj = GetInstance(i, DATA_ObjectArray);
 			if (obj->object_type == OBJTYPE_ARMY)
 				numChildShips++;
 		}
@@ -1096,7 +1096,7 @@ extern "C" void DoNukeDamage(ModelInstance_t *base)
 			}
 			else
 			{
-				obj = FUNC_001532_GetModelInstancePtr(i, DATA_ObjectArray);
+				obj = GetInstance(i, DATA_ObjectArray);
 				expDist = abs((SINT16)base->dist_cam - (SINT16)obj->dist_cam);
 			}
 

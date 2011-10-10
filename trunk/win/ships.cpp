@@ -606,7 +606,7 @@ extern "C" INT32 AIGetMissileToFire(ModelInstance_t *ship)
 	float rMult;
 
 	targetIdx = ship->dest_index;
-	target = FUNC_001532_GetModelInstancePtr(targetIdx, DATA_ObjectArray);
+	target = GetInstance(targetIdx, DATA_ObjectArray);
 
 	ship_def = FUNC_001538_GetModelPtr(ship->model_num)->Shipdef_ptr;
 	maxCargo = ship_def->Capacity;

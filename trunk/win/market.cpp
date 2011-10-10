@@ -87,7 +87,7 @@ extern "C" float GetPopulationMult(starport_t *starport)
 
 	if (DATA_NumStarports > 1)
 	{
-		starportObj = FUNC_001532_GetModelInstancePtr(starport->objectIdx, DATA_ObjectArray);
+		starportObj = GetInstance(starport->objectIdx, DATA_ObjectArray);
 		randSeed = starportObj->globalvars.unique_Id;
 	
 		randSeed2 = randSeed = (randSeed << 0x12) | (randSeed >> 0xe);
@@ -108,7 +108,7 @@ extern "C" INT32 GetSupplyLevel(INT32 itemIdx, starport_t *starport)
 
 	if (DATA_NumStarports > 1)
 	{
-		starportObj = FUNC_001532_GetModelInstancePtr(starport->objectIdx, DATA_ObjectArray);
+		starportObj = GetInstance(starport->objectIdx, DATA_ObjectArray);
 		randSeed = starportObj->globalvars.unique_Id;
 	
 		randSeed2 = randSeed = (randSeed << itemIdx) | (randSeed >> (32-itemIdx));
@@ -528,7 +528,7 @@ extern "C" INT32 ShouldCatchSmuggler()
 	SINT32 randSeed, randSeed2, rand;
 
 	starportIdx = DATA_PlayerObject->dest_index;
-	starportObj = FUNC_001532_GetModelInstancePtr(starportIdx, DATA_ObjectArray);
+	starportObj = GetInstance(starportIdx, DATA_ObjectArray);
 
 	randSeed = starportObj->globalvars.unique_Id;
 	
@@ -667,7 +667,7 @@ extern "C" void CreateMarketData(starport_t *starport)
 
 	GetStarportSupply(starport, starportSupply);
 
-	starportObj = FUNC_001532_GetModelInstancePtr(starport->objectIdx, DATA_ObjectArray);
+	starportObj = GetInstance(starport->objectIdx, DATA_ObjectArray);
 	sqrDistFromCenter = GetSqrDistFromCenter(DATA_CurrentSystem) - 25;
 
 	for (i = 0; i <= 32; i++)

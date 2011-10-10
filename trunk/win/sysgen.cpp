@@ -1073,8 +1073,8 @@ extern "C" void GetStarportSupply(starport_t *starport, INT8 *supply)
 	INT8 worldPorts[ST_MAX];
 	SINT32 effects[EF_MAX], numWorldPorts;
 
-	starportObj = FUNC_001532_GetModelInstancePtr(starport->objectIdx, DATA_ObjectArray);
-	parentObj = FUNC_001532_GetModelInstancePtr(starportObj->parent_index, DATA_ObjectArray);
+	starportObj = GetInstance(starport->objectIdx, DATA_ObjectArray);
+	parentObj = GetInstance(starportObj->parent_index, DATA_ObjectArray);
 
 	srand(INT16_AT(starport+0xa0));
 	memset(effects, 0, sizeof(effects));
