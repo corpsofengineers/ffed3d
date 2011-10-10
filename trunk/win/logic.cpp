@@ -175,26 +175,36 @@ int scriptSystem::setColor (lua_State *L)
 
 //LUA PUSHING METHODS
 
-void scriptSystem::newInteger (char *varName, int arg)
+void scriptSystem::newInteger (__int64 arg)
 {
-	lua_pushinteger (luaVM, arg); lua_setglobal (luaVM, varName);
+	lua_pushinteger (luaVM, arg);
 }
 
-void scriptSystem::newNumber (char* varName, float arg)
+void scriptSystem::newNumber (double arg)
 {
-	lua_pushnumber (luaVM, arg); lua_setglobal (luaVM, varName);
+	lua_pushnumber (luaVM, arg);
 }
 
-void scriptSystem::newString (char* varName, char* arg)
+void scriptSystem::newString (char* arg)
 {
-	lua_pushstring (luaVM, arg); lua_setglobal (luaVM, varName);
+	lua_pushstring (luaVM, arg);
 }
 
-void scriptSystem::newFunction (char* funcName, CFunction func)
+void scriptSystem::newBool (bool arg)
+{
+	lua_pushboolean (luaVM, arg);
+}
+
+void scriptSystem::newFunction (CFunction func)
 {
 	lua_CFunction luaFunc;
 	luaFunc = (lua_CFunction)func;
-	lua_pushcfunction (luaVM, luaFunc); lua_setglobal (luaVM, funcName);
+	lua_pushcfunction (luaVM, luaFunc);
+}
+
+void scriptSystem::registerVariable (char* varName)
+{
+	lua_setglobal (luaVM, varName);
 }
 
 void scriptSystem::newClass (void)
@@ -203,14 +213,14 @@ void scriptSystem::newClass (void)
 	_top = lua_gettop (luaVM);
 }
 
-void scriptSystem::newChildInteger (char* varName, int arg)
+void scriptSystem::newChildInteger (char* varName, __int64 arg)
 {
 	lua_pushstring (luaVM, varName);
 	lua_pushinteger (luaVM, arg);
 	lua_settable (luaVM, _top);
 }
 
-void scriptSystem::newChildNumber(char *varName, float arg)
+void scriptSystem::newChildNumber(char *varName, double arg)
 {
 	lua_pushstring (luaVM, varName);
 	lua_pushnumber (luaVM, arg);
@@ -221,6 +231,13 @@ void scriptSystem::newChildString(char *varName, char *arg)
 {
 	lua_pushstring (luaVM, varName);
 	lua_pushstring (luaVM, arg);
+	lua_settable (luaVM, _top);
+}
+
+void scriptSystem::newChildBool (char* varName, bool arg)
+{
+	lua_pushstring (luaVM, varName);
+	lua_pushboolean (luaVM, arg);
 	lua_settable (luaVM, _top);
 }
 
@@ -248,16 +265,23 @@ char* scriptSystem::getAsString (int arg_id)
 	return res;
 }
 
-int scriptSystem::getAsInteger (int arg_id)
+__int64 scriptSystem::getAsInteger (int arg_id)
 {
-	int res = lua_tointeger (luaVM, arg_id);
+	__int64 res = lua_tointeger (luaVM, arg_id);
 	return res;
 }
 
-float scriptSystem::getAsNumber (int arg_id)
+double scriptSystem::getAsNumber (int arg_id)
 {
-	float res = lua_tonumber (luaVM, arg_id);
+	double res = lua_tonumber (luaVM, arg_id);
 	return res;
+}
+
+int scriptSystem::getFunction (char* funcName)
+{
+	lua_getglobal (luaVM, funcName);
+	
+	return lua_isfunction (luaVM, -1);
 }
 
 char* scriptSystem::getParentAsString (char* varName)
@@ -269,16 +293,29 @@ char* scriptSystem::getParentAsString (char* varName)
 	return res;
 }
 
-int scriptSystem::getParentAsInteger (char* varName)
+__int64 scriptSystem::getParentAsInteger (char* varName)
 {
 	lua_getfield (luaVM, 1, varName);
-	int res = lua_tointeger (luaVM, -1);
+	__int64 res = lua_tointeger (luaVM, -1);
 	return res;
 }
 
-float scriptSystem::getParentAsNumber (char* varName)
+double scriptSystem::getParentAsNumber (char* varName)
 {
 	lua_getfield (luaVM, 1, varName);
-	float res = lua_tonumber (luaVM, -1);
+	double res = lua_tonumber (luaVM, -1);
 	return res;
+}
+
+int scriptSystem::getParenFunction (char* funcName)
+{
+	lua_getfield (luaVM, 1, funcName);
+
+	return lua_isfunction (luaVM, -1);
+}
+
+
+void scriptSystem::callFunction (int argCount, int result)
+{
+	lua_call (luaVM, argCount, result);
 }

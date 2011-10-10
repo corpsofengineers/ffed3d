@@ -1,5 +1,4 @@
 #include "lua/lua.hpp"
-#include <windows.h>
 
 typedef int (*CFunction) (void);
 
@@ -23,26 +22,33 @@ public:
 	static int setColor (lua_State *L);
 
 	//LUA PUSHING METHODS
-	void newInteger (char* varName, int arg);
-	void newNumber (char* varName, float arg);
-	void newString (char* varName, char* arg);
-	void newFunction (char* funcName, CFunction func);
+	void newInteger (__int64 arg);
+	void newNumber (double arg);
+	void newString (char* arg);
+	void newBool (bool arg);
+	void newFunction (CFunction func);
+	void registerVariable (char* varName);
 
 	void newClass (void);
-	void newChildInteger (char* varName, int arg);
-	void newChildNumber (char* varName, float arg);
+	void newChildInteger (char* varName, __int64 arg);
+	void newChildNumber (char* varName, double arg);
 	void newChildString (char* varName, char* arg);
+	void newChildBool (char* varName, bool arg);
 	void newChildFunction (char* funcName, CFunction arg);
 	void registerClass (char* className);
 
 	//LUA GET`SMETHOD
 	char* getAsString (int arg_id);
-	float getAsNumber (int arg_id);
-	int getAsInteger (int arg_id);
-
+	double getAsNumber (int arg_id);
+	__int64 getAsInteger (int arg_id);
+	int getFunction (char* funcName);
+	
 	char* getParentAsString (char* varName);
-	float getParentAsNumber (char* varName);
-	int getParentAsInteger (char* varName);
+	double getParentAsNumber (char* varName);
+	__int64 getParentAsInteger (char* varName);
+	int getParenFunction (char* funcName);
+
+	void callFunction (int argCount, int result);
 
 protected:
 	scriptSystem (void);

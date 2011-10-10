@@ -152,6 +152,8 @@ unsigned int __stdcall Thread1(void* p)
 	return 0;
 }
 
+extern void scrInit();
+
 int WINAPI WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	LPSTR lpCmdLine, int nCmdShow)
 {
@@ -165,6 +167,8 @@ int WINAPI WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	ticks = time.QuadPart;
 
 	_beginthreadex(NULL, 0, &Thread1, NULL, 0, NULL);
+
+	scrInit();
 
 	int res;
 
