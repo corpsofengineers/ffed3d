@@ -202,10 +202,10 @@ extern "C" void MakeCargoString(ModelInstance_t *cargoObj)
 
 		strcpy(oldStr, nameStr); // get the beginning
 
-		sprintf(newStr, "%s(%d)", oldStr, cargoObj->cargoAmount);
+		sprintf(newStr, "%s(%d)", oldStr, cargoObj->cargo_fuel);
 	}
 	else
-		sprintf(newStr, "%s (%d)", nameStr, cargoObj->cargoAmount);
+		sprintf(newStr, "%s (%d)", nameStr, cargoObj->cargo_fuel);
 
 	newStr[19] = 0;
 	strncpy(nameStr, newStr, 20);
@@ -271,7 +271,7 @@ extern "C" ModelInstance_t *IsCloseToStarport(INT32 offenseIdx)
 		starportIdx = DATA_StarportArray[i].objectIdx;
 		starportObj = FUNC_001532_GetModelInstancePtr(starportIdx, DATA_ObjectArray);
 
-		dist = starportObj->dist;
+		dist = starportObj->dist_cam;
 
 		if (dist <= nearestDist && !IsStarportLocked(starportObj))
 		{
@@ -330,7 +330,7 @@ extern "C" INT32 ShouldAllowAcceleration(INT32 accel)
 
 		obj = FUNC_001532_GetModelInstancePtr(i, DATA_ObjectArray);
 
-		if (obj->attackFlag == 0x13 || (obj->dist <= 14 && obj->destinationIndex == DATA_PlayerIndex && obj->attackFlag > 0 && obj->attackFlag <= 5))
+		if (obj->ai_mode == 0x13 || (obj->dist_cam <= 14 && obj->dest_index == DATA_PlayerIndex && obj->ai_mode > 0 && obj->ai_mode <= 5))
 			return 0;
 	}
 

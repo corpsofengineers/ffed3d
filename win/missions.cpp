@@ -933,9 +933,9 @@ extern "C" void OnSystemInit()
 		
 		obj = FUNC_001532_GetModelInstancePtr(i, DATA_ObjectArray);
 
-		if (obj->attackFlag == 0x24)
+		if (obj->ai_mode == 0x24)
 		{
-			starport = FUNC_001532_GetModelInstancePtr(obj->destinationIndex, DATA_ObjectArray);
+			starport = FUNC_001532_GetModelInstancePtr(obj->dest_index, DATA_ObjectArray);
 
 			if (IsStarportLocked(starport))
 				FUNC_000924_DestroyObject(obj, 0);
@@ -1008,7 +1008,7 @@ extern "C" INT8 *MilitaryBaseTick(ModelInstance_t *base)
 		if (INT32_AT(mission+6) != DATA_CurrentSystem)
 			continue;
 
-		if (INT8_AT(mission+0x1a) == base->index_number)
+		if (INT8_AT(mission+0x1a) == base->index)
 			break;
 	}
 
@@ -1048,7 +1048,7 @@ extern "C" INT8 *MilitaryBaseTick(ModelInstance_t *base)
 		else if (INT8_AT(DATA_ObjectArray+i) == 0x4f)
 		{
 			obj = FUNC_001532_GetModelInstancePtr(i, DATA_ObjectArray);
-			if (obj->ai == 0xf5)
+			if (obj->object_type == 0xf5)
 				numChildShips++;
 		}
 	}
@@ -1059,7 +1059,7 @@ extern "C" INT8 *MilitaryBaseTick(ModelInstance_t *base)
 	}
 
 	// shouldn't spawn when too far away
-	if (base->dist >= 0x17)
+	if (base->dist_cam >= 0x17)
 		return 0;
 
 	// go nuts...
@@ -1067,7 +1067,7 @@ extern "C" INT8 *MilitaryBaseTick(ModelInstance_t *base)
 
 	maxShips = missionDiffs[missionID].maxShips;
 	// don't spawn unrestricted unless the player is really close
-	if (base->dist > 0x11 && numChildShips >= (maxShips*maxShips/2.0))
+	if (base->dist_cam > 0x11 && numChildShips >= (maxShips*maxShips/2.0))
 		return 0;
 
 	if ((DATA_RandomizerFunc() & 0xff) < missionDiffs[missionID].shipFrequency)
@@ -1091,13 +1091,13 @@ extern "C" void DoNukeDamage(ModelInstance_t *base)
 		{
 			if (i == DATA_PlayerIndex)
 			{
-				expDist = base->dist;
+				expDist = base->dist_cam;
 				obj = DATA_PlayerObject;
 			}
 			else
 			{
 				obj = FUNC_001532_GetModelInstancePtr(i, DATA_ObjectArray);
-				expDist = abs((SINT16)base->dist - (SINT16)obj->dist);
+				expDist = abs((SINT16)base->dist_cam - (SINT16)obj->dist_cam);
 			}
 
 			if (expDist < 16 && obj->model_num >= 4 && obj->model_num <= 0x47)

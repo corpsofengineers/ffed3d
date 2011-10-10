@@ -162,115 +162,69 @@ typedef union
 } GlobalVars;
 
 struct ModelInstance_t {
-	ffeMatrix3x3 rotMatrix;
-	u8 uchar_24;			// set to 3Ch?
-	u8 uchar_25;
-	Point64 pos;
-	Point64 rel_pos;		// relative position from owner
-	u8 parent_index;		// Parent object of current
-	u8 uchar_57;			// 1 if ON a planet? (eg., city, ship?)
-	u8 uchar_58;
+	ffeMatrix3x3 relMatrix;		// relative orientation
+	u8 uchar_24;				// set to 3Ch?
+	u8 uchar_25;				// global position valid flag
+	Point64 pos;				// global position
+	Point64 rel_pos;			// relative position
+	u8 parent_index;			// Parent object of current
+	u8 uchar_57;				// rotational FOR flag
+	u8 uchar_58;				// global orientation valid flag
 	u8 uchar_59;
-	u8 uchar_5A;
-	u8 uchar_5B;
-	u8 uchar_5C;
-	u8 uchar_5D;
-	u8 uchar_5E;
-	u8 uchar_5F;
-	u8 uchar_60;
-	u8 uchar_61;
-	u8 uchar_62;
-	u8 uchar_63;
-	u8 uchar_64;
-	u8 uchar_65;
-	u8 uchar_66;
-	u8 uchar_67;
-	u8 uchar_68;
-	u8 uchar_69;
-	u8 uchar_6A;
-	u8 uchar_6B;
-	u32 field_6C;
-	u8 uchar_70;
-	u8 uchar_71;
-	u8 uchar_72;
-	u8 uchar_73;
-	u8 uchar_74;
-	u8 uchar_75;
-	u8 uchar_76;
-	u8 uchar_77;
-	u8 uchar_78;
-	u8 uchar_79;
-	u8 uchar_7A;
-	u8 uchar_7B;
-	u8 uchar_7C;
-	u8 uchar_7D;
-	u32 model_scale;
-	u16 model_num;
-	u8 ambient_color_r;			// UNSURE! OVERLAPS OTHERSTUFF
-	u8 uchar_85;				// undefined
-	u8 index_number;			// of THIS model instance in list
-	u8 uchar_87;				// if this is NOT 0Bh, no aggressive response? 
-								// for planets: const 1
-	u8 dist;					// distance?? from current target? [see explosion, mining machine]
+	ffeMatrix3x3 globMatrix;	// global orientation 
+	u32 model_scale;			// exponential scale val
+	u32 model_num;				// model number
+	u8 index;					// index of THIS object instance in list
+	u8 ship_type;				// object control - 0x1 orbital, 0x3 player ship, 0xb AI ship
+	u8 dist_cam;				// exponential distance from camera
 	u8 uchar_89;				// undefined
-	u8 uchar_8A;
-	u8 uchar_8B;
-	Point32 Point3d_t;			// ??
-	ScreenCoord_t screenpos;
+	u8 dist_3face;				// exponential distance outside view
+	u8 sleep;					// frames between updates - set with 0x8a value
+	Point32 velocity;			// velocity vector, actual
+	ScreenCoord_t screenpos;	// xy position on screen
 	GlobalVars globalvars;
-	u16 mass_x4;				// from model, times 4
-	u16 orgModelShip;			// for hyperspace warp
-	u16 ushort_E8;
-	u16 ushort_EA;				// fuel in tank?
-	u16 ushort_EC;				// short x?
-	u16 ushort_EE;				// short y?
-	u16 vertex_level;			// Level counter for this model
-	u8 HyperCloudSource;
-	u8 uchar_F3;				// undefined
-	ffeRGB color;
-	u8 uchar_F7;
-	u16 ushort_F8;
-	u32 ulong_FA;				// random id?
-	u8 destinationIndex;
-	u8 attackFlag;				// Routine at 4DECC0 to call
-								// 4 if attacking this?
-	u8 targetIndex;				// another index number?
-	u8 thrustPower;				// 0, 1, 2 for more powerful reverse thrusts?
-	u16 ushort_102;
-	u16 ushort_104;
-	u16 ushort_106;
-	u16 ushort_vx;
-	u16 ushort_vy;
-	u16 ushort_vz;
-	u16 ushort_10E;				// vector scale?
-	u16 ushort_110;
-	u16 ushort_112;
-	u16 ushort_114;
-	u16 cargoAmount;
-	u8 ai;						// 1 if not aggressive? [on 'haha' answer]
-								// FB=Agressive (may have bonus)
-								// FF=This is the player?
-	u8 cargo_free_space;					// other ship's fuel amount?
-	u32 destroyBonus;
-	u32 ulong_11E;				// Amount of fuel in tank?
+	u16 mass_x4;				// mass*4, used for damage
+	u16 parent_model;			// HS cloud - parent model, also modified by firing laser 
+	u16 laser_next_pulse;		// time to next pulse laser shot?
+	u16 laser_temp;				// laser temperature
+	u16 fract_vel_x;			// fractional vel x 
+	u16 fract_vel_y;			// fractional vel y
+	u16 fract_vel_z;			// fractional vel z
+	u32 dest_system;			// destination system code
+	u16 jump_range;				// max jump range
+	u8 post_hs_ai;				// post-HS AI mode
+	u8 filter;					// filter?
+	u32 jump_time;				// jump time (tics >> 0x10)
+	u8 dest_index;				// destination index
+	u8 ai_mode;					// AI mode
+	u8 target_index;			// nav target index - used for missile also enemy index for pirate groups
+	u8 thrust_power;			// 0-2, depending on retro power
+	u16 target_off_x;			// target x-offset, used for station/starport first pass
+	u16 target_off_y;			// target y-offset
+	u16 target_off_z;			// target z-offset
+	u16 target_dir_x;			// target x-direction
+	u16 target_dir_y;			// target y-direction
+	u16 target_dir_z;			// target z-direction
+	u16 dist_target;			// exponential distance to target (shift of dir vec)
+	u16 autopilot_pitch;		// autopilot pitch (x rotation)
+	u16 autopilot_roll;			// autopilot roll (z rotation)
+	u16 autopilot_yaw;			// autopilot yaw (y rotation)
+	u16 cargo_space;			// remaining internal capacity, AI only
+	u8 object_type;				// 0xff if player, 0xfb pirate, 0xfe HS cloud, 01 esc. capsule
+	u8 cargo_fuel;				// cargo fuel in tons - AI only
+	u32 bounty;
+	u32 fuel_tank;				// fuel tank - 0x20000000 = 1t
 	u8 field_122[2];			// 2 dup(?)
 	u8 name[20];				// 20 bytes
-	u64 int64_138;
-	u32 int64lo_140;
-	u32 int64hi_144;
-	u32 org_model_scale;		// Original model scale?
-	u8 flags_14C;				// 10h -> can dock
-								// 20h -> is orbiter
-								// 40h -> has external pads
-								// & 7: Star Ambient color number
-	u8 uchar_14D;
-	u8 uchar_14E;				// 6 for cargo pod
-	u8 uchar_14F;				// == 2 for ECM/Naval ECM
-								// == 7 for Energy Bomb
-	u8 uchar_150;
-	u8 flags_151;				// which guns are firing??
-								// 20h:ECM/Naval ECM
-								// 40h:Energy Bomb
+	u64 interract_radius;		// interaction radius
+	u64 collision_radius;		// primary collision radius
+	u32 physics_timeout;		// physics timeout
+	u8 flags;					// flags
+	u8 FOR_timeout;				// FOR update timeout
+	u8 smoke_timeout;			// smoke timeout
+	u8 ecm_timeout;				// ecm/bomb timeout
+	u8 avoid_timeout;			// autopilot avoidance check timeout
+	u8 laser_flags;				// laser flags
 };
 
 struct DrawMdl_t {
@@ -360,3 +314,105 @@ struct DrawMdl_t {
 	u8 uchar15A;				// undefined
 	u8 uchar15B;				// undefined
 };
+
+//Equipment flags (0xc8 dword in PhysObj):
+//
+//0x1			laser cooling booster
+//0x2			auto-refueller
+//0x4			military camera
+//0x8			escape capsule
+//0x10		?energy bomb?
+//0x20		navigation computer
+//0x40		combat computer
+//0x80		autotargeter
+//0x100
+//0x200		missile viewer
+//0x400		cargo scoop
+//0x800		chaff dispensor
+//0x10000
+//0x20000		cargo bay life support
+//0x40000		scanner
+//0x80000		ecm
+//0x100000	fuel scoop
+//0x200000	autopilot
+//0x400000	radar mapper
+//0x800000	naval ecm
+//0x1000000	HS cloud analyser
+//0x2000000
+//0x4000000	energy bomb
+//0x8000000	stowmaster
+//0x10000000	energy booster
+//0x20000000
+//0x40000000	atmos. shield
+//0x80000000	hull auto-repair system
+
+// AI modes:
+//
+//0x0		Basic navigation mode
+//0x1		Attacking - turning towards
+//0x2		Attacking - firing
+//0x3		Attacking - turning away
+//0x4		Pirate interception
+//0x5		Transitional state to 0x4
+//0x6		Static?
+//0x7		travel to HS entry point
+//0x8 	HS exit routine
+//0x9		Bounty hunter interception
+//0xa		Patrol?
+//0xb		Formation navigation
+//0xc		Missile evasion?
+//0xd		Auxiliary ships around station
+//0xe
+//0xf
+//0x10
+//0x11	Delayed HS exit cloud
+//0x12	HS exit cloud
+//0x13	Missile
+//0x14	Mine
+//0x15	Smoking cargo
+//0x16	Normal cargo - abandoned ship?
+//0x17	Static cargo
+//0x18	Dies at small distance from player
+//0x19	Asteroid
+//0x1b	Space dust
+//0x1c	
+//0x1d	HS entrance cloud
+//0x1e	HS cloud remnant
+//0x1f	Request launch
+//0x20	Docked/landed - waiting for traffic control timeout
+//0x21	Launching
+//0x23	Docking/landing
+//0x24	Docked/landed
+
+//Object types:	Stores ship table index for non-pirate?
+//
+//0x1		ship after esc. capsule
+//0xfa	cargo
+//0xfb 	pirate
+//0xfd	missile
+//0xfe	HS cloud
+//0xff 	player
+//
+//flags:
+//
+//0x7		light index
+//0x8		light flag
+//0x10	starport/station? - dockable object
+//0x20	starport (else station)
+//0x40	open air?
+//0x80	complex object
+//
+//laser flags:
+//
+//0x1		shields hit
+//0x2		laser fired
+//0x4		front laser
+//0x8		rear laser
+//0x10	turret laser
+//0x20	ecm activated
+//0x40	energy bomb activated
+//
+//Laser types:
+//
+//0x88	1MW pulse
+//0xa0	1MW beam laser

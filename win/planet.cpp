@@ -45,9 +45,9 @@ extern "C" void C_PlaceStation (ModelInstance_t *starport, int lat, int lon, Mod
     FUNC_001674_MatBuildOdd (starport, lat, lon);
 
 	// Переводим 32-битные координаты старпорта в 64-битные
-	vVector[0] = starport->rotMatrix._21;
-	vVector[1] = starport->rotMatrix._22;
-	vVector[2] = starport->rotMatrix._23;
+	vVector[0] = starport->relMatrix._21;
+	vVector[1] = starport->relMatrix._22;
+	vVector[2] = starport->relMatrix._23;
 
 	// Часть А, снижаем старпорт до радиуса планеты
 	// relPos - позиция старпорта относительно центра планеты
