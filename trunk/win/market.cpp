@@ -345,7 +345,7 @@ extern "C" void GetCargoAmounts(ModelInstance_t *ship, INT32 *cargoAmounts)
 	if (ship->object_type == OBJTYPE_POLICE)
 		return;
 
-	ship_def = FUNC_001538_GetModelPtr(ship->model_num)->Shipdef_ptr;
+	ship_def = GetModel(ship->model_num)->Shipdef_ptr;
 
 	// preliminary: spawn fuel.
 	driveType = ship_def->IntegralDrive;
@@ -497,7 +497,7 @@ extern "C" void DoSpawnCargo(ModelInstance_t *ship)
 			cargo_obj = FUNC_000926_SpawnCargo(0x8e00 + DATA_JettisonedCargoTypes[i], ship, cargoAmounts[i]);
 	}
 
-	ship_def = FUNC_001538_GetModelPtr(ship->model_num)->Shipdef_ptr;
+	ship_def = GetModel(ship->model_num)->Shipdef_ptr;
 	hullMass = ship_def->Mass;
 
 	hullArmorPieces = sqrt((float)hullMass) / 8;

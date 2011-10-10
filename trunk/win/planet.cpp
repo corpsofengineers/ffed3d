@@ -29,7 +29,7 @@ extern "C" void C_PlaceStation (ModelInstance_t *starport, int lat, int lon, Mod
 
 	// Получаем указатель на предыдущий объект старпорта, т.е. планету
 	planet = GetInstance (starport->parent_index, objectList);
-	planetModel = FUNC_001538_GetModelPtr(planet->model_num);    
+	planetModel = GetModel(planet->model_num);    
 
 	// field_2C он же unknown_2
 	radius = planetModel->field_2C - 1;                // parent "radius"

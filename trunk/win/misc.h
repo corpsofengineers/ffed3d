@@ -299,6 +299,7 @@ typedef struct
 
 #define NUM_ELEMENTS(a) (sizeof(a)/sizeof(a[0]))
 
+extern "C" Model_t **ffeModelList;
 extern "C" INT32 (*DATA_RandomizerFunc)();	// randomizer
 extern "C" ModelInstance_t* DATA_PlayerObject;
 extern "C" stockitem_t DATA_StockData[0x20];
@@ -321,7 +322,6 @@ extern "C" INT16 DATA_PlayerCargo[32];
 extern "C" INT32 DATA_PlayerCargoSpace;
 extern "C" INT8  DATA_LastJettisonedCargoIndex;
 extern "C" INT8  DATA_ExtendedUniverse;
-extern "C" Model_t * FUNC_001538_GetModelPtr(int);
 //extern "C" void* (*DATA_GetStaticDataFunc)(int modelidx);	// finds ship static data
 extern "C" INT32* (*DATA_HasEquipmentFunc)(int unknown, INT8 *equip);	// finds ship static data
 extern "C" INT32 (*DATA_FixedRandomFunc)(int num, int *seed1, int *seed2); 
@@ -339,8 +339,7 @@ extern "C" void FUNC_000034_Unknown(INT32, INT32);
 extern "C" INT32 FUNC_000035_GetSpecialShips(INT32);
 
 extern ModelInstance_t* GetInstance(int index, ModelInstance_t *list);
-//extern "C" ModelInstance_t * FUNC_001532_GetModelInstancePtr(u8 index, ModelInstance_t* objectArray);
-//extern "C" INT8* (*DATA_GetObjectFunc)(int objidx, INT8 *objectArray);	// finds object data
+extern Model_t *GetModel(int index);
 
 // this function is unreliable, replace
 //extern INT16 (*DATA_BoundRandom)(INT16 max);	// returns a number between 0 and max
