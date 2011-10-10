@@ -4,6 +4,7 @@
 #include <memory.h>
 #include <stdio.h>
 #include "misc.h"
+#include "ffescr.h"
 
 typedef struct 
 {
@@ -915,6 +916,14 @@ extern "C" void PlayerDocked()
 
 extern "C" void OnSystemInit()
 {
+	scriptSystem* scr = scriptSystem::getSingleton();
+
+	if (scr->getFunction ("OnSystemInit"))
+	{
+		scr->callFunction (0, 0);
+		return;
+	}
+
 	ModelInstance_t *obj, *starport;
 	INT8 i;
 
