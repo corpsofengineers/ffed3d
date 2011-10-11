@@ -213,6 +213,7 @@
     </ClCompile>
     <ClCompile Include="win\bbs.cpp" />
     <ClCompile Include="win\ffemisc.cpp" />
+    <ClCompile Include="win\ffeScrMethods.cpp" />
     <ClCompile Include="win\gfx.cpp">
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <FavorSizeOrSpeed Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Neither</FavorSizeOrSpeed>

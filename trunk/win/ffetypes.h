@@ -300,6 +300,23 @@ struct DrawMdl_t {
 	u8 uchar15B;				// undefined
 };
 
+// instance state flags
+#define IST_PER_FRAME		0x1		// per-frame event 5 update
+#define IST_TAKE_DAMAGE		0x4		// collision process, laser process
+#define	IST_ALIVE			0x8		// alive?
+#define	IST_STATIC			0xb		// HS cloud, asteroid etc - inanimate objects?
+#define	IST_STARPORT		0xf		// starport
+#define	IST_SATELLITE		0x10	// Moving orbital object - not starport
+#define	IST_PLANET			0x11	// planet
+#define	IST_STATION			0x1f	// station
+#define	IST_UNTOUCHABLE		0x20	// exclude from mouse click processing, undamageable by energy bomb
+#define	IST_DOCKED			0x4b	// docked
+
+struct InstanseList_t {
+	u8 state_flags[116];
+	ModelInstance_t instances[116];
+};
+
 //Equipment flags
 #define EQUIP_LASER_COOLING_BOOSTER	0x1
 #define	EQUIP_AUTO_REFUELLER		0x2

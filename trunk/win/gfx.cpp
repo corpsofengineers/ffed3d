@@ -35,7 +35,7 @@ extern "C" char *DATA_006821;
 extern "C" unsigned char *DATA_008874;
 extern "C" PANELCLICKAREA *DATA_007684;
 extern "C" int *DATA_008804; // game time
-extern "C" ModelInstance_t *instanceList; // 0x006ab9c0
+extern "C" InstanseList_t *instanceList; // 0x006ab9c0
 
 extern "C" ffeVertex* FUNC_001470_getVertex(void *a, int num);
 extern "C" ffeVertex* FUNC_001471(void *a, int num);
@@ -6144,8 +6144,8 @@ void mMatrix(unsigned char* inst) {
 }
 
 
-extern "C" void C_Break3(unsigned char *ptr) {
-	int objNum;
+extern "C" void C_Break3(unsigned char *ptr) 
+{
 	D3DXVECTOR3 a, b, c;
 	D3DXVECTOR3 v, v2;
 
@@ -6195,9 +6195,9 @@ extern "C" void C_Break3(unsigned char *ptr) {
 		}
 
 		// Нам бы цвет света звезды задать
-		currentAmbientR=starColors[objNum-138][0];
-		currentAmbientG=starColors[objNum-138][1];
-		currentAmbientB=starColors[objNum-138][2];
+		currentAmbientR=starColors[plptr->model_num-138][0];
+		currentAmbientG=starColors[plptr->model_num-138][1];
+		currentAmbientB=starColors[plptr->model_num-138][2];
 		fullAmbientColor=(currentAmbientR*17)<<16;
 		fullAmbientColor|=(currentAmbientG*17)<<8;
 		fullAmbientColor|=(currentAmbientB*17);

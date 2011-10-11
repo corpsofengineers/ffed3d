@@ -299,6 +299,7 @@ typedef struct
 
 #define NUM_ELEMENTS(a) (sizeof(a)/sizeof(a[0]))
 
+extern "C" InstanseList_t* DATA_ObjectArray;
 extern "C" Model_t **ffeModelList;
 extern "C" INT32 (*DATA_RandomizerFunc)();	// randomizer
 extern "C" ModelInstance_t* DATA_PlayerObject;
@@ -309,7 +310,6 @@ extern "C" INT32 DATA_DriveMasses[];
 extern "C" INT32 DATA_ECM_Weight;
 extern "C" INT32 DATA_NECM_Weight;
 extern "C" INT8 DATA_AIMissiles[0x10];
-extern "C" ModelInstance_t* DATA_ObjectArray;
 extern "C" INT8 DATA_FederalShips[16];
 extern "C" INT8 DATA_ImperialShips[16];
 extern "C" INT16 DATA_CurrentAllegiance;
@@ -338,7 +338,7 @@ extern "C" void FUNC_000048_Unknown(INT32, INT32, INT32);
 extern "C" void FUNC_000034_Unknown(INT32, INT32);
 extern "C" INT32 FUNC_000035_GetSpecialShips(INT32);
 
-extern ModelInstance_t* GetInstance(int index, ModelInstance_t *list);
+extern ModelInstance_t* GetInstance(int index, InstanseList_t *list);
 extern Model_t *GetModel(int index);
 
 // this function is unreliable, replace

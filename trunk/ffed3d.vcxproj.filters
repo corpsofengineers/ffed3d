@@ -178,6 +178,9 @@
     <ClCompile Include="win\ffemisc.cpp">
       <Filter>Source Files\win\logic</Filter>
     </ClCompile>
+    <ClCompile Include="win\ffeScrMethods.cpp">
+      <Filter>Source Files\win</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="ffe.asm">
