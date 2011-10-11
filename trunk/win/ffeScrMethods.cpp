@@ -8,7 +8,7 @@ extern void FUNC_000924_DestroyObject(ModelInstance_t *object, INT8 inflictorIdx
 int getPlayer (void);
 int getPlayerIndex (void);
 int getObject (void);
-int setLastAttackedIndex ();
+int setLastAttackedIndex (void);
 int createShips_conv (void);
 int getObjectState (void);
 int isStarportLocked_conv (void);
@@ -24,7 +24,7 @@ void scrInit (void)
 	scr->newFunction (getObject);			 scr->registerVariable ("GetObject");
 	scr->newFunction (setLastAttackedIndex); scr->registerVariable ("SetLastAttackedIndex");
 	scr->newFunction (createShips_conv);	 scr->registerVariable ("CreateShips");
-	scr->newFunction (getObjectState); scr->registerVariable ("GetObjectState");
+	scr->newFunction (getObjectState);       scr->registerVariable ("GetObjectState");
 	scr->newFunction (isStarportLocked_conv);scr->registerVariable ("IsStarportLocked");
 	scr->newFunction (destroyObject);        scr->registerVariable ("DestroyObject");
 }
@@ -68,7 +68,7 @@ int getObject (void)
 
 int setLastAttackedIndex (void)
 {
-	int id = scriptSystem::getSingleton()->getAsInteger (1);
+	INT8 id = scriptSystem::getSingleton()->getAsInteger (1);
 
 	DATA_LastAttackedIndex = id;
 
