@@ -23,12 +23,15 @@ scriptSystem::scriptSystem (void):
 	error(0)
 {
 	luaVM = lua_open();
-	
+
+	consoleText = new char* [256];
+	conTextCount = 0;
 	//luaL_openlibs (luaVM); Not Need for now
 
 	//Pushind Basic Methods
 	lua_pushcfunction (luaVM, scriptSystem::randomize); lua_setglobal (luaVM, "Randomize");
 	lua_pushcfunction (luaVM, scriptSystem::setColor); lua_setglobal (luaVM, "ColorRGB");
+	lua_pushcfunction (luaVM, scriptSystem::print); lua_setglobal (luaVM, "print");
 
 	//BuildScriptTable and
 	BuildScriptsTable();
@@ -50,6 +53,26 @@ int scriptSystem::doScript (char* scriptName)
 	if (luaL_dofile (luaVM, call))
 	{
 		error = lua_tostring (luaVM, -1);
+		char* log = new char[strlen("error: ")+strlen(error)];
+		strcpy (log, "error: ");
+		strcat (log, error);
+		AddToLog (log);
+		ret = 1;
+	}
+
+	return ret;
+}
+
+int scriptSystem::doString (char* string)
+{
+	int ret = 0;
+	if (luaL_dostring (luaVM, string))
+	{
+		error = lua_tostring (luaVM, -1);
+		char* log = new char[strlen("error: ")+strlen(error)];
+		strcpy (log, "error: ");
+		strcat (log, error);
+		AddToLog (log);
 		ret = 1;
 	}
 
@@ -110,6 +133,35 @@ void scriptSystem::BuildScriptsTable (void)
 
 }
 
+char* scriptSystem::getLogString (int id)
+{
+	return consoleText[id];
+}
+
+int scriptSystem::getLogCount (void)
+{
+	return conTextCount;
+}
+
+void scriptSystem::AddToLog (char* text)
+{
+	if (conTextCount < 256)
+	{
+		consoleText[conTextCount] = new char [strlen(text)];
+		strcpy (consoleText[conTextCount], text);
+		conTextCount++;
+	} else
+	{
+		for (int i=1;i<256;i--)
+		{
+			consoleText[i-1] = new char [strlen (consoleText[i])];
+			strcpy (consoleText[i-1], consoleText[i]);
+		}
+		consoleText[255] = new char [strlen(text)];
+		strcpy (consoleText[255], text);
+	}
+}
+
 int scriptSystem::doPreLaunchScripts (void)
 {
 	int ret = 0;
@@ -126,18 +178,6 @@ int scriptSystem::doAutoScripts (void)
 	int ret = 0;
 	for (int i=0; i<as;i++)
 		if(doScript (autoscripts[i])) {ret = 1;}
-
-	return ret;
-}
-
-int scriptSystem::doString (char* string)
-{
-	int ret = 0;
-	if (luaL_dostring (luaVM, string))
-	{
-		error = lua_tostring (luaVM, -1);
-		ret = 1;
-	}
 
 	return ret;
 }
@@ -171,6 +211,12 @@ int scriptSystem::setColor (lua_State *L)
 
 	lua_pushinteger (L, res);
 	return 1;
+}
+
+int scriptSystem::print (lua_State* L)
+{
+	scriptSystem::getSingleton()->AddToLog ((char* )lua_tostring (L, 1));
+	return 0;
 }
 
 //LUA PUSHING METHODS
@@ -315,15 +361,19 @@ int scriptSystem::getParenFunction (char* funcName)
 }
 
 
-void scriptSystem::callFunction (int argCount, int result)
+int scriptSystem::callFunction (int argCount, int result)
 {
-	//lua_call (luaVM, argCount, result);
-
+	int ret = 0;
+	
 	if (lua_pcall (luaVM, argCount, result, 0))
 	{
 		error = lua_tostring (luaVM, -1);
-		MessageBox(0, error, 0, 0);
+		char* log = new char[strlen("error: ")+strlen(error)];
+		strcpy (log, "error: ");
+		strcat (log, error);
+		AddToLog (log);
+		ret = 1;
 	}
 
-	return;
+	return ret;
 }

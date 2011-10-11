@@ -13,6 +13,8 @@ public:
 	int doScript (char* scriptName);
 	int doString (char* string);
 	const char* getLastError (void);
+	char* getLogString (int id);
+	int getLogCount (void);
 
 	int doPreLaunchScripts();
 	int doAutoScripts();
@@ -20,6 +22,7 @@ public:
 	//LUA METHODS
 	static int randomize (lua_State* L);
 	static int setColor (lua_State *L);
+	static int print (lua_State *L);
 
 	//LUA PUSHING METHODS
 	void newInteger (__int64 arg);
@@ -48,13 +51,14 @@ public:
 	__int64 getParentAsInteger (char* varName);
 	int getParenFunction (char* funcName);
 
-	void callFunction (int argCount, int result);
+	int callFunction (int argCount, int result);
 
 protected:
 	scriptSystem (void);
 	~scriptSystem (void);
 
 	void BuildScriptsTable (void);
+	void AddToLog (char* text);
 
 //VARIABLES
 public:
@@ -67,4 +71,6 @@ protected:
 	size_t as;
 	char** firstscripts;
 	char** autoscripts;
+	char** consoleText;
+	int conTextCount;
 };
