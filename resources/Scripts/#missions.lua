@@ -1,11 +1,11 @@
-function OnSystemInit2()
+function OnSystemInit()
 
-	SetLastAttakedIndex(0);
+	SetLastAttackedIndex(0);
 	CreateShips();
 
 	for index=1, 0x72, 1 do
 
-		if GetObjectState(i) ~= IST_DOCKED and i ~= GetPlayerIndex() then
+		if GetObjectState(i) ~= IST_DOCKED then
 
 			obj = GetObject(i);
 
