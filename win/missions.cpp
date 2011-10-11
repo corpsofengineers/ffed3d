@@ -925,22 +925,21 @@ extern "C" void OnSystemInit()
 	}
 
 	ModelInstance_t *obj, *starport;
-	INT8 i;
 
 	DATA_LastAttackedIndex = 0;
 
 	CreateShips();
 
 	// destroy AI ships docked in locked starports
-	for (i = 1; i < 0x72; i++)
+	for (u8 index = 1; index < 0x72; index++)
 	{
-		if (INT8_AT(DATA_ObjectArray+i) != 0x4b)
+		if (DATA_ObjectArray->state_flags[index] != IST_DOCKED)
 			continue;
 
-		if (i == DATA_PlayerIndex)
+		if (index == DATA_PlayerIndex)
 			continue;
 		
-		obj = GetInstance(i, DATA_ObjectArray);
+		obj = GetInstance(index, DATA_ObjectArray);
 
 		if (obj->ai_mode == AI_DOCKED_OR_LANDED)
 		{
