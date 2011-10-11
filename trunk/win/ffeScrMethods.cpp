@@ -10,7 +10,7 @@ int getPlayerIndex (void);
 int getObject (void);
 int setLastAttackedIndex ();
 int createShips_conv (void);
-int checkDATAObjectArray (void);
+int getObjectState (void);
 int isStarportLocked_conv (void);
 int destroyObject (void);
 
@@ -24,7 +24,7 @@ void scrInit (void)
 	scr->newFunction (getObject);			 scr->registerVariable ("GetObject");
 	scr->newFunction (setLastAttackedIndex); scr->registerVariable ("SetLastAttackedIndex");
 	scr->newFunction (createShips_conv);	 scr->registerVariable ("CreateShips");
-	scr->newFunction (checkDATAObjectArray); scr->registerVariable ("CheckDATAObjectArray");
+	scr->newFunction (getObjectState); scr->registerVariable ("GetObjectState");
 	scr->newFunction (isStarportLocked_conv);scr->registerVariable ("IsStarportLocked");
 	scr->newFunction (destroyObject);        scr->registerVariable ("DestroyObject");
 }
@@ -81,18 +81,13 @@ int createShips_conv (void)
 	return 0;
 }
 
-int checkDATAObjectArray (void)
+int getObjectState (void)
 {
 	int i = scriptSystem::getSingleton()->getAsInteger (1);
-	__int64 r = scriptSystem::getSingleton()->getAsInteger (2);
+	
+	u8 state = DATA_ObjectArray->state_flags[i];
 
-	if (INT8_AT(DATA_ObjectArray+i) == r)
-	{
-		scriptSystem::getSingleton()->newBool (true);
-	} else
-	{
-		scriptSystem::getSingleton()->newBool (false);
-	}
+	scriptSystem::getSingleton()->newInteger (state);
 
 	return 1;
 }
