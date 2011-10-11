@@ -5,15 +5,15 @@ function OnSystemInit()
 
 	for index=1, 0x72, 1 do
 
-		if GetObjectState(i) ~= IST_DOCKED then
+		if GetObjectState(index) ~= IST_DOCKED then
 
-			obj = GetObject(i);
+			obj = GetObject(index);
 
-			if obj.ai_mode == AI_DOCKED_OR_LANDED and i ~= GetPlayerIndex() then
+			if obj.ai_mode == AI_DOCKED_OR_LANDED and index ~= GetPlayerIndex() then
 
 				starport = GetObject(obj.dest_index);
 
-				if IsStarportLocked(startport) == true then DestroyObject(obj, 0) end
+				if IsStarportLocked(starport) == true then DestroyObject(obj, 0) end
 
 			end
 

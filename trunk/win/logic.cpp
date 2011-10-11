@@ -317,5 +317,13 @@ int scriptSystem::getParenFunction (char* funcName)
 
 void scriptSystem::callFunction (int argCount, int result)
 {
-	lua_call (luaVM, argCount, result);
+	//lua_call (luaVM, argCount, result);
+
+	if (lua_pcall (luaVM, argCount, result, 0))
+	{
+		error = lua_tostring (luaVM, -1);
+		MessageBox(0, error, 0, 0);
+	}
+
+	return;
 }
