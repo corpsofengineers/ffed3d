@@ -22,6 +22,7 @@ static int exclusive = 0;
 static int fullscreen = 0;
 int aspectfix = 1;
 static int wireframe = 0;
+int console = 0;
 
 static int fswidth = 640;
 static int fsheight = 400;
@@ -468,10 +469,7 @@ void VideoInit()
 	scr->newChildFunction ("showTip", showLoadingTip);
 	scr->registerClass ("lTip");
 
-	if(scr->doPreLaunchScripts())
-	{
-		MessageBox (0, scr->getLastError(), "Lua Error", MB_OK);
-	}
+	scr->doPreLaunchScripts();
 
 	CfgStruct cfg;
 	int pPalBase[3] = { 0, 0, 0 };
@@ -1065,7 +1063,7 @@ bool InitD3D(HWND hWnd)
 	modelTex = NULL;
 	texTex = NULL;
 	effectTex = NULL;
-	m_tFont = NULL;
+	//m_tFont = NULL;
 
 	if (renderSystem->GetDevice()!=NULL)
 		renderSystem->GetDevice()->Clear(0,NULL,D3DCLEAR_TARGET|D3DCLEAR_ZBUFFER,D3DCOLOR_XRGB(0,0,0),1.0f,0);
@@ -1130,6 +1128,21 @@ void DrawText(LPSTR pText, int x, int y, D3DCOLOR rgbFontColour)
     //m_pFont->Begin();
     m_pFont->DrawTextA(textSprite,pText, -1, &Rect, DT_CALCRECT, 0); //Calculate the size of the rect needed
     m_pFont->DrawTextA(textSprite,pText, -1, &Rect, 0, rgbFontColour); //Draw the text
+    //m_pFont->End();
+}
+
+void DrawConText(LPSTR pText, int x, int y, D3DCOLOR rgbFontColour)
+{
+	RECT Rect;
+
+    Rect.left = x;
+    Rect.top = y;
+    Rect.right = 0;
+    Rect.bottom = 0;
+
+    //m_pFont->Begin();
+    m_tFont->DrawTextA(textSprite,pText, -1, &Rect, DT_CALCRECT, 0); //Calculate the size of the rect needed
+    m_tFont->DrawTextA(textSprite,pText, -1, &Rect, 0, rgbFontColour); //Draw the text
     //m_pFont->End();
 }
 
@@ -2617,6 +2630,33 @@ void Render()
 	
 	textSprite->End();
 	//renderSystem->SetRenderState( D3DRS_ALPHATESTENABLE, false);
+
+	//Консоль рисуем.
+	
+	if (console)
+	{
+		D3DXMATRIX *scale;
+		textSprite->Begin (D3DXSPRITE_ALPHABLEND);
+		textSprite->Draw (textures[96], NULL, NULL, NULL, 0xffffffff);
+		//рисуем бффер
+		//рисуем строку ввода
+		DrawConText (">", 2, 480, 0xff00ff00);
+		DrawConText ("", 4, 480, 0xffffffff);
+
+		//выводим лог консоли
+
+		scriptSystem* scr = scriptSystem::getSingleton();
+		int conPosY = 460;
+
+		for (int i=scr->getLogCount()-1;i>=0;i--)
+		{
+			DrawConText (scr->getLogString(i), 2, conPosY, D3DCOLOR_XRGB (220, 240, 255));
+			conPosY -= 20;
+		}
+
+		textSprite->End();
+	}
+
 	renderSystem->EndScene();    
     //renderSystem->GetDevice()->Present(NULL, NULL, NULL, NULL);
 

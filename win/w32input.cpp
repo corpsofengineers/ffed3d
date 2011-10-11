@@ -12,6 +12,8 @@
 #include <objbase.h>
 #include <dinput.h>
 
+extern int console;
+
 static LPDIRECTINPUT pDInput = NULL;
 static LPDIRECTINPUTDEVICE pDIMouse = NULL;
 static LPDIRECTINPUTDEVICE pDIKeyb = NULL;
@@ -215,6 +217,10 @@ static int keybLastKey = 0xff;
 static ULONG pKeybTimes[256];
 
 
+void printTyConsole (UCHAR pCur[256])
+{
+}
+
 void InputKeybReadStates (UCHAR *pKeys)
 {
 	int i, rval;
@@ -224,6 +230,26 @@ void InputKeybReadStates (UCHAR *pKeys)
 	if (pDIKeyb == NULL) return;
 	rval = pDIKeyb->GetDeviceState (256, (void *)pCur);
 	if (rval != DI_OK) return;
+
+	//Консоль!
+
+	if (pCur[DIK_GRAVE] == 0x80 && pKeybTimes[41] < TimerGetTimeStamp())
+	{
+		if (!console)
+		{
+			console = 1;
+		} else
+		{
+			console = 0;
+		}
+		pKeybTimes[41] = TimerGetTimeStamp() + repeatdelay;
+	}
+
+	if (console)
+	{
+		printTyConsole (pCur);
+		return;
+	}
 
 	for (i=0; i<256; i++)
 	{
@@ -311,7 +337,7 @@ void KeyBinds (CfgStruct *cfg)
 		bind = false;
 		notuse = false;
 	}
-
+	pKeybConvTable[41] = DIK_GRAVE;
 }
 
 void InputInit (void)
