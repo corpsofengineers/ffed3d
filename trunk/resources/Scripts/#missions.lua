@@ -9,7 +9,7 @@ function OnSystemInit()
 
 			obj = GetObject(i);
 
-			if obj.ai_mode == AI_DOCKED_OR_LANDED then
+			if obj.ai_mode == AI_DOCKED_OR_LANDED and i ~= GetPlayerIndex() then
 
 				starport = GetObject(obj.dest_index);
 
