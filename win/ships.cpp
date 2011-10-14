@@ -124,18 +124,6 @@ extern "C" INT32 GetVol(INT32 logVol)
 	return (0x7e00 >> logVol);
 }
 
-//u32 RandomSeed3(u32 seed)
-//{
-//	u32 a, b;
-//	
-//	a = (DATA_RandSeed2 >> 0x1b) | (DATA_RandSeed2 << 0x5);
-//	DATA_RandSeed1 = DATA_RandSeed1 + DATA_RandSeed2 + a;
-//	DATA_RandSeed2 = a;
-//	b = (DATA_RandSeed1 << 16) | (DATA_RandSeed1 >> 16);
-//
-//	return (seed * (b & 0xffff)) >> 16;
-//}
-
 u32 GetRandomModelNum(u8 object_type)//, u32 *pIndex)
 {
 	u32 num;
@@ -157,15 +145,6 @@ u32 GetRandomModelNum(u8 object_type)//, u32 *pIndex)
 	//}
 
 	return DATA_ShipsLoyalityTable[object_type].ships[num];
-}
-
-extern "C" void FUNC_000791_GenerateName(u32 *, u8, u32, u8*);
-
-void GenerateShipName(ModelInstance_t *ebx, u8 bytes, u32 *p3)
-{
-	DATA_RandomizerFunc();
-	ebx->globalvars.unique_Id = DATA_RandSeed1;
-	FUNC_000791_GenerateName(p3, bytes, ebx->globalvars.unique_Id, ebx->name);
 }
 
 void InitInstance(ModelInstance_t *new_instance, ModelInstance_t *old_instance, u32 model_num)
@@ -253,19 +232,57 @@ ModelInstance_t *CreateObject(ModelInstance_t *ship_instance, u8 state, u32 mode
 	return instance;
 }
 
-u32 AttachLaser(ModelInstance_t *p1, u16 *cargo_space)
+u32 AttachLaser(ModelInstance_t *ship, u16 *cargo_space)
 {
-	u32 i;
+	u32 i, maxLasers;
 	u32 weight = BoundRandom(0x33);
-	weight += DATA_ShipLaserCapacity[p1->object_type];
+	weight += DATA_ShipLaserCapacity[ship->object_type];
 	weight = weight * *cargo_space >> 8;
 
-	for (i = 1; i < 9; i++)
-		if (weight < DATA_AILasers[i].weight) break;
+	if (DATA_PlasmaMount[ship->model_num] == 0x0)
+		maxLasers = 0x6;
+	else
+		maxLasers = 0x8;
 
-	i--;
+	for (i = 1; ; i++) {
+		if (weight < DATA_AILasers[i].weight) break;
+		if (i == maxLasers) break;
+	}
+
 	*cargo_space -= DATA_AILasers[i].weight;
 	return DATA_AILasers[i].id;
+}
+
+extern "C" void FUNC_000791_GenerateName(u32, u8*, u32, u8*);
+
+// names
+// 0 - "????"
+// 1 - human full name
+// 2 - human full name
+// 3 - human full name
+// 4 - human second name
+// 5 - human first name
+// 6 - starport
+// 7 - station
+// 8 - city name
+// 9 - world name
+// 10 - merchant name
+// 11 - battleships?
+// 12 - corporate name
+// 13 - merchant name
+// 14 - "police"
+// 15 - "????"
+// 16 - city name
+// 17 - town name
+// 18 - ship reg num
+// 19 - star reg num?
+// 20 - star reg num?
+
+void GenerateShipName(ModelInstance_t *ebx, u8 *tptr, u32 type)
+{
+	DATA_RandomizerFunc();
+	ebx->globalvars.unique_Id = DATA_RandSeed1;
+	FUNC_000791_GenerateName(type, tptr, ebx->globalvars.unique_Id, ebx->name);
 }
 
 ModelInstance_t *CreateShip(ModelInstance_t *copyfrom, u8 object_type, int modelnum)
@@ -275,26 +292,27 @@ ModelInstance_t *CreateShip(ModelInstance_t *copyfrom, u8 object_type, int model
 
 	ship_instance->ship_type = 0xb;					// AI ship
 	ship_instance->object_type = object_type;			// store shiptable
-	u32 ebp_0x28;
-	GenerateShipName(ship_instance, DATA_NameThingyByteTable[object_type], &ebp_0x28);		// ship name?
+
+	GenerateShipName(ship_instance, &DATA_NameThingyByteTable[object_type], object_type == 0xe ? 14 : 18);		// ship name?
 	ShipDef_t* ship_def = GetModel(ship_instance->model_num)->Shipdef_ptr;		// stats pointer
 	u16 max_tech_level = DATA_RandomizerFunc() & 0xffff;				// tech/wealth?
 
-	if (ship_instance->object_type == 0xe) {			// police
+	if (object_type == 0xe) {			// police
 		ship_instance->globalvars.unique_Id = 0;		// Uniform colour
 		max_tech_level = DATA_SystemTechLevel << 8;
 	}
-	if (ship_instance->object_type == 0x10) max_tech_level = 0xffff;	// assass. targets
+	if (object_type == 0x10) max_tech_level = 0xffff;	// assass. targets
 	u16 cargo_space = ship_instance->cargo_space;							// remain. int cap
 	u32 equipment = 0;
 	u32 edx = DATA_RandomizerFunc();
 	u32 drive = ship_def->Drive;							// drive
-	if (ship_instance->object_type == 0xc) edx = 0xffff;		// bounty hunters?
-	if (edx > 0xf000 && ship_instance->object_type != 1)
+	if (object_type == 0xc) 
+		edx = 0xffff;		// bounty hunters?
+	if (edx > 0xf000 && object_type != 1)
 		{ cargo_space--; equipment |= EQUIP_HS_CLOUD_ANALYSER; }					// HS cloud analyser
 	if (drive >= 0) {
-		if (edx > 0xc000) 
-			drive >>= 8;			// 1/3 chance of altern.
+		//if (edx > 0xc000) 
+		//	drive >>= 8;			// 1/3 chance of altern.
 		drive &= 0xf;
 		ship_instance->globalvars.drive = drive;
 		cargo_space -= DATA_DriveMasses[drive];					// actual drive
@@ -305,7 +323,23 @@ ModelInstance_t *CreateShip(ModelInstance_t *copyfrom, u8 object_type, int model
 	if (cargo_fuel >= cargo_space) 
 		cargo_fuel = cargo_space;		
 	cargo_space -= cargo_fuel;	// J3101
-	ship_instance->cargo_fuel = cargo_fuel;							// cargo fuel
+	ship_instance->cargo_fuel = cargo_fuel;	// cargo fuel
+
+	// for pirates, 10%-20% goes to cargo space... unoccupied
+	// for traders, 20%-40% is occupied
+	// for assassination targets, 10%-20% is occupied
+	// for military ships, assassins, and police, no extra cargo
+	if (object_type < 0x13 && object_type != 0xe)
+	{
+		u16 usedWeight = 0.1 + 0.1*FloatRandom();
+		usedWeight *= cargo_space;
+
+		if (object_type < 0xa)
+			usedWeight *= 2;
+
+		cargo_space -= usedWeight;
+	}
+
 	ship_instance->globalvars.laser_front = AttachLaser(ship_instance, &cargo_space);				// laser
 
 	u32 shields = cargo_space;
@@ -319,7 +353,7 @@ ModelInstance_t *CreateShip(ModelInstance_t *copyfrom, u8 object_type, int model
 	shields = BoundRandom(shields);
 	shields = BoundRandom(shields) * 2;
 	cargo_space -= shields;
-	ship_instance->globalvars.shields = shields << 4;						// shields
+	ship_instance->globalvars.shields = ship_instance->globalvars.max_shields = shields << 4;						// shields
 
 	if (cargo_space >= 2) {
 		u32 techlevel = BoundRandom(max_tech_level);
@@ -360,14 +394,13 @@ ModelInstance_t *CreateShip(ModelInstance_t *copyfrom, u8 object_type, int model
 	ship_instance->cargo_fuel += more_fuel;						// Cargo fuel again?
 	ship_instance->cargo_space = cargo_space;						// remaining capacity
 	ship_instance->globalvars.equip = equipment;		// equipment
+
 	return ship_instance;
 }
 
 // Object gen of some kind
-extern "C" ModelInstance_t *AIShipSpawn(u8 object_type, u32 some)
+extern "C" ModelInstance_t *AIShipSpawn(u8 object_type)
 {
-	u32 i = 1;
-	//u32 modelNum = GetRandomModelNum (shiptable, something);		// Generate model index
 	u32 modelNum = GetRandomModelNum (object_type);
 	return CreateShip(&DATA_DummyInstance, object_type, modelNum);
 }
@@ -435,8 +468,8 @@ extern "C" INT32 DoShipDamage(ModelInstance_t *ship, INT32 damage, INT8 bContinu
 	if (newHull < 0.0)
 		newHull = 0.0;
 	
-	hull = (INT16)newHull;
-	shields = (INT16)newShields;
+	ship->mass_x4 = (INT16)newHull;
+	ship->globalvars.shields = (INT16)newShields;
 	
 	// store small differences to avoid rounding-error magnification.
 	HullDiff[idx] = newHull - hull;
@@ -964,7 +997,7 @@ extern "C" INT8 SpawnHostileGroup(INT8 ships, INT8 *shipArray, INT32 targetName,
 		tempVec[i] = DATA_GroupingVector[i];
 
 	// spawn the leader ship.
-	shipObj = FUNC_000772_AIShipSpawn(shipType);
+	shipObj = AIShipSpawn(shipType);
 	
 	if (shipObj == 0)
 		return 0;
@@ -991,7 +1024,7 @@ extern "C" INT8 SpawnHostileGroup(INT8 ships, INT8 *shipArray, INT32 targetName,
 		if (shipType == 0x13)
 			DATA_CustomShipIndex = shipArray[DATA_RandomizerFunc() & 0xf];
 
-		shipObj = FUNC_000772_AIShipSpawn(shipType+1);
+		shipObj = AIShipSpawn(shipType+1);
 		
 		if (shipObj == 0)
 			return i;
@@ -1082,7 +1115,7 @@ extern "C" void RefreshShipyardData(starport_t *starport)
 
 void SpawnHSTrader()
 {
-    ModelInstance_t *trader = AIShipSpawn(1,0);
+    ModelInstance_t *trader = AIShipSpawn(1);
     if(trader != 0) {
         u32 ebp_2 = 0x33;
 		FUNC_000702_GeneratePosition(trader,20480);
@@ -1099,15 +1132,15 @@ void SpawnHSTrader()
             }
             trader->globalvars.local_Startime += DATA_GameTics;
             trader->globalvars.local_Stardate += DATA_GameDays;
-    //        if(FUNC_000775_FindSourceSystem(trader) == 0) {
-				//if (DATA_ObjectArray->state_flags[trader->index] == 0x20) {
-				//	DATA_NumObjects--;
-				//}
-				//DATA_ObjectArray->state_flags[trader->index] = 0;
-    //        } else {
+            if(FUNC_000775_FindSourceSystem(trader) == 0) {
+				if (DATA_ObjectArray->state_flags[trader->index] == 0x20) {
+					DATA_NumObjects--;
+				}
+				DATA_ObjectArray->state_flags[trader->index] = 0;
+            } else {
                 DATA_ObjectArray->state_flags[trader->index] = 2;
                 FUNC_000048_BeginEvents(0x17, 0, trader->index);
-            //}
+            }
         }
     }
 }
@@ -1127,7 +1160,7 @@ extern "C" void SpawnTraders(INT32 traderLevel, INT32 bInitial)
 	curTraders = numTraders/4;
 	// spawn traders incoming via hyperspace
 	for (i = 0; i < curTraders; i++)
-		FUNC_000689_SpawnHSTrader();
+		SpawnHSTrader();
 
 	// spawn thargoids?
 	curTraders = BoundRandom(FUNC_000035_GetSpecialShips(0x16));

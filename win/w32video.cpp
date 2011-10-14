@@ -1,9 +1,8 @@
 #include <windows.h>
+#include <assert.h>
 #include <ddraw.h>
-#include <stdio.h>
 #include <d3dx9.h>
 #include <sys/stat.h>
-#include <io.h>
 
 #include "../ffeapi.h"
 #include "../ffecfg.h"
@@ -12,7 +11,6 @@
 #include "Macros.h"
 #include "ini/ini.h"
 #include "Render/RenderSystem.h"
-#include <assert.h>
 #include "ffescr.h"
 
 D3DXVECTOR3 pl;
