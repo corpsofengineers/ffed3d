@@ -1,5 +1,7 @@
 #include <vector>
 #include <process.h>
+#include <stdio.h>
+#include <io.h>
 #include "xmath.h"
 #include "XFile/Utility.h"
 #include "XFile/XfileEntity.h"

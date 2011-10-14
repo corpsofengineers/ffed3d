@@ -914,6 +914,7 @@ GLOBAL FUNC_000917
 GLOBAL FUNC_000918
 GLOBAL FUNC_000919
 GLOBAL FUNC_000921
+GLOBAL _RandomB2S
 GLOBAL FUNC_000922
 GLOBAL FUNC_000923
 GLOBAL _FUNC_000924_DestroyObject
@@ -4895,7 +4896,7 @@ SECTION .text
 		mov [ebp-0x14],eax
 		mov eax,[ebp-0x14]
 		push eax
-		call _FUNC_000772_AIShipSpawn
+		call _AIShipSpawn
 		pop ecx
 		mov [ebp-0x8],eax
 		cmp dword [ebp-0x8],byte +0x0
@@ -46349,7 +46350,7 @@ FUNC_000669:			; Pos = 2cdd4
 		push ecx
 		push ebx
 		push dword [ebp+0x8]
-		call _FUNC_000772_AIShipSpawn
+		call _AIShipSpawn
 		pop ecx
 		mov ebx,eax
 		test ebx,ebx
@@ -46398,7 +46399,7 @@ FUNC_000670:			; Pos = 2ce59
 		push esi
 		push edi
 		push dword [ebp+0x8]
-		call _FUNC_000772_AIShipSpawn
+		call _AIShipSpawn
 		pop ecx
 		mov ebx,eax
 		test ebx,ebx
@@ -47251,7 +47252,7 @@ FUNC_000689:			; Pos = 2d66e
 		add esp,byte -0x8
 		push ebx
 		push byte +0x1
-		call _FUNC_000772_AIShipSpawn
+		call _AIShipSpawn
 		pop ecx
 		mov ebx,eax
 		test ebx,ebx
@@ -47337,7 +47338,7 @@ FUNC_000690:			; Pos = 2d768
 		add esp,byte -0x8
 		push ebx
 		push byte +0x11	
-		call _FUNC_000772_AIShipSpawn
+		call _AIShipSpawn
 		pop ecx
 		mov ebx,eax
 		test ebx,ebx
@@ -47425,7 +47426,7 @@ FUNC_000691:			; Pos = 2d862
 		push esi
 		push edi
 		push byte +0x1
-		call _FUNC_000772_AIShipSpawn
+		call _AIShipSpawn
 		pop ecx
 		mov edi,eax
 		test edi,edi
@@ -47569,7 +47570,7 @@ FUNC_000694:			; Pos = 2d9d8
 		push ecx
 		push ebx
 		push byte +0xa
-		call _FUNC_000772_AIShipSpawn
+		call _AIShipSpawn
 		pop ecx
 		mov ebx,eax
 		test ebx,ebx
@@ -47616,7 +47617,7 @@ FUNC_000695:			; Pos = 2da37
 		mov ecx,0x6
 		rep movsd
 		push byte +0xb
-		call _FUNC_000772_AIShipSpawn
+		call _AIShipSpawn
 		pop ecx
 		mov edi,eax
 		test edi,edi
@@ -47787,7 +47788,7 @@ FUNC_000696:			; Pos = 2dc8f
 		mov ecx,0x6
 		rep movsd
 		push byte +0xa
-		call _FUNC_000772_AIShipSpawn
+		call _AIShipSpawn
 		pop ecx
 		mov ebx,eax
 		test ebx,ebx
@@ -48048,7 +48049,7 @@ FUNC_000699:			; Pos = 2df8f
 		test al,al
 		jz JUMP_002932
 		push byte +0xf
-		call _FUNC_000772_AIShipSpawn
+		call _AIShipSpawn
 		pop ecx
 		mov ebx,eax
 		test ebx,ebx
@@ -70858,7 +70859,7 @@ _asmmain:			; Pos = 3c5f4
 		ret
 
 
-
+_RandomB2S:
 FUNC_000921:			; Pos = 3c904
 
 		push ebp

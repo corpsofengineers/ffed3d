@@ -1,5 +1,6 @@
 /* Common definitions used in new source */
 
+#include <stdio.h>
 #include "ffetypes.h"
 
 #pragma warning ( disable: 4244 4133 4305 4761 )
@@ -299,7 +300,9 @@ typedef struct
 
 #define NUM_ELEMENTS(a) (sizeof(a)/sizeof(a[0]))
 
-extern "C" u8 *DATA_NameThingyByteTable;
+extern "C" u32 RandomB2S(u32 max, u32 *seed1, u32 *seed2);
+
+extern "C" u8 DATA_NameThingyByteTable[];
 extern "C" INT32 DATA_GLobalEventCounter;
 extern "C" InstanseList_t* DATA_ObjectArray;
 extern "C" Model_t **ffeModelList;
