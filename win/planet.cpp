@@ -32,7 +32,7 @@ extern "C" void C_PlaceStation (ModelInstance_t *starport, int lat, int lon, Ins
 	planetModel = GetModel(planet->model_num);    
 
 	// field_2C он же unknown_2
-	radius = planetModel->field_2C - 1;                // parent "radius"
+	radius = planetModel->interract_radius - 1;                // parent "radius"
 	scaleFactor = planetModel->Scale + planetModel->Scale2 - 8;
 
 	// Старпорт расположен в координатах

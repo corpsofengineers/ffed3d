@@ -30,7 +30,7 @@ float GetPlanetRadius (void *planet);
 
 extern "C" ffeVertex *DATA_009200; // Vertex buffer?
 extern "C" char *DATA_007892_Icosahedron;
-extern "C" char *DATA_008861;
+extern "C" ModelInstance_t** DATA_008861;
 extern "C" char *DATA_006821;
 extern "C" unsigned char *DATA_008874;
 extern "C" PANELCLICKAREA *DATA_007684;
@@ -6151,7 +6151,7 @@ extern "C" void C_Break3(unsigned char *ptr)
 
 	ModelInstance_t *objInstance;
 	unsigned char prevIndex;
-	ModelInstance_t *plptr=(ModelInstance_t*)*(ModelInstance_t**)DATA_008861;
+	ModelInstance_t *plptr=*DATA_008861;
 
 	if (playerLightPosEnable==false)
 		D3DXMatrixIdentity(&lightRotMatrix);	

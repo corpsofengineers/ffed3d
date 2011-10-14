@@ -54,7 +54,7 @@ GLOBAL FUNC_000044
 GLOBAL FUNC_000045
 GLOBAL FUNC_000046
 GLOBAL FUNC_000047
-GLOBAL _FUNC_000048_Unknown
+GLOBAL _FUNC_000048_BeginEvents
 GLOBAL FUNC_000049
 GLOBAL FUNC_000050
 GLOBAL FUNC_000051
@@ -693,7 +693,7 @@ GLOBAL FUNC_000698
 GLOBAL _FUNC_000699_SpawnAuxTrader
 GLOBAL FUNC_000700
 GLOBAL FUNC_000701
-GLOBAL _FUNC_000702_Unknown
+GLOBAL _FUNC_000702_GeneratePosition
 GLOBAL FUNC_000703
 GLOBAL FUNC_000704
 GLOBAL FUNC_000705
@@ -767,6 +767,7 @@ GLOBAL _FUNC_000772_AIShipSpawn
 GLOBAL FUNC_000773
 GLOBAL FUNC_000774
 GLOBAL FUNC_000775
+GLOBAL _FUNC_000775_FindSourceSystem
 GLOBAL FUNC_000776
 GLOBAL FUNC_000777
 GLOBAL FUNC_000778
@@ -782,6 +783,7 @@ GLOBAL FUNC_000787
 GLOBAL FUNC_000788
 GLOBAL FUNC_000789
 GLOBAL FUNC_000790
+GLOBAL _FUNC_000791_GenerateName
 GLOBAL FUNC_000791
 GLOBAL FUNC_000792
 GLOBAL FUNC_000793
@@ -1874,6 +1876,7 @@ GLOBAL _FUNC_001847
 EXTERN _FillAviFrame
 EXTERN _ResetAviFrame
 
+EXTERN _AIShipSpawn
 EXTERN _C_PlaceStation
 EXTERN _C_FUNC_001816_ArrayInit
 EXTERN _FUNC_001874_DrawPlanet
@@ -4892,7 +4895,7 @@ SECTION .text
 		mov [ebp-0x14],eax
 		mov eax,[ebp-0x14]
 		push eax
-		call FUNC_000772
+		call _FUNC_000772_AIShipSpawn
 		pop ecx
 		mov [ebp-0x8],eax
 		cmp dword [ebp-0x8],byte +0x0
@@ -6433,7 +6436,7 @@ FUNC_000047:			; Pos = 14018
 		ret
 
 
-_FUNC_000048_Unknown:
+_FUNC_000048_BeginEvents:
 FUNC_000048:			; Pos = 14070
 
 		push ebp
@@ -15243,6 +15246,7 @@ FUNC_000147:			; Pos = 193f0
 	JUMP_001175:			; Pos = 19448
 		xor ebx,ebx
 	JUMP_001176:			; Pos = 1944a
+		;mov dword [_DATA_GLobalEventCounter],ebx;
 		mov eax,edi
 		shl eax,0x8
 		add eax,esi
@@ -47247,7 +47251,7 @@ FUNC_000689:			; Pos = 2d66e
 		add esp,byte -0x8
 		push ebx
 		push byte +0x1
-		call FUNC_000772
+		call _FUNC_000772_AIShipSpawn
 		pop ecx
 		mov ebx,eax
 		test ebx,ebx
@@ -47333,7 +47337,7 @@ FUNC_000690:			; Pos = 2d768
 		add esp,byte -0x8
 		push ebx
 		push byte +0x11	
-		call FUNC_000772
+		call _FUNC_000772_AIShipSpawn
 		pop ecx
 		mov ebx,eax
 		test ebx,ebx
@@ -47421,7 +47425,7 @@ FUNC_000691:			; Pos = 2d862
 		push esi
 		push edi
 		push byte +0x1
-		call FUNC_000772
+		call _FUNC_000772_AIShipSpawn
 		pop ecx
 		mov edi,eax
 		test edi,edi
@@ -48044,7 +48048,7 @@ FUNC_000699:			; Pos = 2df8f
 		test al,al
 		jz JUMP_002932
 		push byte +0xf
-		call FUNC_000772
+		call _FUNC_000772_AIShipSpawn
 		pop ecx
 		mov ebx,eax
 		test ebx,ebx
@@ -48170,7 +48174,7 @@ FUNC_000701:			; Pos = 2e04a
 		ret
 
 
-_FUNC_000702_Unknown:
+_FUNC_000702_GeneratePosition:
 FUNC_000702:			; Pos = 2e0d5
 
 		push ebp
@@ -51999,11 +52003,9 @@ FUNC_000771:			; Pos = 304df
 		pop ebp
 		ret
 
+		
 
-
-; ANISO - AIShipSpawn() ?
-_FUNC_000772_AIShipSpawn:
-FUNC_000772:			; Pos = 304f5
+_FUNC_000772_AIShipSpawn: ; Pos = 304f5
 
 		push ebp
 		mov ebp,esp
@@ -52332,6 +52334,7 @@ FUNC_000774:			; Pos = 30806
 
 
 ; ANISO - find hyperspace source system for incoming traders
+_FUNC_000775_FindSourceSystem:
 FUNC_000775:			; Pos = 30856
 
 		push ebp
@@ -52839,7 +52842,7 @@ FUNC_000790:			; Pos = 30c87
 		ret
 
 
-
+_FUNC_000791_GenerateName:
 FUNC_000791:			; Pos = 30cb0
 
 		push ebp

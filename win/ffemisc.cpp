@@ -611,13 +611,13 @@ extern "C" INT32 GetNearbySystem(SINT8 bGetOpposing)
 	return 0;
 }
 
-ModelInstance_t *GetInstance(int index, InstanseList_t *list)
+ModelInstance_t *GetInstance(u32 index, InstanseList_t *list)
 {
 	return &list->instances[index];
 	//return (ModelInstance_t*)((u32)list+sizeof(ModelInstance_t)*index+0x74);
 }
 
-Model_t *GetModel(int index) 
+Model_t *GetModel(u32 index) 
 {
 	return *(ffeModelList+index);
 }

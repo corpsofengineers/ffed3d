@@ -692,7 +692,7 @@ extern "C" void CreateMarketData(starport_t *starport)
 
 		starport->marketData[i].avail = avail;
 
-		FUNC_000048_Unknown(0x18, INT32_AT(starport+0xa0), i+1000);
+		FUNC_000048_BeginEvents(0x18, INT32_AT(starport+0xa0), i+1000);
 	}
 
 	DATA_StarportRand = (INT32_AT(starport+0xa0) >> 16) | (INT32_AT(starport+0xa0) << 16);
@@ -756,7 +756,7 @@ extern "C" void RefreshMarketData(starport_t *starport)
 
 		starport->marketData[i].avail += availAdd;
 		starport->marketData[i].price += priceDiff;
-		FUNC_000048_Unknown(0x18, INT32_AT(starport+0xa0), i+1000);
+		FUNC_000048_BeginEvents(0x18, INT32_AT(starport+0xa0), i+1000);
 	}
 }
 
