@@ -11,8 +11,10 @@
 #define INITGUID
 #include <objbase.h>
 #include <dinput.h>
+#include "ffescr.h"
 
 extern int console;
+char* con_text= new char[255];
 
 static LPDIRECTINPUT pDInput = NULL;
 static LPDIRECTINPUTDEVICE pDIMouse = NULL;
@@ -211,14 +213,93 @@ char *keyTOdig [256] =
 	"","","","","","","","",			// 0xf8-0xff
 };
 
-
 static UCHAR pKeybStates[256];
 static int keybLastKey = 0xff;
 static ULONG pKeybTimes[256];
 
+int con_pos = 0;
+int c = 0;
+char* bufb,* bufe;
 
-void printTyConsole (UCHAR pCur[256])
+void printTyConsole (WPARAM key)
 {
+
+	if (key == VK_LEFT)
+	{
+		if (con_pos > 0)
+		{
+			con_pos--;
+			c = 1;
+		}
+	}
+
+	if (key == VK_RIGHT)
+	{
+		if (con_pos < strlen(con_text))
+		{
+			con_pos++;
+			c = 1;
+		}
+	}
+
+	if (c)
+	{
+		bufb = NULL;
+		bufb = new char[con_pos+1];
+		memcpy (bufb, con_text, con_pos);
+		bufe = NULL;
+		bufe = new char[strlen(con_text)-con_pos+1];
+		memcpy (bufe, con_text+con_pos, strlen(con_text)-con_pos+1);
+	}
+
+
+	if (key == VK_RETURN)
+	{
+		scriptSystem::getSingleton()->doString (con_text);
+		con_text[0] = '\0';
+		con_pos = 0;
+		c=0;
+	}
+
+	if (key == VK_BACK && con_pos > 0)
+	{
+		if (c)
+		{
+			bufb[con_pos-1] = '\0';
+			strcpy (con_text, bufb);
+			strcat (con_text, bufe);
+		} else
+		{
+			con_text[con_pos-1] = '\0';
+		}
+
+		con_pos--;
+	}
+
+	BYTE* keyboardState;
+	keyboardState = new BYTE[256];
+	
+	if (GetKeyboardState(keyboardState))
+	{
+		WORD wChar;
+		int ra = ToAscii (key, 0, keyboardState, &wChar, 1); 
+		if (ra > 0 && key != VK_BACK)
+		{
+			if (c)
+			{
+				bufb[con_pos] = wChar;
+				bufb[con_pos+1]='\0';
+				strcpy (con_text, bufb);
+				strcat (con_text, bufe);
+				con_pos++;
+			} else
+			{
+				con_text[con_pos+1] = '\0';
+				con_text[con_pos] = wChar;
+				con_pos++;
+			}		
+		}
+	}
 }
 
 void InputKeybReadStates (UCHAR *pKeys)
@@ -233,7 +314,7 @@ void InputKeybReadStates (UCHAR *pKeys)
 
 	//Консоль!
 
-	if (pCur[DIK_GRAVE] == 0x80 && pKeybTimes[41] < TimerGetTimeStamp())
+	if (pCur[DIK_GRAVE] == 0x80 && pCur[DIK_LCONTROL] == 0x80 && pKeybTimes[41] < TimerGetTimeStamp())
 	{
 		if (!console)
 		{
@@ -247,7 +328,7 @@ void InputKeybReadStates (UCHAR *pKeys)
 
 	if (console)
 	{
-		printTyConsole (pCur);
+		//printTyConsole (pCur);
 		return;
 	}
 
@@ -346,6 +427,7 @@ void InputInit (void)
 	CfgStruct cfg;
 	GUID joyGuid;
 	LPDIRECTINPUTDEVICE pDIJoy1;
+	con_text[0] = '\0';
 
 	if (pDInput == NULL) {
 		rval = DirectInputCreate (Win32GetInst(), DIRECTINPUT_VERSION,
