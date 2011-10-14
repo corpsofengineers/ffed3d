@@ -35,10 +35,15 @@ struct ScreenCoord_t {
 	u16 x, y;
 };
 
+struct ShipsLoyalityTable {
+	u32 size;
+	u32* ships;
+};
+
 struct ShipDef_t {
     short ForwardThrust;		// 0x00
     short RearThrust;			// 0x02
-    char  Gunmountings;			// 0x03
+    char  Lasers;				// 0x03
     char  FuelScoop;			// 0x04
     short Mass;					// 0x06
     short Capacity;				// 0x08
@@ -72,8 +77,8 @@ struct Model_t {
 	char	         DefaultColorB;
     char             padding;
     int              field_28;
-    int              field_2C;
-    int              field_30;
+    int              interract_radius;
+    int              collision_radius;
     unsigned short * Collision_ptr;
     ShipDef_t *      Shipdef_ptr;
     int              DefaultCharacter;
@@ -103,12 +108,12 @@ typedef union
 			u16 Thrust_BE;				// retro thruster accel
 			u16 Thrust_C0;				// top thruster accel
 			u16 Thrust_C2;				// bottom thruster accel
-			u16 Max_Main_Thrust;		// right thruster accel
+			u16 Thrust_C4;				// right thruster accel
 			u16 Thrust_C6;				// left thruster accel
 			u32 equip;					// equipment flags
 			u32 dam_equip;				// damaged equipment flags
 			u8 drive;					// drive type
-			u8 num_gunmountings;		// number of gun mountings
+			u8 num_lasers;				// number of gun mountings
 			u8 laser_front;				// front laser
 			u8 laser_rear;				// rear laser
 			u8 laser_top;				// top turret laser

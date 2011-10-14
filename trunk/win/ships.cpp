@@ -124,6 +124,254 @@ extern "C" INT32 GetVol(INT32 logVol)
 	return (0x7e00 >> logVol);
 }
 
+//u32 RandomSeed3(u32 seed)
+//{
+//	u32 a, b;
+//	
+//	a = (DATA_RandSeed2 >> 0x1b) | (DATA_RandSeed2 << 0x5);
+//	DATA_RandSeed1 = DATA_RandSeed1 + DATA_RandSeed2 + a;
+//	DATA_RandSeed2 = a;
+//	b = (DATA_RandSeed1 << 16) | (DATA_RandSeed1 >> 16);
+//
+//	return (seed * (b & 0xffff)) >> 16;
+//}
+
+u32 GetRandomModelNum(u8 object_type)//, u32 *pIndex)
+{
+	u32 num;
+	u8 table_index = object_type;
+
+	if (object_type == 1 || object_type == 0) 
+		table_index = 2 * DATA_CurrentAllegiance;		// current system?
+
+	num = DATA_ShipsLoyalityTable[table_index].size;		// table size
+
+	if (object_type == 1 && DATA_CurrentPopulation < 4) 
+		num = DATA_CurrentPopulation * num / 4;
+
+	//if (tablenum != 16) {
+		num = BoundRandom(num);
+	//	pIndex[0] = DATA_RandSeed2;
+	//} else { 
+	//	num = pIndex[0] * DATA_ShipsLoyalityTable[tablenum].size >> 16;
+	//}
+
+	return DATA_ShipsLoyalityTable[object_type].ships[num];
+}
+
+extern "C" void FUNC_000791_GenerateName(u32 *, u8, u32, u8*);
+
+void GenerateShipName(ModelInstance_t *ebx, u8 bytes, u32 *p3)
+{
+	DATA_RandomizerFunc();
+	ebx->globalvars.unique_Id = DATA_RandSeed1;
+	FUNC_000791_GenerateName(p3, bytes, ebx->globalvars.unique_Id, ebx->name);
+}
+
+void InitInstance(ModelInstance_t *new_instance, ModelInstance_t *old_instance, u32 model_num)
+{
+    if(old_instance != new_instance) {
+        memcpy(new_instance, old_instance, 0x152);
+        new_instance->index = model_num != 0 ? new_instance->index : 0;
+    }
+    if(model_num != 0) {
+		new_instance->globalvars.local_Startime = DATA_GameTics;
+		new_instance->globalvars.local_Stardate = DATA_GameDays;
+		new_instance->model_num = model_num;
+        Model_t* model = GetModel(model_num);
+		new_instance->interract_radius = model->interract_radius << (model->Scale + model->Scale2 + 7);
+		new_instance->collision_radius = model->interract_radius << (model->Scale + model->Scale2 + 7);
+		new_instance->laser_flags = 0;
+		new_instance->uchar_25 = 0;
+		new_instance->name[0] = 0;
+		u8 dl = ( model->DefaultColorR & 0xff) >> 4 & 7;
+		u16 *collision = model->Collision_ptr;
+        if(collision != 0 && *collision != 0) {
+            dl = dl | 0x80;
+        }
+		new_instance->flags = dl;
+		new_instance->dist_cam = 0xff;
+		ShipDef_t* ship_def = model->Shipdef_ptr;
+        if(ship_def != 0) {
+			new_instance->globalvars.Thrust_C4 = ship_def->ForwardThrust;
+            new_instance->globalvars.Thrust_C6 = ship_def->RearThrust;
+            new_instance->globalvars.Thrust_C2 = ship_def->RearThrust;
+            new_instance->globalvars.Thrust_BE = ship_def->RearThrust;
+            new_instance->globalvars.Thrust_C0 = ~ship_def->RearThrust;
+            new_instance->globalvars.Thrust_BC = ~ship_def->RearThrust;
+			new_instance->thrust_power = ~ship_def->RearThrust >= 0x1329 ? 2 : ~ship_def->RearThrust >= 0xaa5 ? 1 : 0;
+			new_instance->globalvars.num_lasers = ship_def->Lasers;
+			new_instance->mass_x4 = ship_def->Mass * 4;
+			u16 capacity = ship_def->Capacity; // capacity
+			if(ship_def->Drive != 0) {
+				new_instance->globalvars.drive = ship_def->Drive;
+                capacity = capacity - DATA_DriveMasses[new_instance->globalvars.drive];
+            }
+			new_instance->cargo_space = capacity;
+			new_instance->globalvars.shields = 0;
+			new_instance->globalvars.max_shields = 0;
+        }
+    }
+}
+
+ModelInstance_t *CreateObject(ModelInstance_t *ship_instance, u8 state, u32 model)
+{
+    u8 *state_ptr;
+	u8 index;
+	ModelInstance_t *instance;
+
+    index = 0x72;
+	for(state_ptr = &DATA_ObjectArray->state_flags[0x72]; index > 0 && *state_ptr != 0; state_ptr--) {
+        index--;
+    }
+	if (index < 0x14) {
+		index = 0x72;
+		state_ptr = &DATA_ObjectArray->state_flags[0x72];
+		do {
+			if(!( *state_ptr & 0x20)) {
+				if(index >= 0x14) {
+					DATA_NumObjects--;
+					break;
+				} else {
+					return NULL;
+				}
+			}
+			index--;
+			state_ptr--;
+		} while(index > 0);
+	} else {
+        DATA_ObjectArray->state_flags[index] = state;
+        if(!(state & 0x20)) {
+            DATA_NumObjects++;
+        }
+
+		instance = &DATA_ObjectArray->instances[index];
+        InitInstance(instance, ship_instance, model);
+        instance->model_num = model;
+        instance->index = (u8)index;
+	}
+	return instance;
+}
+
+u32 AttachLaser(ModelInstance_t *p1, u16 *cargo_space)
+{
+	u32 i;
+	u32 weight = BoundRandom(0x33);
+	weight += DATA_ShipLaserCapacity[p1->object_type];
+	weight = weight * *cargo_space >> 8;
+
+	for (i = 1; i < 9; i++)
+		if (weight < DATA_AILasers[i].weight) break;
+
+	i--;
+	*cargo_space -= DATA_AILasers[i].weight;
+	return DATA_AILasers[i].id;
+}
+
+ModelInstance_t *CreateShip(ModelInstance_t *copyfrom, u8 object_type, int modelnum)
+{
+	ModelInstance_t *ship_instance = CreateObject(copyfrom, 0x4f, modelnum);	// create object
+	if (ship_instance == NULL) return NULL;
+
+	ship_instance->ship_type = 0xb;					// AI ship
+	ship_instance->object_type = object_type;			// store shiptable
+	u32 ebp_0x28;
+	GenerateShipName(ship_instance, DATA_NameThingyByteTable[object_type], &ebp_0x28);		// ship name?
+	ShipDef_t* ship_def = GetModel(ship_instance->model_num)->Shipdef_ptr;		// stats pointer
+	u16 max_tech_level = DATA_RandomizerFunc() & 0xffff;				// tech/wealth?
+
+	if (ship_instance->object_type == 0xe) {			// police
+		ship_instance->globalvars.unique_Id = 0;		// Uniform colour
+		max_tech_level = DATA_SystemTechLevel << 8;
+	}
+	if (ship_instance->object_type == 0x10) max_tech_level = 0xffff;	// assass. targets
+	u16 cargo_space = ship_instance->cargo_space;							// remain. int cap
+	u32 equipment = 0;
+	u32 edx = DATA_RandomizerFunc();
+	u32 drive = ship_def->Drive;							// drive
+	if (ship_instance->object_type == 0xc) edx = 0xffff;		// bounty hunters?
+	if (edx > 0xf000 && ship_instance->object_type != 1)
+		{ cargo_space--; equipment |= EQUIP_HS_CLOUD_ANALYSER; }					// HS cloud analyser
+	if (drive >= 0) {
+		if (edx > 0xc000) 
+			drive >>= 8;			// 1/3 chance of altern.
+		drive &= 0xf;
+		ship_instance->globalvars.drive = drive;
+		cargo_space -= DATA_DriveMasses[drive];					// actual drive
+	}
+	drive = ship_instance->globalvars.drive;
+	ship_instance->fuel_tank = DATA_DriveTankFuel[drive] << 0x18;		// fuel
+	u32 cargo_fuel = DATA_DriveCargoFuel[drive];
+	if (cargo_fuel >= cargo_space) 
+		cargo_fuel = cargo_space;		
+	cargo_space -= cargo_fuel;	// J3101
+	ship_instance->cargo_fuel = cargo_fuel;							// cargo fuel
+	ship_instance->globalvars.laser_front = AttachLaser(ship_instance, &cargo_space);				// laser
+
+	u32 shields = cargo_space;
+	if (shields > 0x12c) shields = 0x12c;
+
+	if (ship_instance->object_type == 1) 
+		shields = shields / 4;
+
+	shields = shields / 4;
+	shields = shields * max_tech_level / 0xffff;
+	shields = BoundRandom(shields);
+	shields = BoundRandom(shields) * 2;
+	cargo_space -= shields;
+	ship_instance->globalvars.shields = shields << 4;						// shields
+
+	if (cargo_space >= 2) {
+		u32 techlevel = BoundRandom(max_tech_level);
+		if (techlevel >= 0xc000) {
+			equipment |= EQUIP_NAVAL_ECM;
+			cargo_space -= 2;							// naval ECM
+		}
+		else if (techlevel >= 0x4000) {
+			equipment |= EQUIP_ECM;
+			cargo_space -= 2;							// ECM
+		}
+	}	
+	if (cargo_space > 0) {
+		u16 missiles = ship_def->Missiles;						// missiles
+		missiles = BoundRandom(missiles);
+		if (missiles >= 1) {
+			u8 missile_type = DATA_AIMissiles[max_tech_level >> 0xc];
+			while (cargo_space > 0 && missiles != 0) {
+				ship_instance->globalvars.missiles[missiles] = missile_type;
+				cargo_space--; missiles--;
+			}
+		}
+	}
+	// J3108
+	if (cargo_space > 0) {
+		u32 techlevel = BoundRandom(max_tech_level);
+		if (techlevel >= 0x800) { cargo_space--; equipment |= EQUIP_SCANNER; }	// scanner
+		techlevel = BoundRandom(max_tech_level);
+		if (techlevel >= 0xfc00 && cargo_space >= 4 && ship_instance->object_type != 0xe) {
+			cargo_space--; equipment |= EQUIP_ENERGY_BOMB;
+		}										// energy bomb
+	}
+	equipment |= EQUIP_ATMO_SHIELD;								// atmos. shield
+	u32 more_fuel = cargo_space * DATA_DriveCargoFuel2[ship_instance->object_type];
+	if (more_fuel > 0xaf) 
+		more_fuel = 0xaf;
+	cargo_space -= more_fuel;
+	ship_instance->cargo_fuel += more_fuel;						// Cargo fuel again?
+	ship_instance->cargo_space = cargo_space;						// remaining capacity
+	ship_instance->globalvars.equip = equipment;		// equipment
+	return ship_instance;
+}
+
+// Object gen of some kind
+extern "C" ModelInstance_t *AIShipSpawn(u8 object_type, u32 some)
+{
+	u32 i = 1;
+	//u32 modelNum = GetRandomModelNum (shiptable, something);		// Generate model index
+	u32 modelNum = GetRandomModelNum (object_type);
+	return CreateShip(&DATA_DummyInstance, object_type, modelNum);
+}
+
 // do damage.  
 extern "C" INT32 DoShipDamage(ModelInstance_t *ship, INT32 damage, INT8 bContinuous)
 {
@@ -386,7 +634,7 @@ extern "C" ModelInstance_t *AIChooseEquipment(ModelInstance_t *ship, INT32 shipT
 		maxLasers = 0x9;
 
 	// no gun mounts?
-	if (ship->globalvars.num_gunmountings != 0)
+	if (ship->globalvars.num_lasers != 0)
 		for (i = 0; i < maxLasers; i++)
 		{
 			if (DATA_AILasers[i].weight > allowedWeight)
@@ -722,7 +970,7 @@ extern "C" INT8 SpawnHostileGroup(INT8 ships, INT8 *shipArray, INT32 targetName,
 		return 0;
 
 	shipObj->dest_index = DATA_PlayerIndex;
-	FUNC_000702_Unknown(shipObj, 0x315000);
+	FUNC_000702_GeneratePosition(shipObj, 0x315000);
 	shipObj->ai_mode = AI_PIRATE_PREPARE;
 	shipObj->target_index = 0x0;
 	shipObj->object_type = object_type;
@@ -733,7 +981,7 @@ extern "C" INT8 SpawnHostileGroup(INT8 ships, INT8 *shipArray, INT32 targetName,
 		shipObj->cargo_fuel |= 0x8000;
 	}
 
-	FUNC_000048_Unknown(0x17, 0x0, shipObj->index);
+	FUNC_000048_BeginEvents(0x17, 0x0, shipObj->index);
 
 	parentShipIdx = shipObj->index;
 
@@ -772,7 +1020,7 @@ extern "C" INT8 SpawnHostileGroup(INT8 ships, INT8 *shipArray, INT32 targetName,
 			for (j = (i & 0xfe); j > 0; j--)
 				FUNC_001661_Vec64Add((INT64*)(shipObj+0x3e), tempVec); */
 
-		FUNC_000048_Unknown(0x17, 0x0, shipObj->index);
+		FUNC_000048_BeginEvents(0x17, 0x0, shipObj->index);
 	}
 
 	return ships;
@@ -830,6 +1078,38 @@ extern "C" void RefreshShipyardData(starport_t *starport)
 
 	if (BoundRandom(17) < DATA_NumStarports)
 		FUNC_000634_AddToShipyard(0xd, starport, &shipyardArray);
+}
+
+void SpawnHSTrader()
+{
+    ModelInstance_t *trader = AIShipSpawn(1,0);
+    if(trader != 0) {
+        u32 ebp_2 = 0x33;
+		FUNC_000702_GeneratePosition(trader,20480);
+		trader->object_type = 0x11;
+		trader->post_hs_ai = 8;
+        if(DATA_NumStarports != 0) {
+			ModelInstance_t *starportObj = GetInstance(DATA_StarportArray[BoundRandom(DATA_NumStarports)].objectIdx, DATA_ObjectArray);
+			trader->target_index = starportObj->index;
+            DATA_RandomizerFunc();
+			trader->globalvars.local_Startime = DATA_RandSeed1 << 2;
+            trader->globalvars.local_Stardate = DATA_RandSeed1 >> 0x1e;
+            if(!(DATA_GameTics & 0x80) && !( trader->globalvars.local_Startime & 0x80)) {
+                trader->globalvars.local_Stardate++;
+            }
+            trader->globalvars.local_Startime += DATA_GameTics;
+            trader->globalvars.local_Stardate += DATA_GameDays;
+    //        if(FUNC_000775_FindSourceSystem(trader) == 0) {
+				//if (DATA_ObjectArray->state_flags[trader->index] == 0x20) {
+				//	DATA_NumObjects--;
+				//}
+				//DATA_ObjectArray->state_flags[trader->index] = 0;
+    //        } else {
+                DATA_ObjectArray->state_flags[trader->index] = 2;
+                FUNC_000048_BeginEvents(0x17, 0, trader->index);
+            //}
+        }
+    }
 }
 
 extern "C" void SpawnTraders(INT32 traderLevel, INT32 bInitial)

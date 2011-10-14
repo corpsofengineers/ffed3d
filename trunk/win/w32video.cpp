@@ -118,7 +118,7 @@ extern "C" int asmmain (int argc, char **argv);
 extern "C" unsigned char *DATA_008604;
 extern "C" unsigned char *DATA_008605; // avi frame buffer
 extern "C" char *DATA_008804;
-extern "C" char *DATA_008861;
+extern "C" ModelInstance_t** DATA_008861;
 extern "C" char *DATA_008872;
 extern "C" char *DATA_008870;
 extern "C" char *DATA_008835;
@@ -1850,7 +1850,7 @@ void PreparePanel(void)
 			BattleMode(false);
 
 		// turret view
-		if (model->Shipdef_ptr->Gunmountings < 3)
+		if (model->Shipdef_ptr->Lasers < 3)
 			VoidButton(34+(7*52), 595);
 		// missile viewer
 		if ((instance->globalvars.equip & EQUIP_MISSILE_VIEWER) == 0)

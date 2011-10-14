@@ -299,13 +299,19 @@ typedef struct
 
 #define NUM_ELEMENTS(a) (sizeof(a)/sizeof(a[0]))
 
+extern "C" u8 *DATA_NameThingyByteTable;
+extern "C" INT32 DATA_GLobalEventCounter;
 extern "C" InstanseList_t* DATA_ObjectArray;
 extern "C" Model_t **ffeModelList;
 extern "C" INT32 (*DATA_RandomizerFunc)();	// randomizer
 extern "C" ModelInstance_t* DATA_PlayerObject;
 extern "C" stockitem_t DATA_StockData[0x20];
 extern "C" INT8 DATA_CargoFromShip[0x20];
+extern "C" INT32 DATA_ShipLaserCapacity[];
 extern "C" laserdata_t DATA_AILasers[0x9];
+extern "C" INT32 DATA_DriveCargoFuel2[];
+extern "C" INT32 DATA_DriveCargoFuel[];
+extern "C" INT32 DATA_DriveTankFuel[];
 extern "C" INT32 DATA_DriveMasses[];
 extern "C" INT32 DATA_ECM_Weight;
 extern "C" INT32 DATA_NECM_Weight;
@@ -334,17 +340,19 @@ extern "C" INT32 FUNC_000952_DestroyEquip(ModelInstance_t *ship);
 extern "C" INT32 FUNC_000953_TakeDamage(ModelInstance_t *victim, INT32 damage, INT8 inflictorIdx, INT32 bContinuous);
 
 extern "C" void FUNC_000148_Unknown(INT32, INT32);
-extern "C" void FUNC_000048_Unknown(INT32, INT32, INT32);
+extern "C" void FUNC_000048_BeginEvents(INT32, INT32, INT32);
 extern "C" void FUNC_000034_Unknown(INT32, INT32);
 extern "C" INT32 FUNC_000035_GetSpecialShips(INT32);
 
-extern ModelInstance_t* GetInstance(int index, InstanseList_t *list);
-extern Model_t *GetModel(int index);
+extern ModelInstance_t* GetInstance(u32 index, InstanseList_t *list);
+extern Model_t *GetModel(u32 index);
 
 // this function is unreliable, replace
 //extern INT16 (*DATA_BoundRandom)(INT16 max);	// returns a number between 0 and max
 #define BoundRandom(m) (m == 0 ? 0 : (DATA_RandomizerFunc() % m))
 
+extern "C" ShipsLoyalityTable DATA_ShipsLoyalityTable[];
+extern "C" ModelInstance_t DATA_DummyInstance;
 extern "C" INT16 DATA_CurrentAllegiance;
 extern "C" INT8 *DATA_CustomShipList;
 extern "C" INT32 DATA_CustomShipIndex;
@@ -413,10 +421,11 @@ extern "C"  void FUNC_GetSysGenParams(sysGenParams_t *genParams, INT32 systemcod
 
 // gets a system of the opposing military power.
 // returns pop. level in eax, return value of F857 in ret
+extern "C" u32 FUNC_000775_FindSourceSystem(ModelInstance_t *ship);
 extern "C"  INT32 FUNC_000625_FindOppositionSystem(INT32 *ret);
 extern "C"  ModelInstance_t *FUNC_000772_AIShipSpawn(INT32 type);
 extern "C"  void FUNC_000697_GetBounty(ModelInstance_t *ship, INT32 bountyLevel);
-extern "C"  void FUNC_000702_Unknown(ModelInstance_t *ship, INT32 v);
+extern "C"  void FUNC_000702_GeneratePosition(ModelInstance_t *ship, INT32 distance);
 extern "C"  void FUNC_000634_AddToShipyard(INT32 type, starport_t *starport, INT32 **shipyardPtr);
 extern "C"  void FUNC_000688_SpawnTraders();
 
