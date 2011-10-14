@@ -21,6 +21,7 @@ static int fullscreen = 0;
 int aspectfix = 1;
 static int wireframe = 0;
 int console = 0;
+extern char* con_text;
 
 static int fswidth = 640;
 static int fsheight = 400;
@@ -337,6 +338,8 @@ static void RestoreSurfaces()
 	VideoReset();
 }
 
+extern void printTyConsole (WPARAM shift);
+
 static LRESULT CALLBACK WndProc (HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
 	switch(msg)
@@ -431,6 +434,10 @@ static LRESULT CALLBACK WndProc (HWND wnd, UINT msg, WPARAM wparam, LPARAM lpara
 				}
 				if (wparam == VK_DELETE){
 					plsize-=0.01;
+				}
+				if (console)
+				{
+					printTyConsole (wparam);
 				}
 
 			}
@@ -2633,14 +2640,17 @@ void Render()
 	
 	if (console)
 	{
-		D3DXMATRIX *scale;
+		float sx = curwidth/640.0f;
+		D3DXMATRIX *scale = new D3DXMATRIX;;
+		D3DXMatrixScaling (scale, sx, 1, 1);
 		textSprite->Begin (D3DXSPRITE_ALPHABLEND);
+		//textSprite->SetTransform (scale);
 		textSprite->Draw (textures[96], NULL, NULL, NULL, 0xffffffff);
 		//рисуем бффер
 		//рисуем строку ввода
 		DrawConText (">", 2, 480, 0xff00ff00);
-		DrawConText ("", 4, 480, 0xffffffff);
-
+		DrawConText (con_text, 20, 480, 0xffffffff);
+		
 		//выводим лог консоли
 
 		scriptSystem* scr = scriptSystem::getSingleton();
