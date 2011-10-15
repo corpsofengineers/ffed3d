@@ -144,7 +144,7 @@ u32 GetRandomModelNum(u8 object_type)//, u32 *pIndex)
 	//	num = pIndex[0] * DATA_ShipsLoyalityTable[tablenum].size >> 16;
 	//}
 
-	return DATA_ShipsLoyalityTable[object_type].ships[num];
+	return DATA_ShipsLoyalityTable[object_type].ships[num-1];
 }
 
 void InitInstance(ModelInstance_t *new_instance, ModelInstance_t *old_instance, u32 model_num)
@@ -218,7 +218,9 @@ ModelInstance_t *CreateObject(ModelInstance_t *ship_instance, u8 state, u32 mode
 			index--;
 			state_ptr--;
 		} while(index > 0);
-	} else {
+	} 
+	//else 
+	{
         DATA_ObjectArray->state_flags[index] = state;
         if(!(state & 0x20)) {
             DATA_NumObjects++;
@@ -293,7 +295,23 @@ ModelInstance_t *CreateShip(ModelInstance_t *copyfrom, u8 object_type, int model
 	ship_instance->ship_type = 0xb;					// AI ship
 	ship_instance->object_type = object_type;			// store shiptable
 
-	GenerateShipName(ship_instance, &DATA_NameThingyByteTable[object_type], object_type == 0xe ? 14 : 18);		// ship name?
+	u32 namegentype = 18;
+
+	if (object_type == 0xe) { // police
+		namegentype = 14;
+	} else if (object_type == 0xc) {
+		namegentype = BoundRandom(2)+1;
+	} else if (modelnum == 0x11 ||
+			   modelnum == 0x31 || 
+			   modelnum == 0x32 || 
+			   modelnum == 0x33 || 
+			   modelnum == 0x34 || 
+			   modelnum == 0x3f || 
+			   modelnum == 0x45) {
+		namegentype = 0;
+	}
+
+	GenerateShipName(ship_instance, &DATA_NameThingyByteTable[object_type], namegentype);		// ship name?
 	ShipDef_t* ship_def = GetModel(ship_instance->model_num)->Shipdef_ptr;		// stats pointer
 	u16 max_tech_level = DATA_RandomizerFunc() & 0xffff;				// tech/wealth?
 
@@ -306,10 +324,16 @@ ModelInstance_t *CreateShip(ModelInstance_t *copyfrom, u8 object_type, int model
 	u32 equipment = 0;
 	u32 edx = DATA_RandomizerFunc();
 	u32 drive = ship_def->Drive;							// drive
+	
 	if (object_type == 0xc) 
 		edx = 0xffff;		// bounty hunters?
 	if (edx > 0xf000 && object_type != 1)
 		{ cargo_space--; equipment |= EQUIP_HS_CLOUD_ANALYSER; }					// HS cloud analyser
+
+	if (object_type == 0xe) {			// police
+		drive = 0x1; // interplanetary drive
+	}
+
 	if (drive >= 0) {
 		//if (edx > 0xc000) 
 		//	drive >>= 8;			// 1/3 chance of altern.
@@ -507,7 +531,8 @@ extern "C" INT32 DoShipDamage(ModelInstance_t *ship, INT32 damage, INT8 bContinu
 	iProbability = (INT32)(damageProbability * 65536.0);
 
 	numDamages = 0;
-	while (rand < iProbability)
+	//while (rand < iProbability)
+	if (rand < iProbability)
 	{
 		iResult = FUNC_000952_DestroyEquip(ship);
 		
@@ -1024,7 +1049,7 @@ extern "C" INT8 SpawnHostileGroup(INT8 ships, INT8 *shipArray, INT32 targetName,
 		if (shipType == 0x13)
 			DATA_CustomShipIndex = shipArray[DATA_RandomizerFunc() & 0xf];
 
-		shipObj = AIShipSpawn(shipType+1);
+		shipObj = AIShipSpawn(shipType);
 		
 		if (shipObj == 0)
 			return i;
@@ -1160,7 +1185,7 @@ extern "C" void SpawnTraders(INT32 traderLevel, INT32 bInitial)
 	curTraders = numTraders/4;
 	// spawn traders incoming via hyperspace
 	for (i = 0; i < curTraders; i++)
-		SpawnHSTrader();
+		FUNC_000689_SpawnHSTrader();
 
 	// spawn thargoids?
 	curTraders = BoundRandom(FUNC_000035_GetSpecialShips(0x16));
