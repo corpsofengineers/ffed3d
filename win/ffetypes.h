@@ -63,26 +63,26 @@ struct ShipDef_t {
 
 
 struct Model_t {
-    unsigned short * Mesh_ptr;
-    signed char *    Vertices_ptr;
-    int              NumVertices;
-    signed char *    Normals_ptr;
-    int              NumNormals;
-    int              Scale;
-    int              Scale2;
-    int              Radius;
-    int              Primitives;
-    char	         DefaultColorR;
-	char	         DefaultColorG;
-	char	         DefaultColorB;
-    char             padding;
-    int              field_28;
-    int              interract_radius;
-    int              collision_radius;
-    unsigned short * Collision_ptr;
-    ShipDef_t *      Shipdef_ptr;
-    int              DefaultCharacter;
-    unsigned short * Character[1];
+    u16 *Mesh_ptr;
+    s8 *Vertices_ptr;
+    u32 NumVertices;
+    s8 *Normals_ptr;
+    u32 NumNormals;
+    u32 Scale;
+    u32 Scale2;
+    u32 Radius;
+    u32 Primitives;
+    u8 DefaultColorR;
+	u8 DefaultColorG;
+	u8 DefaultColorB;
+    u8 padding;
+    u32 field_28;
+    s32 interract_radius;
+    s32 collision_radius;
+    u16* Collision_ptr;
+    ShipDef_t *Shipdef_ptr;
+    u8 DefaultCharacter;
+    u16 *Character[1];
 };
 
 typedef union 
@@ -104,12 +104,12 @@ typedef union
 			u16 ushort_B6;				// x accel rate
 			u16 ushort_B8;				// y accel rate
 			u16 Current_Main_Thrust;	// z accel rate
-			u16 Thrust_BC;				// main thruster accel
-			u16 Thrust_BE;				// retro thruster accel
-			u16 Thrust_C0;				// top thruster accel
-			u16 Thrust_C2;				// bottom thruster accel
-			u16 Thrust_C4;				// right thruster accel
-			u16 Thrust_C6;				// left thruster accel
+			s16 Thrust_BC;				// main thruster accel
+			s16 Thrust_BE;				// retro thruster accel
+			s16 Thrust_C0;				// top thruster accel
+			s16 Thrust_C2;				// bottom thruster accel
+			s16 Thrust_C4;				// right thruster accel
+			s16 Thrust_C6;				// left thruster accel
 			u32 equip;					// equipment flags
 			u32 dam_equip;				// damaged equipment flags
 			u8 drive;					// drive type
@@ -189,12 +189,12 @@ struct ModelInstance_t {
 	u8 ai_mode;					// AI mode
 	u8 target_index;			// nav target index - used for missile also enemy index for pirate groups
 	u8 thrust_power;			// 0-2, depending on retro power
-	u16 target_off_x;			// target x-offset, used for station/starport first pass
-	u16 target_off_y;			// target y-offset
-	u16 target_off_z;			// target z-offset
-	u16 target_dir_x;			// target x-direction
-	u16 target_dir_y;			// target y-direction
-	u16 target_dir_z;			// target z-direction
+	s16 target_off_x;			// target x-offset, used for station/starport first pass
+	s16 target_off_y;			// target y-offset
+	s16 target_off_z;			// target z-offset
+	s16 target_dir_x;			// target x-direction
+	s16 target_dir_y;			// target y-direction
+	s16 target_dir_z;			// target z-direction
 	u16 dist_target;			// exponential distance to target (shift of dir vec)
 	u16 autopilot_pitch;		// autopilot pitch (x rotation)
 	u16 autopilot_roll;			// autopilot roll (z rotation)
@@ -206,8 +206,20 @@ struct ModelInstance_t {
 	u32 fuel_tank;				// fuel tank - 0x20000000 = 1t
 	u8 field_122[2];			// 2 dup(?)
 	u8 name[20];				// 20 bytes
-	u64 interract_radius;		// interaction radius
-	u64 collision_radius;		// primary collision radius
+	union {
+		struct {
+			s32 interract_radius_low;	// interaction radius
+			s32 interract_radius_hi;
+		};
+		s64 interract_radius;
+	};
+	union {
+		struct {
+			s32 collision_radius_low;	// primary collision radius
+			s32 collision_radius_hi;
+		};
+		s64 collision_radius;
+	};
 	u32 physics_timeout;		// physics timeout
 	u8 flags;					// flags
 	u8 FOR_timeout;				// FOR update timeout

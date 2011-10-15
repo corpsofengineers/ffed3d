@@ -147,6 +147,8 @@ u32 GetRandomModelNum(u8 object_type)//, u32 *pIndex)
 	return DATA_ShipsLoyalityTable[object_type].ships[num-1];
 }
 
+extern "C" void FUNC_001341_Int64ArithShift(__int64 *, int);
+
 void InitInstance(ModelInstance_t *new_instance, ModelInstance_t *old_instance, u32 model_num)
 {
     if(old_instance != new_instance) {
@@ -158,8 +160,17 @@ void InitInstance(ModelInstance_t *new_instance, ModelInstance_t *old_instance, 
 		new_instance->globalvars.local_Stardate = DATA_GameDays;
 		new_instance->model_num = model_num;
         Model_t* model = GetModel(model_num);
-		new_instance->interract_radius = model->interract_radius << (model->Scale + model->Scale2 + 7);
-		new_instance->collision_radius = model->interract_radius << (model->Scale + model->Scale2 + 7);
+
+		u32 scale = (model->Scale + model->Scale2 + 7);
+		new_instance->interract_radius_low = model->interract_radius;
+		FUNC_001341_Int64ArithShift(&new_instance->interract_radius, scale - 0xf);
+		//new_instance->interract_radius_low = (u64)model->interract_radius << (scale - 0xf);
+		new_instance->interract_radius_hi = model->interract_radius >> 0x1f;
+
+		new_instance->collision_radius_low = model->collision_radius;
+		FUNC_001341_Int64ArithShift(&new_instance->collision_radius, scale - 0xf);
+		//new_instance->collision_radius_low = (u64)model->collision_radius << (scale - 0xf);
+		new_instance->collision_radius_hi = model->collision_radius >> 0x1f;
 		new_instance->laser_flags = 0;
 		new_instance->uchar_25 = 0;
 		new_instance->name[0] = 0;
@@ -195,43 +206,40 @@ void InitInstance(ModelInstance_t *new_instance, ModelInstance_t *old_instance, 
 
 ModelInstance_t *CreateObject(ModelInstance_t *ship_instance, u8 state, u32 model)
 {
-    u8 *state_ptr;
 	u8 index;
-	ModelInstance_t *instance;
 
-    index = 0x72;
-	for(state_ptr = &DATA_ObjectArray->state_flags[0x72]; index > 0 && *state_ptr != 0; state_ptr--) {
-        index--;
+ 	for(index = 114; index > 0; index--) {
+        if (DATA_ObjectArray->state_flags[index] == 0)
+			break;
     }
-	if (index < 0x14) {
-		index = 0x72;
-		state_ptr = &DATA_ObjectArray->state_flags[0x72];
-		do {
-			if(!( *state_ptr & 0x20)) {
-				if(index >= 0x14) {
-					DATA_NumObjects--;
-					break;
-				} else {
-					return NULL;
-				}
-			}
-			index--;
-			state_ptr--;
-		} while(index > 0);
-	} 
-	//else 
-	{
+	if (index < 20) { // 20 reserved
+		return NULL;
+		//for(index = 114; index > 0; index--) {
+		//	if (!(DATA_ObjectArray->state_flags[index] & 0x20)) {
+		//		if(index >= 20) {
+		//			DATA_NumObjects--;
+		//			break;
+		//		} else {
+		//			return NULL;
+		//		}
+		//	}
+		//}
+	}
+
+	if (index > 0) {
         DATA_ObjectArray->state_flags[index] = state;
         if(!(state & 0x20)) {
             DATA_NumObjects++;
         }
 
-		instance = &DATA_ObjectArray->instances[index];
+		ModelInstance_t *instance = &DATA_ObjectArray->instances[index];
         InitInstance(instance, ship_instance, model);
         instance->model_num = model;
         instance->index = (u8)index;
+		return instance;
 	}
-	return instance;
+
+	return NULL;
 }
 
 u32 AttachLaser(ModelInstance_t *ship, u16 *cargo_space)
@@ -425,12 +433,15 @@ ModelInstance_t *CreateShip(ModelInstance_t *copyfrom, u8 object_type, int model
 // Object gen of some kind
 extern "C" ModelInstance_t *AIShipSpawn(u8 object_type)
 {
+	if (object_type >= 0x13)
+		object_type -= 0x9;
+
 	u32 modelNum = GetRandomModelNum (object_type);
 	return CreateShip(&DATA_DummyInstance, object_type, modelNum);
 }
 
 // do damage.  
-extern "C" INT32 DoShipDamage(ModelInstance_t *ship, INT32 damage, INT8 bContinuous)
+extern "C" INT32 DoShipDamage(ModelInstance_t *ship, INT32 damage, u32 src_index, INT8 bContinuous)
 {
 	float temp;
 	float oldShields;
@@ -444,9 +455,17 @@ extern "C" INT32 DoShipDamage(ModelInstance_t *ship, INT32 damage, INT8 bContinu
 	ShipDef_t *ship_def;
 	INT32 rand, iProbability, iResult = 0, vol;
 
+	if (damage == 0) 
+		return 0;
+
+	if (src_index == ship->index)
+		return 0;
+
 	idx = ((ship == DATA_PlayerObject) ? 1 : 0);
 
 	//if (idx) return 0; // god mode
+
+	//ModelInstance_t *src = GetInstance(src_index, DATA_ObjectArray);
 
 	shields = ship->globalvars.shields;
 	totalShields = ship->globalvars.max_shields;
@@ -455,8 +474,8 @@ extern "C" INT32 DoShipDamage(ModelInstance_t *ship, INT32 damage, INT8 bContinu
 	ship_def = GetModel(ship->model_num)->Shipdef_ptr;
 	totalHull = ship_def->Mass * 4;
 	
-	oldHull = hull + HullDiff[idx];
-	oldShields = shields + ShieldDiff[idx];
+	oldHull = hull;// + HullDiff[idx];
+	oldShields = shields;// + ShieldDiff[idx];
 
 	if ((totalShields > 0) && (oldShields > 0))
 	{
@@ -496,8 +515,8 @@ extern "C" INT32 DoShipDamage(ModelInstance_t *ship, INT32 damage, INT8 bContinu
 	ship->globalvars.shields = (INT16)newShields;
 	
 	// store small differences to avoid rounding-error magnification.
-	HullDiff[idx] = newHull - hull;
-	ShieldDiff[idx] = newShields - shields;
+	//HullDiff[idx] = newHull - hull;
+	//ShieldDiff[idx] = newShields - shields;
 	
 	if (hull == 0)
 		return 0;	// death
@@ -896,9 +915,9 @@ extern "C" void RegenerateShields(ModelInstance_t *ship)
 	shieldRechargeAccum[shipIdx] -= shieldGain;
 	
 	if ((shields + shieldGain) > maxShields)
-		shields = maxShields;
+		ship->globalvars.shields = maxShields;
 	else
-		shields += shieldGain;
+		ship->globalvars.shields += shieldGain;
 }
 
 extern "C" INT32 AIGetMissileToFire(ModelInstance_t *ship)
@@ -1030,7 +1049,8 @@ extern "C" INT8 SpawnHostileGroup(INT8 ships, INT8 *shipArray, INT32 targetName,
 	shipObj->dest_index = DATA_PlayerIndex;
 	FUNC_000702_GeneratePosition(shipObj, 0x315000);
 	shipObj->ai_mode = AI_PIRATE_PREPARE;
-	shipObj->target_index = 0x0;
+	shipObj->target_index = DATA_PlayerIndex;
+	shipObj->thrust_power++;
 	shipObj->object_type = object_type;
 
 	if (targetName != 0)
@@ -1049,7 +1069,7 @@ extern "C" INT8 SpawnHostileGroup(INT8 ships, INT8 *shipArray, INT32 targetName,
 		if (shipType == 0x13)
 			DATA_CustomShipIndex = shipArray[DATA_RandomizerFunc() & 0xf];
 
-		shipObj = AIShipSpawn(shipType);
+		shipObj = AIShipSpawn(shipType+1);
 		
 		if (shipObj == 0)
 			return i;
@@ -1059,8 +1079,8 @@ extern "C" INT8 SpawnHostileGroup(INT8 ships, INT8 *shipArray, INT32 targetName,
 		shipObj->target_index = DATA_PlayerIndex;
 		shipObj->thrust_power++;
 		shipObj->target_off_x = BoundRandom(2000) - 1000;
+		shipObj->target_off_y = BoundRandom(2000) - 1000;
 		shipObj->target_off_z = BoundRandom(2000) - 1000;
-		shipObj->target_off_z = 0;
 		shipObj->object_type = object_type;
 
 		if (targetName != 0)

@@ -283,6 +283,7 @@ struct xModel
 			std::string dir;
 			for(int j=0; j<10; j++) 
 			{
+				skin[j]=NULL;
 				dir = CUtility::GetTheCurrentDirectory();
 				if (j==0)
 					sprintf_s(buf,"%s\\models\\%i\\skin.png",dir.c_str(),id);
@@ -290,7 +291,7 @@ struct xModel
 					sprintf_s(buf,"%s\\models\\%i\\skin%i.png",dir.c_str(),id,j);
 				if (CUtility::DoesFileExist(buf)) {
 					if (FAILED(D3DXCreateTextureFromFile(renderSystem->GetDevice(), buf, &skin[j]))) {
-						skin[j]=NULL;
+						//skin[j]=NULL;
 					}
 				}
 			}

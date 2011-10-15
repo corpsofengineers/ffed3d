@@ -962,7 +962,9 @@ extern "C" void SpawnAssassins(INT32 ships, INT32 missionIdx, INT32 name)
 	maxGroup = sqrt(ships);
 	shipArray = PackageData[missionIdx].shipData;
 
-	if (shipArray == MafiaShips || shipArray == IndyShips)
+	if (shipArray == NULL)
+		return;
+	else if (shipArray == MafiaShips || shipArray == IndyShips)
 		shipIDByte = 0xfb;	// bounties, cargo
 	else
 		shipIDByte = 0xf6;	// professionals, lawful
