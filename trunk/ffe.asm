@@ -73329,12 +73329,14 @@ FUNC_000953:			; Pos = 3e288 TakeDamage function!
 		; now pass parameters
 		mov eax,[ebp+0x14]
 		push eax	; bContinuous
+		mov eax,[ebp+0x10]
+		push eax	; source index
 		push edi	; damage
 		push ebx	; ship ptr
 		
 
 		call _DoShipDamage	; see ffemisc.c
-		add esp,byte +0xc
+		add esp,byte +0x10
 		
 		cmp word [ebx+0xe4],0x0
 		jnz EndCond2

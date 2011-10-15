@@ -1908,7 +1908,7 @@ Vect3f getNormal(unsigned char num) {
 	Vect3f normal;
 
 	if (mod!=NULL && mod->Normals_ptr!=NULL && num>0) {
-		signed char *normalPtr = mod->Normals_ptr+(num/2-1)*6;
+		char *normalPtr = mod->Normals_ptr+(num/2-1)*6;
 		normal.x=(float)*(normalPtr+2);
 		normal.y=(float)*(normalPtr+3);
 		normal.z=(float)*(normalPtr+4);
@@ -1943,7 +1943,7 @@ Vect3f getReNormal(unsigned char num) {
 	if (mod->Normals_ptr!=NULL && num>0) {
 		vNormal1 = GetVertexNormal(&Vect3f(Vertices->p.x, Vertices->p.y, Vertices->p.z)); 
 
-		signed char *normalPtr = mod->Normals_ptr+(num/2-1)*6;
+		char *normalPtr = mod->Normals_ptr+(num/2-1)*6;
 		vNormal2.x=(float)*(normalPtr+2);
 		vNormal2.y=(float)*(normalPtr+3);
 		vNormal2.z=(float)*(normalPtr+4);
@@ -1980,7 +1980,7 @@ Vect3f getReNormal(unsigned char num) {
 	return normal;
 }
 
-signed char * getVertexPtr(unsigned char num) {
+char * getVertexPtr(unsigned char num) {
 	return mod->Vertices_ptr+num/2*6;
 }
 
@@ -2030,7 +2030,7 @@ void getExpVertex(float *p, int vertNum) {
 void getTransVertex(float *p, int vertNum) {
 	int rnd;
 	float pta[3], ptb[3], ptc[3];	
-	signed char *vertOffs;
+	char *vertOffs;
 
 	vertOffs = getVertexPtr(vertNum);
 
