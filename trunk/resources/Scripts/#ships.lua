@@ -1,4 +1,4 @@
-function CreateShips_callback_()
+function CreateShips_callback()
 
 	for i=0, TransportMissions(), 1 do
 
