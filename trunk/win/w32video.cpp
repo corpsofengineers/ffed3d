@@ -174,6 +174,8 @@ int WINAPI WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
 	res = asmmain(0, NULL);
 
+	scriptSystem::getSingleton()->FreeInst();
+
 	return res;
 }
 

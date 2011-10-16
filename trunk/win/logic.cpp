@@ -1,3 +1,4 @@
+#include <math.h>
 #include "ffescr.h"
 #include <time.h>
 #include <d3d9.h>
@@ -32,6 +33,10 @@ scriptSystem::scriptSystem (void):
 	lua_pushcfunction (luaVM, scriptSystem::randomize); lua_setglobal (luaVM, "Randomize");
 	lua_pushcfunction (luaVM, scriptSystem::setColor); lua_setglobal (luaVM, "ColorRGB");
 	lua_pushcfunction (luaVM, scriptSystem::print); lua_setglobal (luaVM, "print");
+	lua_pushcfunction (luaVM, scriptSystem::math_sqrt); lua_setglobal (luaVM, "sqrt");
+	lua_pushcfunction (luaVM, scriptSystem::logic_and); lua_setglobal (luaVM, "logic_and");
+	lua_pushcfunction (luaVM, scriptSystem::logic_shiftright); lua_setglobal (luaVM, "logic_shiftright");
+	lua_pushcfunction (luaVM, scriptSystem::logic_shiftleft); lua_setglobal (luaVM, "logic_shiftleft");
 
 	//BuildScriptTable and
 	BuildScriptsTable();
@@ -217,6 +222,43 @@ int scriptSystem::print (lua_State* L)
 {
 	scriptSystem::getSingleton()->AddToLog ((char* )lua_tostring (L, 1));
 	return 0;
+}
+
+int scriptSystem::math_sqrt (lua_State *L)
+{
+	INT16 var = lua_tointeger (L, 1);
+	INT32 res = sqrt ((double)var);
+	lua_pushinteger (L, res);
+	return 1;
+}
+
+int scriptSystem::logic_and (lua_State *L)
+{
+	int a = lua_tointeger (L, 1);
+	int b = lua_tointeger (L, 2);
+
+	a &= b;
+
+	lua_pushinteger (L, a);
+	return 1;
+}
+
+int scriptSystem::logic_shiftright (lua_State *L)
+{
+	int var = lua_tointeger (L, 1);
+	int shift = lua_tointeger (L, 2);
+	var >>= shift;
+	lua_pushinteger (L, var);
+	return 1;
+}
+
+int scriptSystem::logic_shiftleft (lua_State *L)
+{
+	int var = lua_tointeger (L, 1);
+	int shift = lua_tointeger (L, 2);
+	var <<= shift;
+	lua_pushinteger (L, var);
+	return 1;
 }
 
 //LUA PUSHING METHODS

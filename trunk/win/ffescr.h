@@ -23,6 +23,10 @@ public:
 	static int randomize (lua_State* L);
 	static int setColor (lua_State *L);
 	static int print (lua_State *L);
+	static int math_sqrt (lua_State *L);
+	static int logic_and (lua_State *L);
+	static int logic_shiftright (lua_State *L);
+	static int logic_shiftleft (lua_State *L);
 
 	//LUA PUSHING METHODS
 	void newInteger (__int64 arg);

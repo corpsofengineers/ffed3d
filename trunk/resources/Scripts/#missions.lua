@@ -1,5 +1,4 @@
-function OnSystemInit()
-
+function OnSystemInit_callback()
 	SetLastAttackedIndex(0);
 	CreateShips();
 

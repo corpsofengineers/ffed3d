@@ -918,7 +918,7 @@ extern "C" void OnSystemInit()
 {
 	scriptSystem* scr = scriptSystem::getSingleton();
 
-	if (scr->getFunction ("OnSystemInit"))
+	if (scr->getFunction ("OnSystemInit_callback"))
 	{
 		scr->callFunction (0, 0);
 		return;
