@@ -1,6 +1,7 @@
 #include <math.h>
 #include "misc.h"
 #include <string.h>
+#include "ffescr.h"
 
 // number of 250-kg damages that one tonne of metal alloys will replace
 #define ALLOY_MULT 16
@@ -1247,6 +1248,15 @@ extern "C" void SpawnTraders(INT32 traderLevel, INT32 bInitial)
 
 extern "C" void CreateShips()
 {
+
+	scriptSystem* scr = scriptSystem::getSingleton();
+
+	if (scr->getFunction ("CreateShips_callback"))
+	{
+		scr->callFunction (0, 0);
+		return;
+	}
+
 	INT32 i, mission_idx, name;
 
 	for (i = 0; i < DATA_NumPackages; i++)
