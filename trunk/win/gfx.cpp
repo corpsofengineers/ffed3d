@@ -2424,9 +2424,9 @@ void setMaterial(short cmd) {
 	}
 
 	if ((short)(cmd & 0x1000)==0x1000) {
-		currentR=localColor[0]*17;
-		currentG=localColor[1]*17;
-		currentB=localColor[2]*17;
+		currentR=localColor[0];
+		currentG=localColor[1];
+		currentB=localColor[2];
 		currentColor.set(currentR,
 			currentG,
 			currentB);
@@ -2444,9 +2444,9 @@ void setMaterial(short cmd) {
 		short r=(rgb&0x0F00)>>8;
 		short g=(rgb&0x00F0)>>4;
 		short b=(rgb&0x000F);
-		currentR=r*17;
-		currentG=g*17;
-		currentB=b*17;
+		currentR=r * 12 + 63;
+		currentG=g * 12 + 63;
+		currentB=b * 12 + 63;
 		currentColor.set(currentR,currentG,currentB);
 	}
 }
@@ -2645,14 +2645,14 @@ extern void sendToRender(int num, float *origin, unsigned char orient, int scale
 	//localColor[0]=mod->DefaultColorR*17;
 	//localColor[1]=mod->DefaultColorG*17;
 	//localColor[2]=mod->DefaultColorB*17;
-	localColor[0]=gptr->localColor.r;
-	localColor[1]=gptr->localColor.g;
-	localColor[2]=gptr->localColor.b;
+	//localColor[0]=gptr->localColor.r;
+	//localColor[1]=gptr->localColor.g;
+	//localColor[2]=gptr->localColor.b;
 
 	if (localColor[0]==localColor[1]==localColor[2]) {
-		localColor[0]=mod->DefaultColorR;
-		localColor[1]=mod->DefaultColorG;
-		localColor[2]=mod->DefaultColorB;
+		localColor[0]=mod->DefaultColorR * 12 + 63;
+		localColor[1]=mod->DefaultColorG * 12 + 63;
+		localColor[2]=mod->DefaultColorB * 12 + 63;
 	}
 
 	//currentColor.set(localColor[0],localColor[1],localColor[2]);
@@ -3620,18 +3620,18 @@ extern void sendToRender(int num, float *origin, unsigned char orient, int scale
 					short g=(rgb&0x00F0)>>4;
 					short b=(rgb&0x000F);
 					//currentColor=D3DCOLOR_XRGB(r*16,g*16,b*16);
-					localColor[0]=(char)r*17;
-					localColor[1]=(char)g*17;
-					localColor[2]=(char)b*17;
+					localColor[0]=(char)r * 12 + 63;
+					localColor[1]=(char)g * 12 + 63;
+					localColor[2]=(char)b * 12 + 63;
 				} else {
 					short rgb=(*(command+2+var)&0x0FFF);
 					short r=(rgb&0x0F00)>>8;
 					short g=(rgb&0x00F0)>>4;
 					short b=(rgb&0x000F);
 					//currentColor=D3DCOLOR_XRGB(r*16,g*16,b*16);
-					localColor[0]=(char)r*17;
-					localColor[1]=(char)g*17;
-					localColor[2]=(char)b*17;
+					localColor[0]=(char)r * 12 + 63;
+					localColor[1]=(char)g * 12 + 63;
+					localColor[2]=(char)b * 12 + 63;
 				}
 				command+=10;
 			} else {
@@ -3639,9 +3639,9 @@ extern void sendToRender(int num, float *origin, unsigned char orient, int scale
 				short r=(rgb&0x0F00)>>8;
 				short g=(rgb&0x00F0)>>4;
 				short b=(rgb&0x000F);
-				localColor[0]=(char)r;
-				localColor[1]=(char)g;
-				localColor[2]=(char)b;
+				localColor[0]=(char)r * 12 + 63;
+				localColor[1]=(char)g * 12 + 63;
+				localColor[2]=(char)b * 12 + 63;
 				command+=3;
 			}
 			continue;
@@ -5529,9 +5529,9 @@ extern "C" int C_Break(DrawMdl_t *drawModel, unsigned short *cmd)
 	}
 
 	// Локальный цвет модели
-	localColor[0]=drawModel->localColor.r;
-	localColor[1]=drawModel->localColor.g;
-	localColor[2]=drawModel->localColor.b;
+	localColor[0]=drawModel->localColor.r * 12 + 63;
+	localColor[1]=drawModel->localColor.g * 12 + 63;
+	localColor[2]=drawModel->localColor.b * 12 + 63;
 
 	// Глобальные переменные модели
 	globalvar = inst->globalvars.raw;	
@@ -5700,10 +5700,10 @@ extern "C" int C_Break(DrawMdl_t *drawModel, unsigned short *cmd)
 //	if (modelconfig[mainObjectNum].skip)
 //		return 0;
 
-	if (subObject==true && currentModel<3 && objectList[mainObjectNum]->config.notdrawtext)
+	if (subObject==true && currentModel == 0 && objectList[mainObjectNum]->Exist())
 		return 0;
 
-	if (subObject==true && currentModel<3 && objectList[previousModel]->config.notdrawtext)
+	if (subObject==true && currentModel == 0 && objectList[previousModel]->Exist())
 		return 0;
 
 	//if (subObject==true && objNum>=3 && objectList[mainObjectNum]->config.notdrawsubmodels)
@@ -5799,6 +5799,7 @@ extern "C" int C_Break(DrawMdl_t *drawModel, unsigned short *cmd)
 		}
 	}
 
+	modelList[modelNum].skinnum = iptr->globalvars.unique_Id & 7;
 	modelList[modelNum].subObject=subObject;
 
 	// Материал 
@@ -5840,9 +5841,9 @@ extern "C" int C_Break(DrawMdl_t *drawModel, unsigned short *cmd)
 			modelList[modelNum].material=SUN;
 	}
 
-	modelList[modelNum].localR=drawModel->localColor.r * 32;
-	modelList[modelNum].localG=drawModel->localColor.g * 32;
-	modelList[modelNum].localB=drawModel->localColor.b * 32;
+	modelList[modelNum].localR=drawModel->localColor.r * 12 + 63;
+	modelList[modelNum].localG=drawModel->localColor.g * 12 + 63;
+	modelList[modelNum].localB=drawModel->localColor.b * 12 + 63;
 
 	// Получаем позицию источника света для текущей модели
 	modelList[modelNum].lightPos.x=-(float)drawModel->lpos.x * 1500;
@@ -6181,6 +6182,10 @@ D3DXVECTOR4 GetStarLightColor()
 		color.y = 1.0f / 255.0f * (starColors[model-138][1] * 17);
 		color.z = 1.0f / 255.0f * (starColors[model-138][2] * 17);
 		color.w = 1.0f;
+
+		color.x = color.x * 0.75 + 0.25;
+		color.y = color.y * 0.75 + 0.25;
+		color.z = color.z * 0.75 + 0.25;
 	}
 
 	return color;

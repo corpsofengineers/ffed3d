@@ -704,6 +704,7 @@ int panelnum=0;
 
 ID3DXEffect* effectList[500];
 ID3DXEffect* effectPlanet;
+ID3DXEffect* effectModels;
 ID3DXEffect* effectCurrent;
 
 
@@ -891,13 +892,25 @@ void loadEffects() {
 		}
 	}
 
+	sprintf_s(buf,"models/models.fx");
+	if ( FAILED(D3DXCreateEffectFromFileA(renderSystem->GetDevice(), (LPCSTR)buf, 0, 0, 0, 0, &effectModels, &err))) {
+		effectModels=NULL;
+		if (err) {
+			char *tempString = (char*)err->GetBufferPointer();
+			if (tempString != NULL) {
+				printf("Modifier shader: %s",tempString);
+				MessageBox(0, tempString, 0, 0);
+			}
+		}
+	}
+
 	for(int i=3;i<500;i++) {
 		if (Planet(i)) {
 			effectList[i] = effectPlanet;
 		} else {
 			sprintf_s(buf,"models/%i/effect.fx",i);
 			if ( FAILED(D3DXCreateEffectFromFileA(renderSystem->GetDevice(), (LPCSTR)buf, 0, 0, 0, 0, &effectList[i], &err))) {
-				effectList[i]=NULL;
+				effectList[i] = effectModels;
 				if (err) {
 					char *tempString = (char*)err->GetBufferPointer();
 					if (tempString != NULL) {
@@ -1594,7 +1607,7 @@ void drawModelPrimitives(int startVert, int endVert)
 
 		if (doTransp==false && vertexType[i].transparent==true) {
 
-		} else if (effectList[currModIndex]) {
+		} else if (Planet(currModIndex) && effectList[currModIndex]) {
 			tn = vertexType[i].textNum;
 			effectList[currModIndex]->SetTexture("tex",textures[vertexType[i].textNum]);
 			effectList[currModIndex]->SetValue("tangent", &vertexType[i].tangent, D3DX_DEFAULT);
@@ -2365,13 +2378,15 @@ void Render()
 				}
 			}
 
-			if (effectList[currModIndex]) {
+			if ((objectList[currModIndex]->Exist() || Planet(currModIndex)) && effectList[currModIndex]) {
 				effectList[currModIndex]->SetTechnique("Main");
 				effectList[currModIndex]->SetValue("light", new D3DXVECTOR4(modelList[m].lightPos.x,modelList[m].lightPos.y,modelList[m].lightPos.z,0.0f), D3DX_DEFAULT);
 				effectList[currModIndex]->SetValue("lightcol", starColor, D3DX_DEFAULT);
 				effectList[currModIndex]->SetValue("ambient", new D3DXVECTOR4(1.0f/255*32,1.0f/255*32,1.0f/255*32, 1), D3DX_DEFAULT);
 				tt +=DeltaTime*0.3f;
 				effectList[currModIndex]->SetValue("time",&tt, D3DX_DEFAULT);
+
+				effectList[currModIndex]->SetValue("skinnum", &modelList[m].skinnum, D3DX_DEFAULT);
 
 				D3DXMatrixMultiply(&Full, &matProj, &matView);
 				effectList[currModIndex]->SetMatrix("viewprojmat",&Full);
@@ -2455,12 +2470,12 @@ void Render()
 				// Отрисовываем внутренние модели
 				doMatrixes(modelList[m].world);
 
-				if (effectList[currModIndex]) {
+				if (Planet(currModIndex) && effectList[currModIndex]) {
 					effectList[currModIndex]->SetMatrix("worldmat",&modelList[m].world);
 					effectList[currModIndex]->Begin(&pass,0);
 				}
 				drawModelPrimitives(modelList[m].vertStart, modelList[m].vertEnd);
-				if (effectList[currModIndex]) {
+				if (Planet(currModIndex) && effectList[currModIndex]) {
 					effectList[currModIndex]->End();
 				}
 			}

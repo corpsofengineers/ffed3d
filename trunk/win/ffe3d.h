@@ -96,6 +96,7 @@ struct MODEL {
 	float dist;
 	FFELIGHT light[10];
 	unsigned short landingGear;
+	unsigned int skinnum;
 };
 
 struct VERTEXTYPE {
