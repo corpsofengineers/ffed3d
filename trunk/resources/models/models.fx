@@ -67,6 +67,49 @@ float getnoise(float2 tex_vu)
 	return noise;
 }
 
+float3 getskin(float3 tx_base)
+{
+	float3 tx;
+
+  if (floor(skinnum / 64) == 1) {
+		tx.r = tx_base.g;
+		tx.g = tx_base.r;
+		tx.b = tx_base.b;
+  } else if (floor(skinnum / 64) == 2) {
+		tx.r = tx_base.b;
+		tx.g = tx_base.g;
+		tx.b = tx_base.r;
+  } else if (floor(skinnum / 64) == 3) {
+		tx.r = tx_base.r;
+		tx.g = tx_base.b;
+		tx.b = tx_base.g;
+  } else {
+		tx = tx_base.rgb;
+  }
+
+  if (frac((float)floor(skinnum / 1) / 2) > 0) {
+		tx.r = 1.0-tx_base.r;
+  }
+  if (frac((float)floor(skinnum / 2) / 2) > 0) {
+		tx.g = 1.0-tx_base.g;
+  }
+  if (frac((float)floor(skinnum / 4) / 2) > 0) {
+		tx.b = 1.0-tx_base.b;
+  }
+
+  if (frac((float)floor(skinnum / 8) / 2) > 0) {
+		tx.r = tx_base.r * 0.5;
+  }
+  if (frac((float)floor(skinnum / 16) / 2) > 0) {
+		tx.g = tx_base.g * 0.5;
+  }
+  if (frac((float)floor(skinnum / 32) / 2) > 0) {
+		tx.b = tx_base.b * 0.5;
+  }
+
+  return tx;
+}
+
 struct VS_OUTPUT
 {
     float4 position : POSITION;
@@ -106,36 +149,9 @@ float4 Pixel_Sh(
 {
   float4 ut;
 
-  float3 tx;
   float4 tx_base = tex2D(s_tex, tex_vu);
   
-  if (skinnum == 1) {
-		tx.r = tx_base.g;
-		tx.g = tx_base.r;
-		tx.b = tx_base.b;
-  } else if (skinnum == 2) {
-		tx.r = tx_base.b;
-		tx.g = tx_base.g;
-		tx.b = tx_base.r;
-  } else if (skinnum == 3) {
-		tx.r = tx_base.r;
-		tx.g = tx_base.b;
-		tx.b = tx_base.g;
-  } else if (skinnum == 4) {
-		tx.r = 1.0-tx_base.g;
-		tx.g = 1.0-tx_base.r;
-		tx.b = 1.0-tx_base.b;
-  } else if (skinnum == 5) {
-		tx.r = 1.0-tx_base.b;
-		tx.g = 1.0-tx_base.g;
-		tx.b = 1.0-tx_base.r;
-  } else if (skinnum == 6) {
-		tx.r = 1.0-tx_base.r;
-		tx.g = 1.0-tx_base.b;
-		tx.b = 1.0-tx_base.g;
-  } else {
-		tx = tx_base.rgb;
-  }
+  float3 tx = getskin(tx_base.rgb);
 
   ut.a = tx_base.a;
 
