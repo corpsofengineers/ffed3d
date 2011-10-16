@@ -99,6 +99,7 @@ float4 Pixel_Sh(
   float3 specular = (lightcol * VdotR);
 
   ut.rgb += specular;
+  ut.rgb = max(ut.rgb, diffuse * 0.2);
   
   return ut;
 }
