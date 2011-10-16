@@ -5799,7 +5799,7 @@ extern "C" int C_Break(DrawMdl_t *drawModel, unsigned short *cmd)
 		}
 	}
 
-	modelList[modelNum].skinnum = iptr->globalvars.unique_Id & 7;
+	modelList[modelNum].skinnum = iptr->globalvars.unique_Id & 255;
 	modelList[modelNum].subObject=subObject;
 
 	// Материал 
