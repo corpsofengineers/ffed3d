@@ -1614,8 +1614,6 @@ void drawModelPrimitives(int startVert, int endVert)
 			if (Planet(currModIndex)) {
 				effectList[currModIndex]->SetTexture("wave1",textures[722]);
 				effectList[currModIndex]->SetTexture("wave2",textures[723]);
-				effectList[currModIndex]->SetTexture("permTexture",permTexture);
-				effectList[currModIndex]->SetTexture("permTexture2d",permTexture2d);
 			}
 			if (vertexType[i].textNum==720) // water
 				effectList[currModIndex]->BeginPass(1);
@@ -2391,6 +2389,9 @@ void Render()
 				D3DXMatrixMultiply(&Full, &matProj, &matView);
 				effectList[currModIndex]->SetMatrix("viewprojmat",&Full);
 				effectList[currModIndex]->SetMatrix("worldInverse",&WorldInverse);
+
+				effectList[currModIndex]->SetTexture("permTexture",permTexture);
+				effectList[currModIndex]->SetTexture("permTexture2d",permTexture2d);
 			}
 
 			renderSystem->SetRenderState(D3DRS_LIGHTING, TRUE);
