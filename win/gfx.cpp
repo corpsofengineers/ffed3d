@@ -119,7 +119,6 @@ extern FFEsprite spriteList[400];
 extern int maxsprite;
 D3DXVECTOR3 mainModelCoord;
 extern D3DXVECTOR3 playerLightPos;
-extern bool playerLightPosEnable;
 
 extern xModel* objectList[500];
 
@@ -3652,9 +3651,6 @@ extern void sendToRender(int num, float *origin, unsigned char orient, int scale
 			if (currentModel>=138 && currentModel<=148) {
 				// Звезда
 				setMaterial(*(command+1));
-				modelList[modelNum].ambientB=currentColor.b;
-				modelList[modelNum].ambientG=currentColor.g;
-				modelList[modelNum].ambientR=currentColor.r;
 
 				getTransVertex(p1, 6);
 				dist=sqrtf(posMatrix[12]*posMatrix[12]+posMatrix[13]*posMatrix[13]+posMatrix[14]*posMatrix[14]);
@@ -5407,11 +5403,6 @@ void DrawAtmosphere(float c=1.0f)
 		modelList[modelNum].lightPos.y=-(float)gptr->lpos.y * 1500;
 		modelList[modelNum].lightPos.z=-(float)gptr->lpos.z * 1500;
 
-
-		modelList[modelNum].ambientR=currentAmbientR*17/2+128;//min(255,currentAmbientR*36);
-		modelList[modelNum].ambientG=currentAmbientG*17/2+128;//min(255,currentAmbientG*36);
-		modelList[modelNum].ambientB=currentAmbientB*17/2+128;//min(255,currentAmbientB*36);
-
 		currentTex=-1;
 		currentColor.set(0,0,0);
 
@@ -5849,10 +5840,6 @@ extern "C" int C_Break(DrawMdl_t *drawModel, unsigned short *cmd)
 			modelList[modelNum].material=SUN;
 	}
 
-	modelList[modelNum].ambientR=currentAmbientR*32;
-	modelList[modelNum].ambientG=currentAmbientG*32;
-	modelList[modelNum].ambientB=currentAmbientB*32;
-
 	modelList[modelNum].localR=drawModel->localColor.r * 32;
 	modelList[modelNum].localG=drawModel->localColor.g * 32;
 	modelList[modelNum].localB=drawModel->localColor.b * 32;
@@ -6094,7 +6081,8 @@ extern "C" int C_Break(DrawMdl_t *drawModel, unsigned short *cmd)
 	return 1;
 }
 
-extern "C" void C_Break2() {
+extern "C" void C_Break2() 
+{
 	currentAmbientR=15;
 	currentAmbientG=15;
 	currentAmbientB=15;
@@ -6102,7 +6090,8 @@ extern "C" void C_Break2() {
 
 D3DXMATRIX tempRotMatrix;
 
-void mMatrix(unsigned char* inst) {		
+void mMatrix(unsigned char* inst) 
+{	
 	D3DXVECTOR3 a, b, c;
 
 	a=D3DXVECTOR3((float)*(int*)(inst+0x0)/DIVIDER,
@@ -6143,66 +6132,62 @@ void mMatrix(unsigned char* inst) {
 	D3DXMatrixMultiply(&lightRotMatrix, &lightRotMatrix, &tempRotMatrix);
 }
 
+extern "C" INT32 DATA_NumObjects;
+
+D3DXVECTOR4 GetStarLightColor()
+{
+	D3DXVECTOR4	lpos, color;
+	u32 model;
+	ModelInstance_t *plptr=*DATA_008861;
+
+	color = D3DXVECTOR4(1.0,1.0,1.0,1.0);
+
+	if (plptr == NULL)
+		return color; 	// player obj not exist
+
+ 	for(int i = 114; i > 0; i--) {
+		model = instanceList->instances[i].index;
+		if (model >= 138 && model <= 148) // this is star?
+			break;
+    }
+
+	playerLightPos.x=-(float)((double)(plptr->pos.x)/DIVIDER);
+	playerLightPos.y=-(float)((double)(plptr->pos.y)/DIVIDER);
+	playerLightPos.z=-(float)((double)(plptr->pos.z)/DIVIDER);
+
+	D3DXVec3Normalize(&playerLightPos, &playerLightPos);
+	playerLightPos.x*=100000;
+	playerLightPos.y*=100000;
+	playerLightPos.z*=100000;
+
+	D3DXMatrixIdentity(&lightRotMatrix);
+
+	if (plptr->uchar_57 == 0) // not in relative pos
+		mMatrix((u8*)plptr);
+	else
+		mMatrix((u8*)plptr+0x5a);
+
+	D3DXVECTOR4 out;
+					
+	D3DXMatrixInverse(&lightRotMatrix, NULL, &lightRotMatrix);
+	D3DXVec3Transform(&lpos, &playerLightPos, &lightRotMatrix);
+	playerLightPos.x = lpos.x;
+	playerLightPos.y = lpos.y;
+	playerLightPos.z = lpos.z;
+
+	if (model >= 138 && model <= 148 && DATA_NumObjects > 0) { // have star model
+		// Нам бы цвет света звезды задать
+		color.x = 1.0f / 255.0f * (starColors[model-138][0] * 17);
+		color.y = 1.0f / 255.0f * (starColors[model-138][1] * 17);
+		color.z = 1.0f / 255.0f * (starColors[model-138][2] * 17);
+		color.w = 1.0f;
+	}
+
+	return color;
+}
 
 extern "C" void C_Break3(unsigned char *ptr) 
 {
-	D3DXVECTOR3 a, b, c;
-	D3DXVECTOR3 v, v2;
-
-	ModelInstance_t *objInstance;
-	unsigned char prevIndex;
-	ModelInstance_t *plptr=*DATA_008861;
-
-	if (playerLightPosEnable==false)
-		D3DXMatrixIdentity(&lightRotMatrix);	
-
-	if (plptr->model_num >= 138 && plptr->model_num <= 148) {
-		if (playerLightPosEnable==false) {
-			v2.x=-(float)((double)(plptr->rel_pos.x)/DIVIDER);
-			v2.y=-(float)((double)(plptr->rel_pos.y)/DIVIDER);
-			v2.z=-(float)((double)(plptr->rel_pos.z)/DIVIDER);
-			
-			objInstance = plptr;
-
-			while (prevIndex = objInstance->parent_index != 0) {				
-				objInstance = GetInstance(prevIndex, instanceList);
-				v.x=-(float)((double)(objInstance->rel_pos.x)/DIVIDER);
-				v.y=-(float)((double)(objInstance->rel_pos.y)/DIVIDER);
-				v.z=-(float)((double)(objInstance->rel_pos.z)/DIVIDER);
-				v2.x+=v.x;
-				v2.y+=v.y;
-				v2.z+=v.z;
-			}
-			//
-			D3DXVec3Normalize(&v2, &v2);
-			playerLightPos.x=v2.x*100000;
-			playerLightPos.y=v2.y*100000;
-			playerLightPos.z=v2.z*100000;
-
-			//prevIndex = *((unsigned char*)plptr+0x56);
-			//plptr = GetInstance (prevIndex, oiList);
-			mMatrix((u8*)plptr);
-			//D3DXVec3Normalize(&playerLightPos, &playerLightPos);
-
-			D3DXVECTOR4 out;
-					
-			D3DXMatrixInverse(&lightRotMatrix,NULL, &lightRotMatrix);
-			D3DXVec3Transform(&out,&playerLightPos, &lightRotMatrix);
-			playerLightPos.x=out.x;
-			playerLightPos.y=out.y;
-			playerLightPos.z=out.z;
-			playerLightPosEnable=true;
-		}
-
-		// Нам бы цвет света звезды задать
-		currentAmbientR=starColors[plptr->model_num-138][0];
-		currentAmbientG=starColors[plptr->model_num-138][1];
-		currentAmbientB=starColors[plptr->model_num-138][2];
-		fullAmbientColor=(currentAmbientR*17)<<16;
-		fullAmbientColor|=(currentAmbientG*17)<<8;
-		fullAmbientColor|=(currentAmbientB*17);
-
-	}
 
 }
 

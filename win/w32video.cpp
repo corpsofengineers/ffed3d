@@ -877,19 +877,31 @@ void loadEffects() {
 	LPD3DXBUFFER err=NULL;
 	char* data=NULL;
 
+	sprintf_s(buf,"models/planet.fx");
+	if ( FAILED(D3DXCreateEffectFromFileA(renderSystem->GetDevice(), (LPCSTR)buf, 0, 0, 0, 0, &effectPlanet, &err))) {
+		effectPlanet=NULL;
+		if (err) {
+			char *tempString = (char*)err->GetBufferPointer();
+			if (tempString != NULL) {
+				printf("Modifier shader: %s",tempString);
+				MessageBox(0, tempString, 0, 0);
+			}
+		}
+	}
+
 	for(int i=3;i<500;i++) {
 		if (Planet(i)) {
-			sprintf_s(buf,"models/planet.fx");
+			effectList[i] = effectPlanet;
 		} else {
 			sprintf_s(buf,"models/%i/effect.fx",i);
-		}
-		if ( FAILED(D3DXCreateEffectFromFileA(renderSystem->GetDevice(), (LPCSTR)buf, 0, 0, 0, 0, &effectList[i], &err))) {
-			effectList[i]=NULL;
-			if (err) {
-				char *tempString = (char*)err->GetBufferPointer();
-				if (tempString != NULL) {
-					printf("Modifier shader: %s",tempString);
-					MessageBox(0, tempString, 0, 0);
+			if ( FAILED(D3DXCreateEffectFromFileA(renderSystem->GetDevice(), (LPCSTR)buf, 0, 0, 0, 0, &effectList[i], &err))) {
+				effectList[i]=NULL;
+				if (err) {
+					char *tempString = (char*)err->GetBufferPointer();
+					if (tempString != NULL) {
+						printf("Modifier shader: %s",tempString);
+						MessageBox(0, tempString, 0, 0);
+					}
 				}
 			}
 		}
@@ -1172,7 +1184,7 @@ extern char ambientR;
 extern char ambientG;
 extern char ambientB;
 
-void selectMaterial(int type, unsigned char cR, unsigned char cG, unsigned char cB) {
+void selectMaterial(int type, float cR, float cG, float cB) {
 //D3DCOLORVALUE rgbaDiffuse;
 D3DCOLORVALUE rgbaEmissive;
 D3DCOLORVALUE rgbaDiffuse;
@@ -1189,9 +1201,9 @@ renderSystem->SetRenderState (D3DRS_DESTBLEND,D3DBLEND_INVSRCALPHA);
 	switch(type) {
 	case SUN:
 		//renderSystem->SetRenderState( D3DRS_ALPHABLENDENABLE, false);
-		rgbaEmissive.r=1.0f/250*cR;
-		rgbaEmissive.g=1.0f/250*cG;
-		rgbaEmissive.b=1.0f/250*cB;
+		rgbaEmissive.r=cR;
+		rgbaEmissive.g=cG;
+		rgbaEmissive.b=cB;
 		rgbaEmissive.a=0.0f;
 		//renderSystem->SetRenderState(D3DRS_AMBIENT, Color4c(128, 128, 128).RGBA());
 		m_matMaterial.Diffuse = rgbaDiffuse0; 
@@ -1208,9 +1220,9 @@ renderSystem->SetRenderState (D3DRS_DESTBLEND,D3DBLEND_INVSRCALPHA);
 		c=(cR+cG+cB)/3;
 		
 		renderSystem->SetRenderState(D3DRS_AMBIENT, D3DCOLOR_XRGB(32, 32, 32));
-		rgbaDiffuse.r=1.0f/255*c;
-		rgbaDiffuse.g=1.0f/255*c;
-		rgbaDiffuse.b=1.0f/255*c;
+		rgbaDiffuse.r=c;
+		rgbaDiffuse.g=c;
+		rgbaDiffuse.b=c;
 		rgbaDiffuse.a=0.0f;
 		
 		/*
@@ -1272,9 +1284,9 @@ renderSystem->SetRenderState (D3DRS_DESTBLEND,D3DBLEND_INVSRCALPHA);
 		renderSystem->SetRenderState (D3DRS_SRCBLEND, D3DBLEND_ONE);
 		renderSystem->SetRenderState (D3DRS_DESTBLEND,D3DBLEND_INVSRCALPHA);
 		renderSystem->SetRenderState(D3DRS_AMBIENT, D3DCOLOR_XRGB(128, 128, 128));
-		rgbaEmissive.r=1.0f/255*cR/10;
-		rgbaEmissive.g=1.0f/255*cG/10;
-		rgbaEmissive.b=1.0f/255*cB/10;
+		rgbaEmissive.r=cR/10;
+		rgbaEmissive.g=cG/10;
+		rgbaEmissive.b=cB/10;
 		rgbaEmissive.a=0.0f;
 		m_matMaterial.Diffuse = rgbaDiffuse0; 
 		m_matMaterial.Ambient = rgbaAmbient0; 
@@ -1282,9 +1294,9 @@ renderSystem->SetRenderState (D3DRS_DESTBLEND,D3DBLEND_INVSRCALPHA);
 	    m_matMaterial.Emissive = rgbaEmissive;
 		break;
 	case SPLINE:
-		rgbaDiffuse.r=1.0f/255*cR;
-		rgbaDiffuse.g=1.0f/255*cG;
-		rgbaDiffuse.b=1.0f/255*cB;
+		rgbaDiffuse.r=cR;
+		rgbaDiffuse.g=cG;
+		rgbaDiffuse.b=cB;
 		rgbaDiffuse.a=1.0f;
 
 		m_matMaterial.Diffuse = rgbaDiffuse; 
@@ -1895,16 +1907,13 @@ bool t_work = false;
 extern float dist;
 extern float radius;
 D3DXVECTOR3 playerLightPos;
-bool playerLightPosEnable;
-extern unsigned char currentAmbientR;
-extern unsigned char currentAmbientG;
-extern unsigned char currentAmbientB;
-
 
 extern int incabin;
 extern bool clearBeforeRender;
 
 //extern int lastPlanetLod;
+
+extern D3DXVECTOR4 GetStarLightColor();
 
 void Render()
 {
@@ -1922,7 +1931,6 @@ void Render()
 		modelNum=0;
 		maxsprite=0;
 		sprites.clear();
-		playerLightPosEnable=false;
 		clearBeforeRender=false;
 		return;
 	}
@@ -1937,7 +1945,6 @@ void Render()
 		modelNum=0;
 		maxsprite=0;
 		sprites.clear();
-		playerLightPosEnable=false;
 		clearBeforeRender=false;
 		return;
 	}
@@ -1949,7 +1956,6 @@ void Render()
 		modelNum=0;
 		maxsprite=0;
 		sprites.clear();
-		playerLightPosEnable=false;
 		clearBeforeRender=false;
 		return;
     }
@@ -2050,6 +2056,8 @@ void Render()
 
 	renderSystem->SetRenderState(D3DRS_ZWRITEENABLE, false);
 	renderSystem->SetRenderState(D3DRS_ZENABLE, false);
+
+	D3DXVECTOR4 starColor = GetStarLightColor();
 
 	//renderSystem->SetRenderState(D3DRS_LIGHTING, FALSE);
 	// nebula
@@ -2261,16 +2269,9 @@ void Render()
 					}
 				}
 			}
-			//renderSystem->GetDevice()->LightEnable(0, TRUE);
-			//if ((int)*(unsigned char*)DATA_008872>=2)
-			//	setupLight(playerLightPos, xr, xg, xb);
-			//else
-			//D3DXVECTOR3 lp;
-			//lp.x=*(int*)(DATA_008804+0x54+12);
-			//lp.y=*(int*)(DATA_008804+0x54+16);
-			////lp.z=*(int*)(DATA_008804+0x54+20);
-			setupLight(playerLightPos, 1.0f/255*min(255,currentAmbientR*16+100), 1.0f/255*min(255,currentAmbientG*16+100), 1.0f/255*min(255,currentAmbientB*16+100));
-			//setupLight(playerLightPos, 1.0f, 1.0f, 1.0f);
+
+			setupLight(playerLightPos, starColor.x, starColor.y, starColor.z);
+
 
 			ViewPort(false);
 
@@ -2354,7 +2355,7 @@ void Render()
 
 			// Общий свет
 			if (!modelList[m].subObject)
-				setupLight(modelList[m].lightPos, 1.0f/255*modelList[m].ambientR, 1.0f/255*modelList[m].ambientG, 1.0f/255*modelList[m].ambientB);
+				setupLight(modelList[m].lightPos, starColor.x, starColor.y, starColor.z);
 			// Субисточники света
 			for(int ii=0;ii<10 && !modelList[m].subObject;ii++) {
 				if (modelList[m].light[ii].enable==true) {
@@ -2365,7 +2366,7 @@ void Render()
 			if (effectList[currModIndex]) {
 				effectList[currModIndex]->SetTechnique("Main");
 				effectList[currModIndex]->SetValue("light", new D3DXVECTOR4(modelList[m].lightPos.x,modelList[m].lightPos.y,modelList[m].lightPos.z,0.0f), D3DX_DEFAULT);
-				effectList[currModIndex]->SetValue("lightcol", new D3DXVECTOR4(1.0f/255*modelList[m].ambientR,1.0f/255*modelList[m].ambientG,1.0f/255*modelList[m].ambientB,1), D3DX_DEFAULT);
+				effectList[currModIndex]->SetValue("lightcol", starColor, D3DX_DEFAULT);
 				effectList[currModIndex]->SetValue("ambient", new D3DXVECTOR4(1.0f/255*32,1.0f/255*32,1.0f/255*32, 1), D3DX_DEFAULT);
 				tt +=DeltaTime*0.3f;
 				effectList[currModIndex]->SetValue("time",&tt, D3DX_DEFAULT);
@@ -2379,7 +2380,7 @@ void Render()
 			renderSystem->SetRenderState(D3DRS_ZWRITEENABLE, modelList[m].zwrite);
 			renderSystem->SetRenderState(D3DRS_ZENABLE, modelList[m].zenable);
 			renderSystem->SetRenderState(D3DRS_CULLMODE, modelList[m].cull);
-			selectMaterial(modelList[m].material, modelList[m].ambientR, modelList[m].ambientG, modelList[m].ambientB);
+			selectMaterial(modelList[m].material, starColor.x, starColor.y, starColor.z);
 			renderSystem->GetDevice()->SetMaterial(&m_matMaterial);
 
 			// Внешние модели
@@ -2540,7 +2541,7 @@ void Render()
 		for(int i=0;i<10;i++) {
 			renderSystem->GetDevice()->LightEnable(i, false);
 		}
-		setupLight(playerLightPos, 1.0f/255*min(255,currentAmbientR*28), 1.0f/255*min(255,currentAmbientG*28), 1.0f/255*min(255,currentAmbientB*28));
+		setupLight(playerLightPos, starColor.x, starColor.y, starColor.z);
 
 		ViewPort(false);
 		doPerspectiveNear();
@@ -2674,7 +2675,6 @@ void Render()
 	maxsprite=0;
 	modelList[0].material=NOTDRAW;
 	sprites.clear();
-	playerLightPosEnable=false;
 	clearBeforeRender=false;
 	if (incabin>=2)
 		incabin=0;
