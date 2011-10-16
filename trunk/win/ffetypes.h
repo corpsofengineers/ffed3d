@@ -41,24 +41,24 @@ struct ShipsLoyalityTable {
 };
 
 struct ShipDef_t {
-    short ForwardThrust;		// 0x00
-    short RearThrust;			// 0x02
-    char  Lasers;				// 0x03
-    char  FuelScoop;			// 0x04
-    short Mass;					// 0x06
-    short Capacity;				// 0x08
-    short Price;				// 0x0a
-    short Scale;				// 0x0c
-    short Description;			// 0x0e
-    short Crew;					// 0x10
-    short Missiles;				// 0x12
-    char  Drive;				// 0x14
-    char  IntegralDrive;		// 0x15
-    short EliteBonus;			// 0x17
-    short frontMount_x, frontMount_y, frontMount_z;
-    short backMount_x, backMount_y, backMount_z;
-    short leftMount_x, leftMount_y, leftMount_z;
-    short rightMount_x, rightMount_y, rightMount_z;
+    s16 ForwardThrust;		// 0x00
+    s16 RearThrust;			// 0x02
+    u8  Lasers;				// 0x03
+    u8  FuelScoop;			// 0x04
+    u16 Mass;				// 0x06
+    u16 Capacity;			// 0x08
+    u16 Price;				// 0x0a
+    u16 Scale;				// 0x0c
+    u16 Description;		// 0x0e
+    u16 Crew;				// 0x10
+    u16 Missiles;			// 0x12
+    u8  Drive;				// 0x14
+    u8  IntegralDrive;		// 0x15
+    u16 EliteBonus;			// 0x17
+    s16 frontMount_x, frontMount_y, frontMount_z;
+    s16 backMount_x, backMount_y, backMount_z;
+    s16 leftMount_x, leftMount_y, leftMount_z;
+    s16 rightMount_x, rightMount_y, rightMount_z;
 };
 
 

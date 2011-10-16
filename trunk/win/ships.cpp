@@ -162,15 +162,15 @@ void InitInstance(ModelInstance_t *new_instance, ModelInstance_t *old_instance, 
         Model_t* model = GetModel(model_num);
 
 		u32 scale = (model->Scale + model->Scale2 + 7);
-		new_instance->interract_radius_low = model->interract_radius;
+
+		new_instance->interract_radius = model->interract_radius;
 		FUNC_001341_Int64ArithShift(&new_instance->interract_radius, scale - 0xf);
-		//new_instance->interract_radius_low = (u64)model->interract_radius << (scale - 0xf);
 		new_instance->interract_radius_hi = model->interract_radius >> 0x1f;
 
-		new_instance->collision_radius_low = model->collision_radius;
+		new_instance->collision_radius = model->collision_radius;
 		FUNC_001341_Int64ArithShift(&new_instance->collision_radius, scale - 0xf);
-		//new_instance->collision_radius_low = (u64)model->collision_radius << (scale - 0xf);
 		new_instance->collision_radius_hi = model->collision_radius >> 0x1f;
+
 		new_instance->laser_flags = 0;
 		new_instance->uchar_25 = 0;
 		new_instance->name[0] = 0;
@@ -245,8 +245,8 @@ ModelInstance_t *CreateObject(ModelInstance_t *ship_instance, u8 state, u32 mode
 u32 AttachLaser(ModelInstance_t *ship, u16 *cargo_space)
 {
 	u32 i, maxLasers;
-	u32 weight = BoundRandom(0x33);
-	weight += DATA_ShipLaserCapacity[ship->object_type];
+	u32 weight = 0;//BoundRandom(0x33);
+	weight = DATA_ShipLaserCapacity[ship->object_type];
 	weight = weight * *cargo_space >> 8;
 
 	if (DATA_PlasmaMount[ship->model_num] == 0x0)
@@ -258,6 +258,11 @@ u32 AttachLaser(ModelInstance_t *ship, u16 *cargo_space)
 		if (weight < DATA_AILasers[i].weight) break;
 		if (i == maxLasers) break;
 	}
+
+	u32 laser = i;
+
+	if (i != 1)
+		laser = BoundRandom(i)-1;
 
 	*cargo_space -= DATA_AILasers[i].weight;
 	return DATA_AILasers[i].id;
@@ -320,36 +325,44 @@ ModelInstance_t *CreateShip(ModelInstance_t *copyfrom, u8 object_type, int model
 	}
 
 	GenerateShipName(ship_instance, &DATA_NameThingyByteTable[object_type], namegentype);		// ship name?
+	
 	ShipDef_t* ship_def = GetModel(ship_instance->model_num)->Shipdef_ptr;		// stats pointer
+	
 	u16 max_tech_level = DATA_RandomizerFunc() & 0xffff;				// tech/wealth?
 
 	if (object_type == 0xe) {			// police
 		ship_instance->globalvars.unique_Id = 0;		// Uniform colour
 		max_tech_level = DATA_SystemTechLevel << 8;
 	}
-	if (object_type == 0x10) max_tech_level = 0xffff;	// assass. targets
-	u16 cargo_space = ship_instance->cargo_space;							// remain. int cap
+
+	if (object_type == 0x10) 
+		max_tech_level = 0xffff;	// assass. targets
+
+	u16 cargo_space = ship_def->Capacity;							// remain. int cap
 	u32 equipment = 0;
-	u32 edx = DATA_RandomizerFunc();
 	u32 drive = ship_def->Drive;							// drive
 	
-	if (object_type == 0xc) 
-		edx = 0xffff;		// bounty hunters?
-	if (edx > 0xf000 && object_type != 1)
-		{ cargo_space--; equipment |= EQUIP_HS_CLOUD_ANALYSER; }					// HS cloud analyser
+	u32 edx = DATA_RandomizerFunc();
 
-	if (object_type == 0xe) {			// police
+	if (object_type == 0xc) // bounty hunters?
+		edx = 0xffff;		
+	if (edx > 0xf000 && object_type != 1) { 
+		//cargo_space--; 
+		equipment |= EQUIP_HS_CLOUD_ANALYSER; 
+	}
+
+	if (object_type == 0xe) { // police
 		drive = 0x1; // interplanetary drive
 	}
 
 	if (drive >= 0) {
 		//if (edx > 0xc000) 
 		//	drive >>= 8;			// 1/3 chance of altern.
-		drive &= 0xf;
+		//drive &= 0xf;
 		ship_instance->globalvars.drive = drive;
 		cargo_space -= DATA_DriveMasses[drive];					// actual drive
 	}
-	drive = ship_instance->globalvars.drive;
+
 	ship_instance->fuel_tank = DATA_DriveTankFuel[drive] << 0x18;		// fuel
 	u32 cargo_fuel = DATA_DriveCargoFuel[drive];
 	if (cargo_fuel >= cargo_space) 
@@ -364,11 +377,11 @@ ModelInstance_t *CreateShip(ModelInstance_t *copyfrom, u8 object_type, int model
 	if (object_type < 0x13 && object_type != 0xe)
 	{
 		u16 usedWeight = 0.1 + 0.1*FloatRandom();
-		usedWeight *= cargo_space;
-
+		
 		if (object_type < 0xa)
 			usedWeight *= 2;
 
+		usedWeight *= cargo_space;
 		cargo_space -= usedWeight;
 	}
 
@@ -387,44 +400,50 @@ ModelInstance_t *CreateShip(ModelInstance_t *copyfrom, u8 object_type, int model
 	cargo_space -= shields;
 	ship_instance->globalvars.shields = ship_instance->globalvars.max_shields = shields << 4;						// shields
 
-	if (cargo_space >= 2) {
+	if (cargo_space >= 5) {
 		u32 techlevel = BoundRandom(max_tech_level);
 		if (techlevel >= 0xc000) {
 			equipment |= EQUIP_NAVAL_ECM;
-			cargo_space -= 2;							// naval ECM
+			cargo_space -= 5;							// naval ECM
 		}
 		else if (techlevel >= 0x4000) {
 			equipment |= EQUIP_ECM;
-			cargo_space -= 2;							// ECM
+			cargo_space -= 5;							// ECM
 		}
 	}	
-	if (cargo_space > 0) {
+	//if (cargo_space > 0) {
 		u16 missiles = ship_def->Missiles;						// missiles
 		missiles = BoundRandom(missiles);
 		if (missiles >= 1) {
 			u8 missile_type = DATA_AIMissiles[max_tech_level >> 0xc];
-			while (cargo_space > 0 && missiles != 0) {
+			while (/*cargo_space > 0 && */missiles != 0) {
 				ship_instance->globalvars.missiles[missiles] = missile_type;
-				cargo_space--; missiles--;
+				//cargo_space--; 
+				missiles--;
 			}
 		}
-	}
+	//}
 	// J3108
-	if (cargo_space > 0) {
+	//if (cargo_space > 0) {
 		u32 techlevel = BoundRandom(max_tech_level);
-		if (techlevel >= 0x800) { cargo_space--; equipment |= EQUIP_SCANNER; }	// scanner
-		techlevel = BoundRandom(max_tech_level);
-		if (techlevel >= 0xfc00 && cargo_space >= 4 && ship_instance->object_type != 0xe) {
-			cargo_space--; equipment |= EQUIP_ENERGY_BOMB;
-		}										// energy bomb
-	}
+		if (techlevel >= 0x800) { 
+			//cargo_space--; 
+			equipment |= EQUIP_SCANNER; 
+		}
+		//techlevel = BoundRandom(max_tech_level);
+		//if (techlevel >= 0xfc00 && cargo_space >= 4 && ship_instance->object_type != 0xe) {
+		//	cargo_space--; equipment |= EQUIP_ENERGY_BOMB;
+		//}
+	//}
 	equipment |= EQUIP_ATMO_SHIELD;								// atmos. shield
-	u32 more_fuel = cargo_space * DATA_DriveCargoFuel2[ship_instance->object_type];
-	if (more_fuel > 0xaf) 
-		more_fuel = 0xaf;
-	cargo_space -= more_fuel;
-	ship_instance->cargo_fuel += more_fuel;						// Cargo fuel again?
-	ship_instance->cargo_space = cargo_space;						// remaining capacity
+
+	//u32 more_fuel = cargo_space * DATA_DriveCargoFuel2[ship_instance->object_type];
+	//if (more_fuel > 0xaf) 
+	//	more_fuel = 0xaf;
+	//cargo_space -= more_fuel;
+	//ship_instance->cargo_fuel += more_fuel;						// Cargo fuel again?
+	//ship_instance->cargo_space = cargo_space;						// remaining capacity
+
 	ship_instance->globalvars.equip = equipment;		// equipment
 
 	return ship_instance;
