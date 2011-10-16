@@ -7,6 +7,7 @@ float4 ambient;        // ambient color
 int skinnum;
 
 texture skin;        // skin.png
+texture permTexture2d;
 
 sampler s_tex = sampler_state 
 {
@@ -17,6 +18,54 @@ sampler s_tex = sampler_state
     MINFILTER = LINEAR;
     MAGFILTER = LINEAR;
 };
+
+sampler permSampler2d = sampler_state 
+{
+    texture = <permTexture2d>;
+    AddressU  = WRAP;        
+    AddressV  = WRAP;
+    MIPFILTER = LINEAR;
+    MINFILTER = POINT;
+    MAGFILTER = POINT;
+};
+
+float4 mnoise(float2 st)
+{
+	float g = 1.0; 
+	float4 r = 0.0;
+	for (int i = 0.0; i < 8.0; i++) 
+	{
+		r += g * (2.0 * tex2D( permSampler2d, st) - 1.0);
+		st = st * 2.0;   
+		g *= 0.5; 
+	} 
+	return r;
+}
+
+float getnoise(float2 tex_vu)
+{
+	float2 tex_vu_n = tex_vu;
+
+	float texel_size = 1.0 / (float)256.0;
+
+	float2 f;
+    f.x = frac( tex_vu_n.x * (float)256.0);
+    f.y = frac( tex_vu_n.y * (float)256.0);
+
+	float4 t00 = mnoise(tex_vu_n + float2(0.0, 0.0));
+	float4 t10 = mnoise(tex_vu_n + float2(texel_size, 0.0));
+	float4 t01 = mnoise(tex_vu_n + float2(0.0, texel_size));
+	float4 t11 = mnoise(tex_vu_n + float2(texel_size, texel_size));
+
+	float4 tA = lerp( t00, t10, f.x);
+	float4 tB = lerp( t01, t11, f.x);
+
+	float4 r = lerp( tA, tB, f.y );
+
+	float noise = 1.0-saturate((r.x+r.y+r.z+r.w)/4.0);
+	
+	return noise;
+}
 
 struct VS_OUTPUT
 {
@@ -90,7 +139,10 @@ float4 Pixel_Sh(
 
   ut.a = tx_base.a;
 
-  float3 diffuse = tx * lightcol;
+  float noise = getnoise(tex_vu);
+  float4 tx_noise = float4(noise,noise,noise,0.0) * 0.5 + 0.5;
+
+  float3 diffuse = tx * tx_noise * lightcol;
   ut.rgb = saturate(dot(lightDir, normal) * diffuse * 2.0);
   
   float3 R = normalize(reflect(-lightDir, normal));
