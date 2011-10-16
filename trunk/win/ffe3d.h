@@ -82,9 +82,6 @@ struct MODEL {
 	bool zclear;
 	bool backsprite;
 	D3DXVECTOR3 lightPos;
-	unsigned char ambientR;
-	unsigned char ambientG;
-	unsigned char ambientB;
 	unsigned char splineR;
 	unsigned char splineG;
 	unsigned char splineB;
