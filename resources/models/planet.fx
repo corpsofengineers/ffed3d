@@ -170,61 +170,13 @@ float4 mnoise(float2 st)
 {
 	float g = 1.0; 
 	float4 r = 0.0;
-	for (int i = 0.0; i < 8; i++) 
+	for (int i = 0.0; i < 8.0; i++) 
 	{
 		r += g * (2.0 * tex2D( permSampler2d, st) - 1.0);
 		st = st * 2.0;   
 		g *= 0.5; 
 	} 
 	return r;
-}
-
-float4 P_LandLife(
-	float2 tex_vu	: TEXCOORD0,
-	float2 tex_vu2	: TEXCOORD4,	
-	float2 tex_vu3	: TEXCOORD5,		
-    float3 normal	: TEXCOORD1,
-    float3 lightDir : TEXCOORD2,
-    float3 eye	: TEXCOORD3,
-    float4 color	: COLOR0
-  ) : COLOR0
-{
-
-	float2 tex_vu_n = tex_vu * 50;
-
-	float texel_size = 1.0 / (float)256;
-
-	float2 f;
-    f.x = frac( tex_vu_n.x * (float)256 );
-    f.y = frac( tex_vu_n.y * (float)256 );
-
-	float4 t00 = mnoise(tex_vu_n + float2(0.0, 0.0));
-	float4 t10 = mnoise(tex_vu_n + float2(texel_size, 0.0));
-	float4 t01 = mnoise(tex_vu_n + float2(0.0, texel_size));
-	float4 t11 = mnoise(tex_vu_n + float2(texel_size, texel_size));
-
-	float4 tA = lerp( t00, t10, f.x);
-	float4 tB = lerp( t01, t11, f.x);
-
-	float4 r = lerp( tA, tB, f.y );
-
-	float noise=1.0-saturate((r.x+r.y+r.z+r.w+color.x+color.y+color.z)/7);
-
-	float4 tx_base = tex2D(s_tex, tex_vu) * 0.5 + 0.5;
-	float4 tx_noise = float4(noise,noise,noise,0.0) * 0.5 + 0.5;
-	color.xyz = saturate(color.xyz + (r.xyz-0.5) * 0.05); 
-
-	float nrmd_light = dot(normal, lightDir);
-	float4 diffuse = saturate((color * tx_base * tx_noise * lightcol) * 2.0 * nrmd_light);
-
-	float3 R = normalize(reflect(-lightDir, normal));
-	float VdotR = saturate(dot(R, normalize(eye)));
-	VdotR /= 128.0 - VdotR * 128.0 + VdotR;
-	float4 specular = (lightcol * VdotR) * 0.25;
-
-	diffuse += specular;
-
-	return diffuse;
 }
 
 float4 P_Land(
@@ -237,10 +189,42 @@ float4 P_Land(
     float4 color	: COLOR0
   ) : COLOR0
 {
-	float4 tx_base = tex2D(s_tex, tex_vu);
 
-	float nrmd_light = dot(normal, normalize(lightDir));
-	float4 diffuse = (color * tx_base * lightcol) * nrmd_light;
+	float2 tex_vu_n = tex_vu * 50.0;
+
+	float texel_size = 1.0 / (float)256.0;
+
+	float2 f;
+    f.x = frac( tex_vu_n.x * (float)256.0);
+    f.y = frac( tex_vu_n.y * (float)256.0);
+
+	float4 t00 = mnoise(tex_vu_n + float2(0.0, 0.0));
+	float4 t10 = mnoise(tex_vu_n + float2(texel_size, 0.0));
+	float4 t01 = mnoise(tex_vu_n + float2(0.0, texel_size));
+	float4 t11 = mnoise(tex_vu_n + float2(texel_size, texel_size));
+
+	float4 tA = lerp( t00, t10, f.x);
+	float4 tB = lerp( t01, t11, f.x);
+
+	float4 r = lerp( tA, tB, f.y );
+
+	float4 r2 = (r + mnoise(tex_vu_n * 50)) / 2.0;
+
+	float noise = 1.0-saturate((r2.x+r2.y+r2.z+r2.w+color.x+color.y+color.z)/7.0);
+
+	float4 tx_base = tex2D(s_tex, tex_vu) * 0.5 + 0.5;
+	float4 tx_noise = float4(noise,noise,noise,0.0) * 0.5 + 0.5;
+	color.xyz = saturate(color.xyz + (r.xyz-0.5) * 0.05); 
+
+	float nrmd_light = dot(normal, lightDir) * 2.0;
+	float4 diffuse = saturate((color * tx_base * tx_noise * lightcol) * nrmd_light);
+
+	float3 R = normalize(reflect(-lightDir, normal));
+	float VdotR = saturate(dot(R, normalize(eye)));
+	VdotR /= 128.0 - VdotR * 128.0 + VdotR;
+	float4 specular = (lightcol * VdotR) * 0.17;
+
+	diffuse += specular;
 
 	return diffuse;
 }
@@ -279,7 +263,7 @@ technique Main
     pass P2
     {
         VertexShader = compile vs_3_0 V_Land();
-        PixelShader  = compile ps_3_0 P_LandLife();
+        PixelShader  = compile ps_3_0 P_Land();
     }
     pass P3
     {
