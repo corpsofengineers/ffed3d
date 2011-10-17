@@ -88,13 +88,13 @@ float3 getskin(float3 tx_base)
   }
 
   if (frac((float)floor(skinnum / 1) / 2) > 0) {
-		tx.r = 1.0-tx_base.r;
+		tx.r = (1.0-tx_base.r) * 0.5;
   }
   if (frac((float)floor(skinnum / 2) / 2) > 0) {
-		tx.g = 1.0-tx_base.g;
+		tx.g = (1.0-tx_base.g) * 0.5;
   }
   if (frac((float)floor(skinnum / 4) / 2) > 0) {
-		tx.b = 1.0-tx_base.b;
+		tx.b = (1.0-tx_base.b) * 0.5;
   }
 
   if (frac((float)floor(skinnum / 8) / 2) > 0) {
