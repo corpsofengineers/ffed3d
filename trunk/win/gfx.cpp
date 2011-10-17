@@ -110,8 +110,7 @@ extern int vertexNum;
 extern MODEL modelList[6000];
 extern int modelNum;
 int mainModelNum=0;
-int mainObjectNum=0;
-int previousModel=0;
+int parentModelNum=0;
 extern FFTEXT ffText[2000];
 extern int textNum;
 extern ULONG pWinPal32[256];
@@ -5448,7 +5447,6 @@ void DrawAtmosphere(float c=1.0f)
 		}
 
 		modelList[modelNum].dist=dist;
-		previousModel=currentModel;
 
 		modelList[modelNum].vertEnd=vertexNum;
 		modelNum++;
@@ -5519,11 +5517,10 @@ extern "C" int C_Break(DrawMdl_t *drawModel, unsigned short *cmd)
 
 	modelList[modelNum].landingGear=inst->globalvars.landingState;
 
-	mainObjectNum=inst->model_num;
+	mainModelNum=inst->model_num;
 
-	if (mainObjectNum==currentModel) {
+	if (mainModelNum==currentModel) {
 		subObject=false;
-		mainModelNum=modelNum;
 	} else {
 		subObject=true;		
 	}
@@ -5677,49 +5674,23 @@ extern "C" int C_Break(DrawMdl_t *drawModel, unsigned short *cmd)
 	posMatrix[11]=0.0f;
 	posMatrix[15]=1.0f;
 
-	// Ниже идут некоторы дебажные скипы моделей
-
-
-	//if (objNum>80 && objNum<=100)
-	//	return 0;
-
-	// Пропускаем отрисовку векторного текста на внешних моделях
-	/*
-	if (objNum<3 && 
-		subObject==true && 
-		objectList[previousModel] && 
-		(*(unsigned char*)(iPtr+0x14c)& 0x10)==0 &&
-		(*(unsigned char*)(iPtr+0x14c)& 0x20)==0 &&
-		(*(unsigned char*)(iPtr+0x14c)& 0x40)==0)
-		return 0;
-	*/
-	// Пропускаем отрисовку всего кроме ракет на внешних моделях кораблей
-	//if (objNum>=179 && objNum<=206 && objNum!=201 && subObject==true && (previousModel >= 14 && previousModel < 70) && objectList[previousModel])
-	//	return 0;
 
 //	if (modelconfig[mainObjectNum].skip)
 //		return 0;
 
-	if (subObject==true && currentModel == 0 && objectList[mainObjectNum]->Exist())
+	// skip text on .x models
+	if (subObject==true && currentModel <= 2 && mainModelNum >= 14 && mainModelNum <= 70 && objectList[mainModelNum]->Exist())
+		return 0;
+	// skip text on .x models
+	if (subObject==true && currentModel <= 2 && mainModelNum >= 14 && mainModelNum <= 70 && objectList[parentModelNum]->Exist())
 		return 0;
 
-	if (subObject==true && currentModel == 0 && objectList[previousModel]->Exist())
-		return 0;
-
-	//if (subObject==true && objNum>=3 && objectList[mainObjectNum]->config.notdrawsubmodels)
-	//	return 0;
-
-	if (subObject==true && currentModel>=3 && objectList[previousModel]->config.notdrawsubmodels)
+	if (subObject==true && currentModel >= 3 && objectList[mainModelNum]->config.notdrawsubmodels)
 		skipCurrentModel=true;
 
-	if (currentModel>=233 && currentModel<=235)
+	if (currentModel >= 233 && currentModel <= 235)
 		clearBeforeRender=true;
 
-    //planet = GetInstance (prevIndex, objectList);
-	//modelNum = *(unsigned short *)((char *)planet+0x82);
-   // planetModel = GetModel ((int)modelNum);    
-
-	
 	// for debug
 	if (0 && *DATA_008874!=0) {
 		char txt[256];
@@ -5799,7 +5770,13 @@ extern "C" int C_Break(DrawMdl_t *drawModel, unsigned short *cmd)
 		}
 	}
 
-	modelList[modelNum].skinnum = iptr->globalvars.unique_Id & 255;
+	if (mainModelNum >= 14 && mainModelNum <= 70 && currentModel > 13 && (currentModel < 195 || currentModel > 198))
+		modelList[modelNum].skinnum = iptr->globalvars.unique_Id & 255;
+	//else if (currentModel > 13)
+	//	modelList[modelNum].skinnum = iptr->globalvars.unique_Id & 3;
+	else
+		modelList[modelNum].skinnum = 0;
+
 	modelList[modelNum].subObject=subObject;
 
 	// Материал 
@@ -5878,7 +5855,7 @@ extern "C" int C_Break(DrawMdl_t *drawModel, unsigned short *cmd)
 //		skipCurrentModel=false;
 //	}
 	
-	if ((currentModel==186 || currentModel==187) && objectList[mainObjectNum]->Exist())
+	if ((currentModel==186 || currentModel==187) && objectList[mainModelNum]->Exist())
 		skipCurrentModel=true;
 
 	if (currentModel==166) { // starmap grid
@@ -6065,8 +6042,6 @@ extern "C" int C_Break(DrawMdl_t *drawModel, unsigned short *cmd)
 
 	modelList[modelNum].dist=dis;
 
-	previousModel=currentModel;
-
 	modelNum++;
 
 	// Это планета. Добавим атмосферу (если в радиусе, то до планеты).	
@@ -6077,6 +6052,7 @@ extern "C" int C_Break(DrawMdl_t *drawModel, unsigned short *cmd)
 		}
 	}
 
+	parentModelNum = currentModel;
 
 	D3DXMatrixIdentity(&currentMatrix);
 	return 1;
