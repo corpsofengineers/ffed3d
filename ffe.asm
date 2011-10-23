@@ -1851,7 +1851,27 @@ GLOBAL _FUNC_001834
 GLOBAL _FUNC_001837
 GLOBAL _FUNC_001838
 GLOBAL _FUNC_001839
+
 GLOBAL _FUNC_001849
+GLOBAL _FUNC_001850
+GLOBAL _FUNC_001851
+GLOBAL _FUNC_001852
+GLOBAL _FUNC_001853
+GLOBAL _FUNC_001854
+GLOBAL _FUNC_001855
+GLOBAL _FUNC_001856
+GLOBAL _FUNC_001857
+GLOBAL _FUNC_001858
+GLOBAL _FUNC_001859
+GLOBAL _FUNC_001860
+GLOBAL _FUNC_001861
+GLOBAL _FUNC_001862
+GLOBAL _FUNC_001863
+GLOBAL _FUNC_001864
+GLOBAL _FUNC_001865
+GLOBAL _FUNC_001866
+GLOBAL _FUNC_001867
+
 GLOBAL _FUNC_001868
 GLOBAL _FUNC_001869
 GLOBAL _FUNC_001870
@@ -2045,7 +2065,7 @@ EXTERN _BlitClipWrapper
 
 ; MODIFIED - added C functions
 EXTERN _DoShipDamage
-EXTERN _DebugBreak
+;EXTERN _DebugBreak
 EXTERN _DoSpawnCargo
 EXTERN _AIChooseEquipment
 EXTERN _StringBreak
@@ -119037,7 +119057,7 @@ FUNC_001849:			; Pos = 64000
 		nop
 
 
-
+_FUNC_001850:
 FUNC_001850:			; Pos = 64274
 
 		push ebp
@@ -119268,7 +119288,7 @@ FUNC_001850:			; Pos = 64274
 		nop
 
 
-
+_FUNC_001851:
 FUNC_001851:			; Pos = 644cc
 
 		push ebp
@@ -119512,7 +119532,7 @@ FUNC_001851:			; Pos = 644cc
 		nop
 
 
-
+_FUNC_001852:
 FUNC_001852:			; Pos = 64734
 
 		push ebp
@@ -119748,7 +119768,7 @@ FUNC_001852:			; Pos = 64734
 		nop
 
 
-
+_FUNC_001853:
 FUNC_001853:			; Pos = 64998
 
 		push ebp
@@ -120021,7 +120041,7 @@ FUNC_001853:			; Pos = 64998
 		ret
 
 
-
+_FUNC_001854:
 FUNC_001854:			; Pos = 64c44
 
 		push ebp
@@ -120280,7 +120300,7 @@ FUNC_001854:			; Pos = 64c44
 		ret
 
 
-
+_FUNC_001855:
 FUNC_001855:			; Pos = 64f00
 
 		push ebp
@@ -120547,7 +120567,7 @@ FUNC_001855:			; Pos = 64f00
 		nop
 
 
-
+_FUNC_001856:
 FUNC_001856:			; Pos = 651bc
 
 		push ebp
@@ -120811,7 +120831,7 @@ FUNC_001856:			; Pos = 651bc
 		ret
 
 
-
+_FUNC_001857:
 FUNC_001857:			; Pos = 65484
 
 		push ebp
@@ -121112,7 +121132,7 @@ FUNC_001857:			; Pos = 65484
 		nop
 
 
-
+_FUNC_001858:
 FUNC_001858:			; Pos = 65788
 
 		push ebp
@@ -121493,7 +121513,7 @@ FUNC_001858:			; Pos = 65788
 		nop
 
 
-
+_FUNC_001859:
 FUNC_001859:			; Pos = 65b90
 
 		push ebp
@@ -121887,7 +121907,7 @@ FUNC_001859:			; Pos = 65b90
 		nop
 
 
-
+_FUNC_001860:
 FUNC_001860:			; Pos = 65fac
 
 		push ebp
@@ -122275,7 +122295,7 @@ FUNC_001860:			; Pos = 65fac
 		nop
 
 
-
+_FUNC_001861:
 FUNC_001861:			; Pos = 663c4
 
 		push ebp
@@ -122678,7 +122698,7 @@ FUNC_001861:			; Pos = 663c4
 		ret
 
 
-
+_FUNC_001862:
 FUNC_001862:			; Pos = 667e8
 
 		push ebp
@@ -123091,7 +123111,7 @@ FUNC_001862:			; Pos = 667e8
 		nop
 
 
-
+_FUNC_001863:
 FUNC_001863:			; Pos = 66c54
 
 		push ebp
@@ -123512,7 +123532,7 @@ FUNC_001863:			; Pos = 66c54
 		ret
 
 
-
+_FUNC_001864:
 FUNC_001864:			; Pos = 670d0
 
 		push ebp
@@ -123931,7 +123951,7 @@ FUNC_001864:			; Pos = 670d0
 		nop
 
 
-
+_FUNC_001865:
 FUNC_001865:			; Pos = 6754c
 
 		push ebp
@@ -124361,7 +124381,7 @@ FUNC_001865:			; Pos = 6754c
 		ret
 
 
-
+_FUNC_001866:	
 FUNC_001866:			; Pos = 679cc
 
 		push ebp
@@ -124583,7 +124603,7 @@ FUNC_001866:			; Pos = 679cc
 		nop
 
 
-
+_FUNC_001867:
 FUNC_001867:			; Pos = 67c04
 
 		push ebp

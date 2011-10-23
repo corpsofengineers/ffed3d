@@ -74,7 +74,7 @@ extern "C" char *DATA_009267;
 extern "C" char *DATA_009269;
 extern "C" char *DATA_009270;
 extern "C" char *DATA_009271;
-extern "C" char *DATA_009272;
+extern "C" ffeVertex *DATA_009272;
 extern "C" char *DATA_009273;
 extern "C" char *DATA_009274;
 extern "C" char *DATA_009275;
@@ -203,7 +203,28 @@ extern "C" inline void C_FUNC_001829_GetTriangulateDepth(ffeVertex*);
 extern "C" inline void C_FUNC_001829_GetTriangulateDepth_2(ffeVertex* AN, ffeVertex* A8, ffeVertex* Ac, ffeVertex* A10);
 
 extern "C" int FUNC_001849(int* A8, ffeVertex* Ac, ffeVertex* A10, ffeVertex* A14, int A18);
+extern "C" int FUNC_001850(int* A8, ffeVertex* Ac, ffeVertex* A10, ffeVertex* A14, int A18);
+extern "C" int FUNC_001851(int* A8, ffeVertex* Ac, ffeVertex* A10, ffeVertex* A14, int A18);
+extern "C" int FUNC_001852(int* A8, ffeVertex* Ac, ffeVertex* A10, ffeVertex* A14, int A18);
+extern "C" int FUNC_001853(int* A8, ffeVertex* Ac, ffeVertex* A10, ffeVertex* A14, int A18);
+extern "C" int FUNC_001854(int* A8, ffeVertex* Ac, ffeVertex* A10, ffeVertex* A14, int A18);
+extern "C" int FUNC_001855(int* A8, ffeVertex* Ac, ffeVertex* A10, ffeVertex* A14, int A18);
+extern "C" int FUNC_001856(int* A8, ffeVertex* Ac, ffeVertex* A10, ffeVertex* A14, int A18);
+extern "C" int FUNC_001857(int* A8, ffeVertex* Ac, ffeVertex* A10, ffeVertex* A14, int A18);
+extern "C" int FUNC_001858(int* A8, ffeVertex* Ac, ffeVertex* A10, ffeVertex* A14, int A18);
+extern "C" int FUNC_001859(int* A8, ffeVertex* Ac, ffeVertex* A10, ffeVertex* A14, int A18);
+extern "C" int FUNC_001860(int* A8, ffeVertex* Ac, ffeVertex* A10, ffeVertex* A14, int A18);
+extern "C" int FUNC_001861(int* A8, ffeVertex* Ac, ffeVertex* A10, ffeVertex* A14, int A18);
+extern "C" int FUNC_001862(int* A8, ffeVertex* Ac, ffeVertex* A10, ffeVertex* A14, int A18);
+extern "C" int FUNC_001863(int* A8, ffeVertex* Ac, ffeVertex* A10, ffeVertex* A14, int A18);
+extern "C" int FUNC_001864(int* A8, ffeVertex* Ac, ffeVertex* A10, ffeVertex* A14, int A18);
+extern "C" int FUNC_001865(int* A8, ffeVertex* Ac, ffeVertex* A10, ffeVertex* A14, int A18);
+extern "C" int FUNC_001866(int* A8, ffeVertex* Ac, ffeVertex* A10, ffeVertex* A14, int A18);
+extern "C" int FUNC_001867(int* A8, ffeVertex* Ac, ffeVertex* A10, ffeVertex* A14, int A18);
+
 extern "C" int FUNC_001818();
+
+extern "C" int C_FUNC_001846(int A8, int Ac, int A10);
 
 Vect3f GetTriangeNormal(Vect3f* vVertex1, Vect3f* vVertex2, Vect3f* vVertex3);
 

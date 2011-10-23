@@ -1,7 +1,6 @@
 /*	Market.c - Stockmarket functions and data */
 
-#include <math.h>
-#include "misc.h"
+#include "ffe3d.h"
 
 #pragma warning ( disable: 4305 4244 )
 
@@ -11,8 +10,8 @@ typedef struct
 {
 	float basePrice;
 	float priceVar;
-	INT32 baseAvail;
-	INT32 availVar;
+	u32 baseAvail;
+	u32 availVar;
 } marketitem_t;
 
 float DangerVarMults[] =
@@ -77,12 +76,12 @@ marketitem_t MarketData[] =
 	{82.0, 2.0, 100, 550},		// Chaff
 };
 
-INT32 PirateLevels[] = 
+u32 PirateLevels[] = 
 	{0, 3, 6, 10, 14, 20, 22, 25, 28, 35, 100, 100, 100};
 
 extern "C" float GetPopulationMult(starport_t *starport)
 {
-	SINT32 randSeed, randSeed2, rand;
+	s32 randSeed, randSeed2, rand;
 	ModelInstance_t *starportObj;
 
 	if (DATA_NumStarports > 1)
@@ -101,9 +100,9 @@ extern "C" float GetPopulationMult(starport_t *starport)
 		return 1.0;
 }
 
-extern "C" INT32 GetSupplyLevel(INT32 itemIdx, starport_t *starport)
+extern "C" u32 GetSupplyLevel(u32 itemIdx, starport_t *starport)
 {
-	SINT32 randSeed, randSeed2, rand;
+	s32 randSeed, randSeed2, rand;
 	ModelInstance_t *starportObj;
 
 	if (DATA_NumStarports > 1)
@@ -122,10 +121,10 @@ extern "C" INT32 GetSupplyLevel(INT32 itemIdx, starport_t *starport)
 }
 
 // returns price in eax (low dword), avail in edx (high dword)
-extern "C" INT64 GetMarketItemData(INT32 itemIdx, INT32 population, INT32 danger, INT32 supply, INT32 flags, starport_t *starport, INT8 *portSupply)
+extern "C" u64 GetMarketItemData(u32 itemIdx, u32 population, u32 danger, u32 supply, u32 flags, starport_t *starport, u8 *portSupply)
 {
 	float price, avail, var, randVar, portPopMult;
-	INT32 starportSupply;
+	u32 starportSupply;
 
 	avail = MarketData[itemIdx].baseAvail;
 
@@ -196,13 +195,13 @@ extern "C" INT64 GetMarketItemData(INT32 itemIdx, INT32 population, INT32 danger
 			price = 0.1;
 	}
 
-	return (INT64)(price*10) + ((INT64)avail << 32);
+	return (u64)(price*10) + ((u64)avail << 32);
 }
 
-extern "C" INT32 ItemAtMaxStock(INT32 itemIdx, starport_t *starport)
+extern "C" u32 ItemAtMaxStock(u32 itemIdx, starport_t *starport)
 {
 	float maxAvail;
-	INT32 stockAmt;
+	u32 stockAmt;
 
 	stockAmt = starport->marketData[itemIdx].avail;
 
@@ -229,13 +228,13 @@ extern "C" INT32 ItemAtMaxStock(INT32 itemIdx, starport_t *starport)
 }
 
 
-extern "C" void SpawnPirates(INT32 pirateLevel, INT32 bInitial)
+extern "C" void SpawnPirates(u32 pirateLevel, u32 bInitial)
 {
 	float piratePct, maxGroup, groupSize;
 	float playerCargoValue, avgPrice;
-	INT8 numPirates, numSpawned;
-	INT8 i, j;
-	INT32 numFreeSlots;
+	u8 numPirates, numSpawned;
+	u8 i, j;
+	u32 numFreeSlots;
 
 	numFreeSlots = GetNumFreeSlots();
 
@@ -287,7 +286,7 @@ extern "C" void SpawnPirates(INT32 pirateLevel, INT32 bInitial)
 			groupSize = numPirates;
 
 		numSpawned = SpawnHostileGroup(groupSize, 0, 0, 0xa, OBJTYPE_PIRATE);
-		if (numSpawned < (INT8)groupSize)
+		if (numSpawned < (u8)groupSize)
 			return;	// no more object handles
 
 		numPirates -= numSpawned;
@@ -297,7 +296,7 @@ extern "C" void SpawnPirates(INT32 pirateLevel, INT32 bInitial)
 }
 
 // more profitable goods are better here...
-extern "C" INT32 GetCargoWeighting(INT32 idx, INT8 flags)
+extern "C" u32 GetCargoWeighting(u32 idx, u8 flags)
 {
 	if (!(flags & 0x8))	// don't buy imports
 		return 0;
@@ -311,18 +310,18 @@ extern "C" INT32 GetCargoWeighting(INT32 idx, INT8 flags)
 
 // fills an array with the cargo stored in this ship.
 // *MUST RETURN THE SAME VALUE EVERY TIME*
-extern "C" void GetCargoAmounts(ModelInstance_t *ship, INT32 *cargoAmounts)
+extern "C" void GetCargoAmounts(ModelInstance_t *ship, u32 *cargoAmounts)
 {
-	INT32 totalCargo;
-	INT32 amountToSpawn, objToSpawn;
-	INT32 i, j;
-	INT32 cargoToSpawn;
-	INT8 cargoType, driveType;
+	u32 totalCargo;
+	u32 amountToSpawn, objToSpawn;
+	u32 i, j;
+	u32 cargoToSpawn;
+	u8 cargoType, driveType;
 	float cargoMult;
-	SINT32 totalWeight, rand, randSeed, randSeed2;
-	INT32 d1, d2, d3, pirates, d5, traders, d7, government;
-	INT32 population, danger, c4;
-	INT8 *stockFlags;
+	s32 totalWeight, rand, randSeed, randSeed2;
+	u32 d1, d2, d3, pirates, d5, traders, d7, government;
+	u32 population, danger, c4;
+	u8 *stockFlags;
 	ShipDef_t *ship_def;
 
 	if (ship == DATA_PlayerObject)
@@ -484,9 +483,9 @@ extern "C" void GetCargoAmounts(ModelInstance_t *ship, INT32 *cargoAmounts)
 // spawn cargo from a soon-to-be destroyed ship.
 extern "C" void DoSpawnCargo(ModelInstance_t *ship)
 {
-	INT8 *cargo_obj;
-	INT32 cargoAmounts[33], i;
-	INT16 hullMass, hullArmorPieces;
+	u8 *cargo_obj;
+	u32 cargoAmounts[33], i;
+	u16 hullMass, hullArmorPieces;
 	ShipDef_t *ship_def;
 
 	GetCargoAmounts(ship, cargoAmounts);
@@ -521,11 +520,11 @@ extern "C" void DoSpawnCargo(ModelInstance_t *ship)
 	return;
 }
 
-extern "C" INT32 ShouldCatchSmuggler()
+extern "C" u32 ShouldCatchSmuggler()
 {
 	ModelInstance_t *starportObj;
-	INT8 starportIdx;
-	SINT32 randSeed, randSeed2, rand;
+	u8 starportIdx;
+	s32 randSeed, randSeed2, rand;
 
 	starportIdx = DATA_PlayerObject->dest_index;
 	starportObj = GetInstance(starportIdx, DATA_ObjectArray);
@@ -544,12 +543,12 @@ extern "C" INT32 ShouldCatchSmuggler()
 		return 0;
 }
 	
-extern "C" void PushDoublePriceAds(INT32 itemIdx, INT32 demand, starport_t *starport, INT32 bInitial)
+extern "C" void PushDoublePriceAds(u32 itemIdx, u32 demand, starport_t *starport, u32 bInitial)
 {
-	INT8 idx, idx2;
+	u8 idx, idx2;
 	float maxAvail, fDemand, baseProb, curProb, price;
 	float fRand;
-	INT32 ads;
+	u32 ads;
 
 	fDemand = demand;
 
@@ -612,7 +611,7 @@ extern "C" void PushDoublePriceAds(INT32 itemIdx, INT32 demand, starport_t *star
 
 extern "C" void KillDoublePriceAds(starport_t *starport)
 {
-	INT8 i, itemIdx;
+	u8 i, itemIdx;
 
 	for (i = 0; i < 18 && starport->numAdverts > 0; i++)
 	{
@@ -630,16 +629,16 @@ extern "C" void KillDoublePriceAds(starport_t *starport)
 	}
 }
 
-extern "C" SINT32 GetSqrDistFromCenter(INT32 id)
+extern "C" s32 GetSqrDistFromCenter(u32 id)
 {
-	INT32 distX, distY;
+	u32 distX, distY;
 
 	distX = (id & 0x1fff) - 0x1718;
 	distY = ((id >> 0xd) & 0x1fff) - 0x1524;
 	return (distX*distX + distY*distY);
 }
 
-extern "C" float GetFrontierPriceMult(SINT32 sqrDistFromCenter, INT32 itemIdx)
+extern "C" float GetFrontierPriceMult(s32 sqrDistFromCenter, u32 itemIdx)
 {
 	if (itemIdx == 31)
 		return 1.0;
@@ -659,11 +658,11 @@ extern "C" float GetFrontierPriceMult(SINT32 sqrDistFromCenter, INT32 itemIdx)
 
 extern "C" void CreateMarketData(starport_t *starport)
 {
-	SINT8 i;
-	SINT32 avail, sqrDistFromCenter;
+	s8 i;
+	s32 avail, sqrDistFromCenter;
 	ModelInstance_t *starportObj;
-	INT64 returnVal;
-	INT8 starportSupply[33];
+	u64 returnVal;
+	u8 starportSupply[33];
 
 	GetStarportSupply(starport, starportSupply);
 
@@ -692,10 +691,10 @@ extern "C" void CreateMarketData(starport_t *starport)
 
 		starport->marketData[i].avail = avail;
 
-		FUNC_000048_BeginEvents(0x18, INT32_AT(starport+0xa0), i+1000);
+		FUNC_000048_BeginEvents(0x18, u32_AT(starport+0xa0), i+1000);
 	}
 
-	DATA_StarportRand = (INT32_AT(starport+0xa0) >> 16) | (INT32_AT(starport+0xa0) << 16);
+	DATA_StarportRand = (u32_AT(starport+0xa0) >> 16) | (u32_AT(starport+0xa0) << 16);
 	
 	// decide whether this starport should have Bulk Carriers
 	// floating around it (is it an orbiting station?)
@@ -707,11 +706,11 @@ extern "C" void CreateMarketData(starport_t *starport)
 
 extern "C" void RefreshMarketData(starport_t *starport)
 {
-	INT64 returnVal;
-	SINT8 i;
-	SINT32 price, avail, sqrDistFromCenter;
-	SINT32 priceDiff, availDiff, availAdd;
-	INT8 starportSupply[33];
+	u64 returnVal;
+	s8 i;
+	s32 price, avail, sqrDistFromCenter;
+	s32 priceDiff, availDiff, availAdd;
+	u8 starportSupply[33];
 
 	GetStarportSupply(starport, starportSupply);
 
@@ -756,15 +755,15 @@ extern "C" void RefreshMarketData(starport_t *starport)
 
 		starport->marketData[i].avail += availAdd;
 		starport->marketData[i].price += priceDiff;
-		FUNC_000048_BeginEvents(0x18, INT32_AT(starport+0xa0), i+1000);
+		FUNC_000048_BeginEvents(0x18, u32_AT(starport+0xa0), i+1000);
 	}
 }
 
 
-extern "C" INT32 RadarCargoDisplay(ModelInstance_t *ship, INT8 *vars)
+extern "C" u32 RadarCargoDisplay(ModelInstance_t *ship, u8 *vars)
 {
-	INT32 ypos, i;
-	INT32 cargoAmounts[33];
+	u32 ypos, i;
+	u32 cargoAmounts[33];
 	
 	GetCargoAmounts(ship, cargoAmounts);
 
@@ -776,15 +775,15 @@ extern "C" INT32 RadarCargoDisplay(ModelInstance_t *ship, INT8 *vars)
 		{
 			if (ypos < 0x79)
 			{
-				INT32_AT(vars+0x8) = cargoAmounts[i];
-				INT32_AT(vars+0x4) = 0x8e00 + i;
+				u32_AT(vars+0x8) = cargoAmounts[i];
+				u32_AT(vars+0x4) = 0x8e00 + i;
 			}
 			else	// condense all the rest into 'other'
 			{
-				INT32_AT(vars+0x8) = 0;
+				u32_AT(vars+0x8) = 0;
 				for (; i <= 32; i++)
-					INT32_AT(vars+0x8) += cargoAmounts[i];
-				INT32_AT(vars+0x4) = 0x99ee;
+					u32_AT(vars+0x8) += cargoAmounts[i];
+				u32_AT(vars+0x4) = 0x99ee;
 			}
 
 			DATA_DrawStringWrapShadowFunc(0x99ed, vars, 0x5f, 0xeb, ypos, 0x0);

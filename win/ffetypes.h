@@ -1,4 +1,5 @@
 
+
 typedef __int8  s8;
 typedef __int16 s16;
 typedef __int32 s32;
@@ -91,7 +92,7 @@ typedef union
 	u16 time;					// FIRST GLOBAL VAR, starTime >> 10
 	u16 landingState;			// VAR1:Starmap Display:10=Trade;80=Text; 
 								// 0 < <0x20 is cargo type; & 1: landing gear down
-	u32 unique_Id;				// also used for random seed
+	int unique_Id;				// also used for random seed
 	u32 mass;					// mass (planets only?) ffp val
 	u32 local_Startime;			// creation time, tics
 	u32 local_Stardate;			// creation time, days (used for arrival/departure)
@@ -307,7 +308,7 @@ struct DrawMdl_t {
 	u8 uchar145;				// undefined
 	u8 uchar146;				// undefined
 	u8 uchar147;				// undefined
-	u32 actualScale;			// ..from Model_t
+	s32 actualScale;			// ..from Model_t
 	ModelInstance_t* modelInstance;
 	u8* ptr_ModelVertices;
 	u8* ptr_ModelNormals;

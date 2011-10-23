@@ -1,5 +1,5 @@
 #include <math.h>
-#include "ffescr.h"
+#include "ffe3d.h"
 #include <time.h>
 #include <d3d9.h>
 
@@ -226,8 +226,8 @@ int scriptSystem::print (lua_State* L)
 
 int scriptSystem::math_sqrt (lua_State *L)
 {
-	INT16 var = lua_tointeger (L, 1);
-	INT32 res = sqrt ((double)var);
+	u16 var = lua_tointeger (L, 1);
+	u32 res = sqrt ((double)var);
 	lua_pushinteger (L, res);
 	return 1;
 }

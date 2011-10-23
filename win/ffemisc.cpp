@@ -1,7 +1,5 @@
-#include <math.h>
-#include <string.h>
-#include <stdio.h>
-#include "misc.h"
+
+#include "ffe3d.h"
 
 extern "C" void BlitClipWrapper (void *pData, int xpos,
 		int ypos, int width, int height, int jump,
@@ -170,11 +168,11 @@ extern "C" void testhook2 (int *pIn, double *pOut)
 	}
 }
 
-// used to set breakpoints in ASM code.
-extern "C" void DebugBreak()
-{
-	return;
-}
+//// used to set breakpoints in ASM code.
+//extern "C" void DebugBreak()
+//{
+//	return;
+//}
 
 // used to test strings in ASM code.
 extern "C" void StringBreak(char* c)
@@ -213,7 +211,7 @@ extern "C" void MakeCargoString(ModelInstance_t *cargoObj)
 }
 
 // determines whether a bribe is successful.
-extern "C" INT32 CanBribe(INT32 maxFineAmt, INT32 fineAmt, INT32 policeIntegrity)
+extern "C" u32 CanBribe(u32 maxFineAmt, u32 fineAmt, u32 policeIntegrity)
 {
 	float bribeFactor, allowedFactor;
 
@@ -229,10 +227,10 @@ extern "C" INT32 CanBribe(INT32 maxFineAmt, INT32 fineAmt, INT32 policeIntegrity
 	return 0;
 }
 
-extern "C" INT32 IsStarportLocked(ModelInstance_t *starport)
+extern "C" u32 IsStarportLocked(ModelInstance_t *starport)
 {
 	ModelInstance_t *base;
-	INT8 i, baseIdx, specialID;
+	u8 i, baseIdx, specialID;
 
 	// find a photography mission for this system.
 	for (i = 0; i < DATA_NumContracts; i++)
@@ -243,7 +241,7 @@ extern "C" INT32 IsStarportLocked(ModelInstance_t *starport)
 			continue;
 		if (specialID < 3)
 			continue;
-		if (INT32_AT(DATA_ContractArray+(i*52)+6) != DATA_CurrentSystem)
+		if (u32_AT(DATA_ContractArray+(i*52)+6) != DATA_CurrentSystem)
 			continue;
 
 		baseIdx = DATA_ContractArray[i*52+0x1a];
@@ -257,11 +255,11 @@ extern "C" INT32 IsStarportLocked(ModelInstance_t *starport)
 	return 0;
 }
 
-extern "C" ModelInstance_t *IsCloseToStarport(INT32 offenseIdx)
+extern "C" ModelInstance_t *IsCloseToStarport(u32 offenseIdx)
 {
 	ModelInstance_t *starportObj, *nearestStarport;
-	SINT8 i;
-	INT8 starportIdx, dist, nearestDist;
+	s8 i;
+	u8 starportIdx, dist, nearestDist;
 
 	nearestStarport = 0;
 	nearestDist = 255;
@@ -303,9 +301,9 @@ extern "C" ModelInstance_t *IsCloseToStarport(INT32 offenseIdx)
 	return 0;
 }
 
-extern "C" INT32 ModifyEquipmentPrice(INT32 in)
+extern "C" u32 ModifyEquipmentPrice(u32 in)
 {
-	INT32 mult;
+	u32 mult;
 
 	mult = 9 + 9 * ((0xff - DATA_SystemTechLevel) / 256.0);
 	
@@ -314,9 +312,9 @@ extern "C" INT32 ModifyEquipmentPrice(INT32 in)
 
 // returns 0 if any missiles are in flight
 // also disallows acceleration with enemy ships nearby
-extern "C" INT32 ShouldAllowAcceleration(INT32 accel)
+extern "C" u32 ShouldAllowAcceleration(u32 accel)
 {
-	SINT8 i;
+	s8 i;
 	ModelInstance_t *obj;
 
 	// OK to play or pause
@@ -325,7 +323,7 @@ extern "C" INT32 ShouldAllowAcceleration(INT32 accel)
 
 	for (i = 0x72; i >= 0; i--)
 	{
-		if (INT8_AT(DATA_ObjectArray+i) == 0)
+		if (u8_AT(DATA_ObjectArray+i) == 0)
 			continue;
 
 		obj = GetInstance(i, DATA_ObjectArray);
@@ -337,15 +335,15 @@ extern "C" INT32 ShouldAllowAcceleration(INT32 accel)
 	return 1;
 }
 
-INT32 g_nearbySystems[NUM_SYSTEMS];
-INT32 g_systemWeights[NUM_SYSTEMS];
-INT32 g_systemWeightSum, g_opposingWeightSum, g_friendlyWeightSum;
-SINT8 g_systemOpposing[NUM_SYSTEMS];
+u32 g_nearbySystems[NUM_SYSTEMS];
+u32 g_systemWeights[NUM_SYSTEMS];
+u32 g_systemWeightSum, g_opposingWeightSum, g_friendlyWeightSum;
+s8 g_systemOpposing[NUM_SYSTEMS];
 
-extern "C" INT32 FindDestID(SINT16 sectX, SINT16 sectY, SINT16 sectDist)
+extern "C" u32 FindDestID(s16 sectX, s16 sectY, s16 sectDist)
 {
-	SINT16 destX, destY, numStars;
-	INT8 randStarnum;
+	s16 destX, destY, numStars;
+	u8 randStarnum;
 	float randAngle;
 
 	if (sectDist <= 0)
@@ -366,17 +364,17 @@ extern "C" INT32 FindDestID(SINT16 sectX, SINT16 sectY, SINT16 sectDist)
 		return 0;
 
 	randStarnum = DATA_RandomizerFunc() % numStars;
-	return ((destX & 0x1fff) | (((INT32)destY & 0x1fff) << 0xd) | (((INT32)randStarnum & 0x3f) << 0x1a));
+	return ((destX & 0x1fff) | (((u32)destY & 0x1fff) << 0xd) | (((u32)randStarnum & 0x3f) << 0x1a));
 }
 
 // fill a global array that can be used	throughout a loop
 extern "C" void FillSystemData()
 {
-	INT32 population, tourism, allegiance, destID;
-	SINT16 sectX, sectY, sectDist;
-	SINT16 i, j;
-	INT32 numSystems;
-	INT8 opposingAllegiance;
+	u32 population, tourism, allegiance, destID;
+	s16 sectX, sectY, sectDist;
+	s16 i, j;
+	u32 numSystems;
+	u8 opposingAllegiance;
 
 	sectX = DATA_CurrentSystem & 0x1fff;
 	sectY = (DATA_CurrentSystem >> 0xd) & 0x1fff;
@@ -490,12 +488,12 @@ extern "C" void FillSystemData()
 }
 
 // called on hyperjump for new system
-extern "C" void CreateSystemData(INT32 systemID)
+extern "C" void CreateSystemData(u32 systemID)
 {
-	INT8 i, *stockFlagsPtr;
-	INT32 d1, d2, techLevel, pirates, policeLevel, traders, d7, government;
-	INT32 population, danger, c4;
-	INT32 b1, b2, milActivity, b4;
+	u8 i, *stockFlagsPtr;
+	u32 d1, d2, techLevel, pirates, policeLevel, traders, d7, government;
+	u32 population, danger, c4;
+	u32 b1, b2, milActivity, b4;
 
 	// get and store info on the new system.
 	FUNC_000869_GetSystemData(DATA_CurrentSystem, &d1, &d2, &techLevel, &pirates, &policeLevel, &traders, &d7, &government);
@@ -534,7 +532,7 @@ extern "C" void CreateSystemData(INT32 systemID)
 // called on every new day
 extern "C" void RefreshSystemData()
 {
-	INT8 i;
+	u8 i;
 
 	FillSystemData();
 
@@ -559,13 +557,13 @@ float HostileSnapAccum = 0.0;
 
 extern "C" void SystemTick()
 {
-	INT32 hostileSub;
+	u32 hostileSub;
 
 	if (DATA_PlayerState == 0x2a || DATA_PlayerState == 0x30)
 		return;
 
 	HostileSnapAccum += DATA_FrameTime*(65536.0/MAX_HOSTILE_DELAY);
-	hostileSub = (INT32)HostileSnapAccum;
+	hostileSub = (u32)HostileSnapAccum;
 
 	if (hostileSub > DATA_HostileTimer)
 	{
@@ -579,11 +577,11 @@ extern "C" void SystemTick()
 	}
 }
 
-extern "C" INT32 GetNearbySystem(SINT8 bGetOpposing)
+extern "C" u32 GetNearbySystem(s8 bGetOpposing)
 {
-	INT32 rnd, i, weight;
+	u32 rnd, i, weight;
 
-	rnd = ((INT32)DATA_RandomizerFunc() << 16) | DATA_RandomizerFunc();
+	rnd = ((u32)DATA_RandomizerFunc() << 16) | DATA_RandomizerFunc();
 	
 	if (bGetOpposing == 1)
 		rnd %= g_opposingWeightSum + 1;

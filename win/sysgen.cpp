@@ -1,9 +1,6 @@
 // Contains SysGen overrides for parameters.
 
-#include <math.h>
-#include <stdlib.h>
-#include <string.h>
-#include "misc.h"
+#include "ffe3d.h"
 
 typedef struct
 {
@@ -416,8 +413,8 @@ float govCrimeExp[] =
 };
 
 // indexed by allegiance, determines allegiance of generated systems
-INT16 CoreX[] = {0x1718, 0x1718, 0x1718, 0x1717};
-INT16 CoreY[] = {0x1524, 0x1520, 0x1524, 0x1528};
+u16 CoreX[] = {0x1718, 0x1718, 0x1718, 0x1717};
+u16 CoreY[] = {0x1524, 0x1520, 0x1524, 0x1528};
 float CoreDistMult[] = {0.0, 1.0, 1.0, 6.0};
 
 government_t fullAllyGov[] =
@@ -436,11 +433,11 @@ government_t partAllyGov[] =
 	GOV_ALLIANCE_DEMOCRACY,
 };
 
-extern "C" void AddPlanetEffects(INT16 modelindex, SINT32 randSeed, SINT32 efScale, SINT32 *effects, INT8 *worldPorts, SINT32 *numWorldPorts)
+extern "C" void AddPlanetEffects(u16 modelindex, s32 randSeed, s32 efScale, s32 *effects, u8 *worldPorts, s32 *numWorldPorts)
 {
-	SINT32 randSeed2;
-	SINT32 agriBoost, tourBoost, lifeBoost, indBoost; 
-	INT16 rnd;
+	s32 randSeed2;
+	s32 agriBoost, tourBoost, lifeBoost, indBoost; 
+	u16 rnd;
 
 	// outdoor world?
 	randSeed2 = randSeed = (randSeed << 0x6) | (randSeed >> 0x1a);
@@ -504,20 +501,20 @@ extern "C" void AddPlanetEffects(INT16 modelindex, SINT32 randSeed, SINT32 efSca
 	effects[EF_LIFE] += lifeBoost * efScale;
 }
 
-INT32 lastGeneratedSystem = 0;
+u32 lastGeneratedSystem = 0;
 sysType_t lastGeneratedSysType;
-INT32 lastGeneratedTechLevel;
+u32 lastGeneratedTechLevel;
 government_t lastGeneratedGovType;
-INT8 lastGeneratedAllegiance;
+u8 lastGeneratedAllegiance;
 
 // randomly give would-be boring systems civilization and classification.
-extern "C" void GenSystemBasicType(INT32 id, sysType_t *type, INT32 *techLevel, government_t *govType, INT8 *allegiance)
+extern "C" void GenSystemBasicType(u32 id, sysType_t *type, u32 *techLevel, government_t *govType, u8 *allegiance)
 {
-	SINT32 i, sectX, sectY, techAdd, temp, indLevel, mineLevel;
-	SINT32 numStarports, numWorldPorts;
-	INT16 lostTourism, rand2, rand3, rand4;
+	s32 i, sectX, sectY, techAdd, temp, indLevel, mineLevel;
+	s32 numStarports, numWorldPorts;
+	u16 lostTourism, rand2, rand3, rand4;
 	float distFromCenter, fTemp, fTemp2, distFromCore, lowestDist;
-	INT8 worldPorts[ST_MAX], highestPorts, closestPower;
+	u8 worldPorts[ST_MAX], highestPorts, closestPower;
 	systemObject_t sysObjects[60], *parentObj, *oldParent;
 	sysGenParams_t genParams;
 
@@ -654,7 +651,7 @@ extern "C" void GenSystemBasicType(INT32 id, sysType_t *type, INT32 *techLevel, 
 	}
 	else if (type->primaryWorld != ST_ICE && type->primaryWorld != ST_DESERT)
 	{
-		SINT32 effectSum, newEffects;
+		s32 effectSum, newEffects;
 
 		effectSum = type->effects[EF_AGRICULTURE];
 		effectSum = type->effects[EF_TOURISM];
@@ -670,8 +667,8 @@ extern "C" void GenSystemBasicType(INT32 id, sysType_t *type, INT32 *techLevel, 
 
 
 /*	temp = numStarports*25;
-	if (type->development > (INT32)temp)
-		type->development = (INT32)temp;*/
+	if (type->development > (u32)temp)
+		type->development = (u32)temp;*/
 
 	type->development = (*techLevel / 4.0) + 128.0*(numStarports/18.0);
 
@@ -788,10 +785,10 @@ extern "C" void GenSystemBasicType(INT32 id, sysType_t *type, INT32 *techLevel, 
 	lastGeneratedAllegiance = *allegiance;
 }
 
-extern "C" void GetSupplyFromEffects(INT8 *supply, SINT32 effects[EF_MAX], government_t government)
+extern "C" void GetSupplyFromEffects(u8 *supply, s32 effects[EF_MAX], government_t government)
 {
 	float stockLevels[33], fRand;
-	SINT8 i, j;
+	s8 i, j;
 
 	for (i = 0; i < 32; i++)
 	{
@@ -822,15 +819,15 @@ extern "C" void GetSupplyFromEffects(INT8 *supply, SINT32 effects[EF_MAX], gover
 		if (i == 29 && stockLevels[i] > 0.75 && supply[i] & 0x8)
 			supply[i] = 0x81;
 		else
-			supply[i] |= (INT8)(7.99*stockLevels[i]);
+			supply[i] |= (u8)(7.99*stockLevels[i]);
 	}
 
 	supply[32] = 0xf; 
 }
 
-extern "C" void FlagIllegalGoods(INT8 *supply, sysType_t *type, government_t government)
+extern "C" void FlagIllegalGoods(u8 *supply, sysType_t *type, government_t government)
 {
-	INT8 i;
+	u8 i;
 	float stockMoral, govMoral, fRand, moralDiff;
 	
 	fRand = ((rand() & 0x7fff) / 16384.0) - 1.0;
@@ -866,11 +863,11 @@ extern "C" void FlagIllegalGoods(INT8 *supply, sysType_t *type, government_t gov
 }
 
 // techLevel determines # of starports
-extern "C" void Override_F869(INT32 id, INT32 *overStr, INT32 *descStr, INT32 *techLevel, INT32 *pirates, INT32 *policeLevel, INT32 *traders, INT32 *miners, INT32 *government)
+extern "C" void Override_F869(u32 id, u32 *overStr, u32 *descStr, u32 *techLevel, u32 *pirates, u32 *policeLevel, u32 *traders, u32 *miners, u32 *government)
 {
 	sysType_t type;
 	government_t govType;
-	INT8 allegiance;
+	u8 allegiance;
 
 	allegiance = *government >> 6;
 	if (allegiance != ALLY_INDEPENDENT) 
@@ -880,7 +877,7 @@ extern "C" void Override_F869(INT32 id, INT32 *overStr, INT32 *descStr, INT32 *t
 		
 	*government &= ~0x7f;
 	*government |= govType;
-	*government |= (INT16)allegiance << 6;
+	*government |= (u16)allegiance << 6;
 
 	*pirates = 10 * (type.effects[EF_CRIME] / 256.0);
 	*traders = 10 * sqrt(type.development / 256.0);
@@ -968,15 +965,15 @@ extern "C" void Override_F869(INT32 id, INT32 *overStr, INT32 *descStr, INT32 *t
 	}
 }
 
-INT32 lastStockGeneratedSystem = 0;
-INT8 lastGeneratedStockFlags[33];
+u32 lastStockGeneratedSystem = 0;
+u8 lastGeneratedStockFlags[33];
 
-extern "C" void Override_F870(INT32 id, INT8 **stockFlags, INT32 *population, INT32 *danger, INT32 *d4)
+extern "C" void Override_F870(u32 id, u8 **stockFlags, u32 *population, u32 *danger, u32 *d4)
 {
-	INT32 overStr, descStr, d3, pirates, techLevel, traders, d7, government;
+	u32 overStr, descStr, d3, pirates, techLevel, traders, d7, government;
 	sysType_t type;
 	government_t govType;
-	INT8 allegiance;
+	u8 allegiance;
 
 	FUNC_000869_NoOverride(id, &overStr, &descStr, &techLevel, &pirates, &d3, &traders, &d7, &government);
 
@@ -1035,12 +1032,12 @@ extern "C" void Override_F870(INT32 id, INT8 **stockFlags, INT32 *population, IN
 	memcpy(lastGeneratedStockFlags, *stockFlags, sizeof(lastGeneratedStockFlags));
 }
 
-extern "C" void Override_F871(INT32 id, INT32 *d1, INT32 *d2, INT32 *milActivity, INT32 *allegiance, INT32 *milRankSub, INT32 *milRankBase)
+extern "C" void Override_F871(u32 id, u32 *d1, u32 *d2, u32 *milActivity, u32 *allegiance, u32 *milRankSub, u32 *milRankBase)
 {
-	INT32 overStr, descStr, d3, pirates, techLevel, traders, d7, government;
+	u32 overStr, descStr, d3, pirates, techLevel, traders, d7, government;
 	sysType_t type;
 	government_t govType;
-	INT8 ally;
+	u8 ally;
 
 	FUNC_000869_NoOverride(id, &overStr, &descStr, &techLevel, &pirates, &d3, &traders, &d7, &government);
 
@@ -1067,16 +1064,16 @@ extern "C" void Override_F871(INT32 id, INT32 *d1, INT32 *d2, INT32 *milActivity
 
 // starport supply depends on parent planet.
 // for instance, Computers will probably be cheaper on an industrial world
-extern "C" void GetStarportSupply(starport_t *starport, INT8 *supply)
+extern "C" void GetStarportSupply(starport_t *starport, u8 *supply)
 {
 	ModelInstance_t *starportObj, *parentObj;
-	INT8 worldPorts[ST_MAX];
-	SINT32 effects[EF_MAX], numWorldPorts;
+	u8 worldPorts[ST_MAX];
+	s32 effects[EF_MAX], numWorldPorts;
 
 	starportObj = GetInstance(starport->objectIdx, DATA_ObjectArray);
 	parentObj = GetInstance(starportObj->parent_index, DATA_ObjectArray);
 
-	srand(INT16_AT(starport+0xa0));
+	srand(u16_AT(starport+0xa0));
 	memset(effects, 0, sizeof(effects));
 
 	AddPlanetEffects(parentObj->model_num, parentObj->globalvars.unique_Id, 1, effects, worldPorts, &numWorldPorts);

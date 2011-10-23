@@ -1,7 +1,5 @@
-#include <math.h>
-#include "misc.h"
-#include <string.h>
-#include "ffescr.h"
+
+#include "ffe3d.h"
 
 // number of 250-kg damages that one tonne of metal alloys will replace
 #define ALLOY_MULT 16
@@ -80,7 +78,7 @@ float TurningMultipliers[] =
 	0.5		// Long-range Cruiser
 };
 
-INT32 maxBounty = 12500;
+u32 maxBounty = 12500;
 
 // New shield value calculate function
 // Handles integral of ds/dd = b + cs:
@@ -115,7 +113,7 @@ extern "C" float CALC_NewHullValue (float initial, float damage)
 	return (((exp(hc * damage) * ((hc*initial) + hb)) - hb) / hc);
 }
 
-extern "C" INT32 GetVol(INT32 logVol)
+extern "C" u32 GetVol(u32 logVol)
 {
 	if (logVol < 4)
 		return 0x7e00;
@@ -389,17 +387,21 @@ ModelInstance_t *CreateShip(ModelInstance_t *copyfrom, u8 object_type, int model
 	ship_instance->globalvars.laser_front = AttachLaser(ship_instance, &cargo_space);				// laser
 
 	u32 shields = cargo_space;
-	if (shields > 0x12c) shields = 0x12c;
+	//if (shields > 0x12c) shields = 0x12c;
 
-	if (ship_instance->object_type == 1) 
-		shields = shields / 4;
+	if (object_type == 1) 
+		shields = cargo_space * 0.2;
+	else if (object_type == 0xc)
+		shields = cargo_space * 0.8;
+	else
+		shields = cargo_space * 0.4;
 
-	shields = shields / 4;
-	shields = shields * max_tech_level / 0xffff;
-	shields = BoundRandom(shields);
-	shields = BoundRandom(shields) * 2;
+	shields = (shields >> 2) << 2; // round to 4t
+	//shields = shields * max_tech_level / 0xffff;
+	//shields = BoundRandom(shields);
+	//shields = BoundRandom(shields) * 2;
 	cargo_space -= shields;
-	ship_instance->globalvars.shields = ship_instance->globalvars.max_shields = shields << 4;						// shields
+	ship_instance->globalvars.shields = ship_instance->globalvars.max_shields = shields >> 2;
 
 	if (cargo_space >= 5) {
 		u32 techlevel = BoundRandom(max_tech_level);
@@ -412,6 +414,27 @@ ModelInstance_t *CreateShip(ModelInstance_t *copyfrom, u8 object_type, int model
 			cargo_space -= 5;							// ECM
 		}
 	}	
+
+	if (cargo_space >= 5) {
+		if (BoundRandom(8) < 3) {
+			equipment |= EQUIP_ESCAPE_CAPSULE;
+			cargo_space -= 5;
+		}
+	}
+
+	if (cargo_space >= 1) {
+		if (object_type == 0xa) {
+			equipment |= EQUIP_ENERGY_BOMB;
+			cargo_space -= 1;
+		}
+	}
+
+	if (cargo_space >= 5) {
+		if (BoundRandom(8) < 3) {
+			equipment |= EQUIP_ESCAPE_CAPSULE;
+			cargo_space -= 5;
+		}
+	}
 	//if (cargo_space > 0) {
 		u16 missiles = ship_def->Missiles;						// missiles
 		missiles = BoundRandom(missiles);
@@ -461,7 +484,7 @@ extern "C" ModelInstance_t *AIShipSpawn(u8 object_type)
 }
 
 // do damage.  
-extern "C" INT32 DoShipDamage(ModelInstance_t *ship, INT32 damage, u32 src_index, INT8 bContinuous)
+extern "C" u32 DoShipDamage(ModelInstance_t *ship, u32 damage, u32 src_index, u8 bContinuous)
 {
 	float temp;
 	float oldShields;
@@ -470,10 +493,10 @@ extern "C" INT32 DoShipDamage(ModelInstance_t *ship, INT32 damage, u32 src_index
 	float shieldAbsorb, hullAbsorb;
 	float realDamage, equipAbsorb;
 	long double damageProbability, baseProbability;
-	INT16 shields, hull, totalShields, totalHull;
-	INT8  idx, numDamages;
+	u16 shields, hull, totalShields, totalHull;
+	u8  idx, numDamages;
 	ShipDef_t *ship_def;
-	INT32 rand, iProbability, iResult = 0, vol;
+	u32 rand, iProbability, iResult = 0, vol;
 
 	if (damage == 0) 
 		return 0;
@@ -483,7 +506,7 @@ extern "C" INT32 DoShipDamage(ModelInstance_t *ship, INT32 damage, u32 src_index
 
 	idx = ((ship == DATA_PlayerObject) ? 1 : 0);
 
-	//if (idx) return 0; // god mode
+	if (idx) return 0; // god mode
 
 	//ModelInstance_t *src = GetInstance(src_index, DATA_ObjectArray);
 
@@ -531,8 +554,8 @@ extern "C" INT32 DoShipDamage(ModelInstance_t *ship, INT32 damage, u32 src_index
 	if (newHull < 0.0)
 		newHull = 0.0;
 	
-	ship->mass_x4 = (INT16)newHull;
-	ship->globalvars.shields = (INT16)newShields;
+	ship->mass_x4 = (u16)newHull;
+	ship->globalvars.shields = (u16)newShields;
 	
 	// store small differences to avoid rounding-error magnification.
 	//HullDiff[idx] = newHull - hull;
@@ -550,7 +573,7 @@ extern "C" INT32 DoShipDamage(ModelInstance_t *ship, INT32 damage, u32 src_index
 		ship->smoke_timeout = 10;
 		
 		vol = idx ? 0x7e00 : GetVol(ship->dist_cam);
-		FUNC_001908_SoundPlaySampleLinVol(0x1d, (INT32)(vol * hullAbsorb) | 0x80000000);
+		FUNC_001908_SoundPlaySampleLinVol(0x1d, (u32)(vol * hullAbsorb) | 0x80000000);
 	}
 
 	if (shieldAbsorb > 0)
@@ -558,7 +581,7 @@ extern "C" INT32 DoShipDamage(ModelInstance_t *ship, INT32 damage, u32 src_index
 		ship->laser_flags |= 0x1;
 		
 		vol = idx ? 0x7e00 : GetVol(ship->dist_cam);
-		FUNC_001908_SoundPlaySampleLinVol(0x1c, (INT32)(vol * shieldAbsorb) | 0x80000000);
+		FUNC_001908_SoundPlaySampleLinVol(0x1c, (u32)(vol * shieldAbsorb) | 0x80000000);
 	}
 
 	// calculate probability of equipment damage here (1-FFFF).
@@ -567,7 +590,7 @@ extern "C" INT32 DoShipDamage(ModelInstance_t *ship, INT32 damage, u32 src_index
 
 	rand = DATA_RandomizerFunc();
 
-	iProbability = (INT32)(damageProbability * 65536.0);
+	iProbability = (u32)(damageProbability * 65536.0);
 
 	numDamages = 0;
 	//while (rand < iProbability)
@@ -577,7 +600,7 @@ extern "C" INT32 DoShipDamage(ModelInstance_t *ship, INT32 damage, u32 src_index
 		
 		// another chance...
 		damageProbability *= baseProbability;
-		iProbability = (INT32)(damageProbability * 65536.0);
+		iProbability = (u32)(damageProbability * 65536.0);
 		numDamages++;
 	}
 	
@@ -592,10 +615,10 @@ extern "C" INT32 DoShipDamage(ModelInstance_t *ship, INT32 damage, u32 src_index
 		return iResult;
 }
 
-extern "C" INT32 GetInitialFuel(ModelInstance_t *ship, INT8 driveType)
+extern "C" u32 GetInitialFuel(ModelInstance_t *ship, u8 driveType)
 {
 	float fuelSpace;
-	SINT32 rand, randSeed, randSeed2;
+	s32 rand, randSeed, randSeed2;
 
 	// police have no fuel...
 	if (ship->object_type== OBJTYPE_POLICE || driveType == 0x1)
@@ -615,15 +638,15 @@ extern "C" INT32 GetInitialFuel(ModelInstance_t *ship, INT8 driveType)
 	return fuelSpace;
 }
 
-extern "C" ModelInstance_t *AIChooseEquipment(ModelInstance_t *ship, INT32 shipType)
+extern "C" ModelInstance_t *AIChooseEquipment(ModelInstance_t *ship, u32 shipType)
 {
-	INT16 spaceUsed, spaceAvail, hullMass, i;
+	u16 spaceUsed, spaceAvail, hullMass, i;
 	float usedWeight, allowedWeight;
-	INT16 maxLasers, fuelSpace;
-	INT8 driveType, numPylons;
+	u16 maxLasers, fuelSpace;
+	u8 driveType, numPylons;
 	ShipDef_t *ship_def;
 	float laserPct;
-	INT32 laserID, oldSystem;
+	u32 laserID, oldSystem;
 	
 	spaceUsed = 0;
 	if (shipType >= 0xa && DATA_RandomizerFunc() < 48000)
@@ -635,8 +658,8 @@ extern "C" ModelInstance_t *AIChooseEquipment(ModelInstance_t *ship, INT32 shipT
 			oldSystem = DATA_CurrentSystem;
 		else
 		{
-			INT8 *c1;
-			INT32 population, danger, c4;
+			u8 *c1;
+			u32 population, danger, c4;
 			
 			FUNC_000870_GetSystemDataExt(oldSystem, &c1, &population, &danger, &c4);
 			if (population < 3)
@@ -783,7 +806,7 @@ extern "C" ModelInstance_t *AIChooseEquipment(ModelInstance_t *ship, INT32 shipT
 	
 	usedWeight = spaceAvail;
 
-	usedWeight = ((INT32)usedWeight / 4) * 4; // 4x increments
+	usedWeight = ((u32)usedWeight / 4) * 4; // 4x increments
 	
 	ship->globalvars.shields = ship->globalvars.max_shields = usedWeight * 16;
 	spaceAvail -= usedWeight;
@@ -806,11 +829,11 @@ extern "C" ModelInstance_t *AIChooseEquipment(ModelInstance_t *ship, INT32 shipT
 }
 
 // returns the exchange rate of a ship (unit: $1000cr).
-extern "C" INT32 GetShipWorth(ModelInstance_t *ship)
+extern "C" u32 GetShipWorth(ModelInstance_t *ship)
 {
-	SINT32 shipCost, i, equipAmt;
-	INT8 driveType;
-	INT16 hullMass, intactMass;
+	s32 shipCost, i, equipAmt;
+	u8 driveType;
+	u16 hullMass, intactMass;
 	
 	ShipDef_t *ship_def;
 
@@ -827,7 +850,7 @@ extern "C" INT32 GetShipWorth(ModelInstance_t *ship)
 
 	for (i = 0; i < 64; i++)
 	{
-		equipAmt = FUNC_000392_GetEquipmentAmount((SINT8*)ship, i);
+		equipAmt = FUNC_000392_GetEquipmentAmount((s8*)ship, i);
 
 		// get nothing for integrated drives, or unsellable items
 		if (DATA_EquipmentData[i].techLevel < 0xff)
@@ -850,11 +873,11 @@ extern "C" INT32 GetShipWorth(ModelInstance_t *ship)
 // Messy function - my apologies
 extern "C" void RegenerateHull()
 {
-	INT16 maxHull, hullGain, *metalAlloys, totalAlloys, oldAlloys;
+	u16 maxHull, hullGain, *metalAlloys, totalAlloys, oldAlloys;
 
 	ShipDef_t *ship_def;
 	ModelInstance_t *ship;
-	SINT8 extraAlloys;
+	s8 extraAlloys;
 
 	ship = DATA_PlayerObject;
 
@@ -877,7 +900,7 @@ extern "C" void RegenerateHull()
 	hullAccum += DATA_FrameTime * HULL_REGEN_RATE * sqrt(maxHull / 6000.0);
 
 	// transfer integer values.
-	hullGain = (INT16)hullAccum;
+	hullGain = (u16)hullAccum;
 	hullAccum -= hullGain;
 	
 	if (totalAlloys < hullGain)
@@ -904,8 +927,8 @@ extern "C" void RegenerateHull()
 
 extern "C" void RegenerateShields(ModelInstance_t *ship)
 {
-	INT16 shields, maxShields, shipIdx;
-	INT32 shieldGain;
+	u16 shields, maxShields, shipIdx;
+	u32 shieldGain;
 	float sfArea, radius, volume, realGain;
 	ShipDef_t *ship_def;
 
@@ -940,12 +963,12 @@ extern "C" void RegenerateShields(ModelInstance_t *ship)
 		ship->globalvars.shields += shieldGain;
 }
 
-extern "C" INT32 AIGetMissileToFire(ModelInstance_t *ship)
+extern "C" u32 AIGetMissileToFire(ModelInstance_t *ship)
 {
 	ModelInstance_t *target;
-	INT8 targetIdx, mType;
-	INT16 maxHull, maxCargo, i, n, pylon, neededCargo, neededHull;
-	INT16 thrust;
+	u8 targetIdx, mType;
+	u16 maxHull, maxCargo, i, n, pylon, neededCargo, neededHull;
+	u16 thrust;
 	ShipDef_t *ship_def;
 
 	float rMult;
@@ -1007,9 +1030,9 @@ extern "C" INT32 AIGetMissileToFire(ModelInstance_t *ship)
 	return pylon;
 }
 
-extern "C" INT32 GetBounty(ModelInstance_t *ship)
+extern "C" u32 GetBounty(ModelInstance_t *ship)
 {
-	SINT32 rand, randSeed, randSeed2, cash, cashdigits, cashunit;
+	s32 rand, randSeed, randSeed2, cash, cashdigits, cashunit;
 	float cashFactor;
 	ShipDef_t *ship_def;
 	
@@ -1033,7 +1056,7 @@ extern "C" INT32 GetBounty(ModelInstance_t *ship)
 
 	cash = cashFactor*maxBounty;
 
-	cashdigits = (SINT8)(log(cash) / log(10)) - 2;
+	cashdigits = (s8)(log(cash) / log(10)) - 2;
 
 	cashunit = pow(10, cashdigits);
 
@@ -1046,12 +1069,12 @@ extern "C" INT32 GetBounty(ModelInstance_t *ship)
 }
 
 // spawns hostile AI ships.
-extern "C" INT8 SpawnHostileGroup(INT8 ships, INT8 *shipArray, INT32 targetName, INT8 shipType, INT8 object_type)
+extern "C" u8 SpawnHostileGroup(u8 ships, u8 *shipArray, u32 targetName, u8 shipType, u8 object_type)
 {
 	ModelInstance_t *shipObj;
-	INT8 parentShipIdx, i;
-//	SINT8 j;
-	INT64 tempVec[3];
+	u8 parentShipIdx, i;
+//	s8 j;
+	u64 tempVec[3];
 
 	if (shipType == 0x13)
 		DATA_CustomShipIndex = shipArray[DATA_RandomizerFunc() & 0xf];
@@ -1113,10 +1136,10 @@ extern "C" INT8 SpawnHostileGroup(INT8 ships, INT8 *shipArray, INT32 targetName,
 
 /*		if (i & 0x1)
 			for (j = (i & 0xfe); j >= 0; j--)
-				FUNC_001662_Vec64Sub((INT64*)(shipObj+0x3e), tempVec);
+				FUNC_001662_Vec64Sub((u64*)(shipObj+0x3e), tempVec);
 		else
 			for (j = (i & 0xfe); j > 0; j--)
-				FUNC_001661_Vec64Add((INT64*)(shipObj+0x3e), tempVec); */
+				FUNC_001661_Vec64Add((u64*)(shipObj+0x3e), tempVec); */
 
 		FUNC_000048_BeginEvents(0x17, 0x0, shipObj->index);
 	}
@@ -1124,14 +1147,14 @@ extern "C" INT8 SpawnHostileGroup(INT8 ships, INT8 *shipArray, INT32 targetName,
 	return ships;
 }
 
-extern "C" INT32 GetTurningRate(SINT32 baseRate, INT32 model)
+extern "C" u32 GetTurningRate(s32 baseRate, u32 model)
 {
 	return baseRate*TurningMultipliers[model];
 }
 
 extern "C" void CreateShipyardData(starport_t *starport)
 {
-	INT32 numShips, i, *shipyardArray;
+	u32 numShips, i, *shipyardArray;
 
 	starport->numShips = 0;
 	shipyardArray = starport->shipyard;
@@ -1155,7 +1178,7 @@ extern "C" void CreateShipyardData(starport_t *starport)
 
 extern "C" void RefreshShipyardData(starport_t *starport)
 {
-	INT32 idx, *shipyardArray;
+	u32 idx, *shipyardArray;
 	
 	// delete 1 ship from the shipyard, maybe.
 	idx = BoundRandom(14);
@@ -1210,9 +1233,9 @@ void SpawnHSTrader()
     }
 }
 
-extern "C" void SpawnTraders(INT32 traderLevel, INT32 bInitial)
+extern "C" void SpawnTraders(u32 traderLevel, u32 bInitial)
 {
-	SINT32 i, numTraders, curTraders, numFreeSlots;
+	s32 i, numTraders, curTraders, numFreeSlots;
 
 	numTraders = (sqrt(traderLevel*9)*DATA_NumStarports)/2.25;
 
@@ -1257,7 +1280,7 @@ extern "C" void CreateShips()
 		return;
 	}
 
-	INT32 i, mission_idx, name;
+	u32 i, mission_idx, name;
 
 	for (i = 0; i < DATA_NumPackages; i++)
 	{
