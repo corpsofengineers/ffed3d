@@ -1,11 +1,10 @@
-#include "ffescr.h"
-#include "misc.h"
+#include "ffe3d.h"
 
 extern void CreateShips();
-extern INT32 IsStarportLocked(ModelInstance_t *starport);
-extern void FUNC_000924_DestroyObject(ModelInstance_t *object, INT8 inflictorIdx);
+extern u32 IsStarportLocked(ModelInstance_t *starport);
+extern void FUNC_000924_DestroyObject(ModelInstance_t *object, u8 inflictorIdx);
 
-extern "C" void SpawnTraders(INT32 traderLevel, INT32 bInitial);
+extern "C" void SpawnTraders(u32 traderLevel, u32 bInitial);
 
 int getPlayer (void);
 int getPlayerIndex (void);
@@ -107,7 +106,7 @@ int getObject (void)
 
 int setLastAttackedIndex (void)
 {
-	INT8 id = scriptSystem::getSingleton()->getAsInteger (1);
+	u8 id = scriptSystem::getSingleton()->getAsInteger (1);
 
 	DATA_LastAttackedIndex = id;
 
@@ -150,7 +149,7 @@ int isStarportLocked_conv (void)
 int destroyObject (void)
 {
 	__int64 id = scriptSystem::getSingleton()->getParentAsInteger ("parent_index");
-	INT8 inflictorIdx = scriptSystem::getSingleton()->getAsInteger (2); 
+	u8 inflictorIdx = scriptSystem::getSingleton()->getAsInteger (2); 
 	ModelInstance_t* obj = GetInstance (id, DATA_ObjectArray);
 	FUNC_000924_DestroyObject(obj, inflictorIdx);
 	return 0;

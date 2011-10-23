@@ -11,6 +11,9 @@
 #include "Render/RenderSystem.h"
 #include "xmath.h"
 
+LPDIRECT3DTEXTURE9 heightmaps[100];
+float heightmapbuf[1024][1024];
+
 void Vec32to64 (__int64 *dst, int *src) {
 	dst[0] = (__int64)src[0];
 	dst[1] = (__int64)src[1];
@@ -196,76 +199,53 @@ int tricounter=0;
 int segmcounter=0;
 // ortogonation?
 
-#define w_orto 160
-#define h_orto (80-1)
+#define w_orto 160*2
+#define h_orto (80*2-1)
 
-extern "C" int C_FUNC_001479_doOrtoXY(int *orto_xy, ffeVector *vertex)
+extern "C" int C_FUNC_001479_doOrtoXY(short *orto_xy, ffeVector *v)
 {
+	D3DXVECTOR4 p;
+	D3DXMATRIX matFull;
 	int eax, ecx, edx;
 
-	//if(vertex->z < 64) {
-    //    return 1;
-    //}
-	if(vertex->z > 65536) {
-		ecx = w_orto + vertex->x / (vertex->z >> 8); // 0xa0 == 160
-		eax = h_orto - vertex->y / (vertex->z >> 8); // 0x4f == 79
-    } else {
-		ecx = w_orto + (vertex->x << 8) / vertex->z; // (a << 8) == (a / 256)
-		eax = h_orto - (vertex->y << 8) / vertex->z;
+	if(v->z < 64) {
+        return 1;
     }
 
-	edx = abs(ecx) | abs(eax);
-    //while (edx > 0x1f00) { // 7936
-    //    ecx = ecx / 2;
-    //    eax = eax / 2;
-    //    edx = edx / 2;
-    //}
-	
-	*orto_xy = (eax<<16) | ecx;
+	D3DXMatrixMultiply(&matFull, &matWorld, &matView);
+	D3DXMatrixMultiply(&matFull, &matFull, &matProj);
+	D3DXVec3Transform(&p, new D3DXVECTOR3(v->x, v->y, v->z), &matFull);
+	p.x = (p.x / p.w);
+	p.y = (p.y / p.w);
+	p.z = (p.z / p.w);
 
+	*orto_xy = (short)(w_orto * p.x);
+	*(orto_xy+1) = (short)(h_orto * p.y);
 
-/*
-	tessVerts[tricounter].x=(float)vertex->x / DIVIDER;
-	tessVerts[tricounter].y=(float)vertex->y / DIVIDER;
-	tessVerts[tricounter].z=(float)vertex->z / DIVIDER;
+	//*(orto_xy+1) = (short)eax;
 
-	///////////////////////
-	//tessVerts[0].n.x=(float)A8->normal_x / DIVIDER;
-	//tessVerts[0].n.y=(float)A8->normal_y / DIVIDER;
-	//tessVerts[0].n.z=(float)A8->normal_z / DIVIDER;
-	//D3DXVec3Normalize(&tessVerts[0].n, &tessVerts[0].n);
+	//if(v->z > 65536) {
+	//	ecx = w_orto + v->x / (v->z >> 8); // 0xa0 == 160
+	//	eax = h_orto - v->y / (v->z >> 8); // 0x4f == 79
+ //   } else {
+	//	ecx = w_orto + (v->x << 8) / v->z; // (a << 8) == (a / 256)
+	//	eax = h_orto - (v->y << 8) / v->z;
+ //   }
 
-	tessVerts[tricounter].color=0x0f0f0f0f;
+ //   ecx = ecx < 0 ? ~ecx : ecx;
+ //   eax = eax < 0 ? ~eax : eax;
+	//edx = ecx | eax;
 
-	tricounter++;
+ //   while (edx > 0x1f00) { // 7936
+ //       ecx = ecx / 2;
+ //       eax = eax / 2;
+ //       edx = edx / 2;
+ //   }
 
-	if (tricounter==3) {
-		tessVerts[8].x=tessVerts[1].x;
-		tessVerts[8].y=tessVerts[1].y;
-		tessVerts[8].z=tessVerts[1].z;
-		tessVerts[9].x=tessVerts[2].x;
-		tessVerts[9].y=tessVerts[2].y;
-		tessVerts[9].z=tessVerts[2].z;
-	}
+	//*orto_xy = (short)ecx;
+	//*(orto_xy+1) = (short)eax;
 
-	if (tricounter==6) {
-		DrawCustomTriangle2(&tessVerts[5],&tessVerts[2],&tessVerts[1]);
-		DrawCustomTriangle2(&tessVerts[5],&tessVerts[1],&tessVerts[4]);
-		tessVerts[1].x=tessVerts[4].x;
-		tessVerts[1].y=tessVerts[4].y;
-		tessVerts[1].z=tessVerts[4].z;
-		tessVerts[2].x=tessVerts[5].x;
-		tessVerts[2].y=tessVerts[5].y;
-		tessVerts[2].z=tessVerts[5].z;
-		tricounter=3;
-		segmcounter++;
-	}
-	if (segmcounter==31) {
-		DrawCustomTriangle2(&tessVerts[9],&tessVerts[2],&tessVerts[1]);
-		DrawCustomTriangle2(&tessVerts[9],&tessVerts[1],&tessVerts[8]);
-	}
-*/
-    return 0;
+	return 0;
 }
 
 extern "C" int FUNC_001876(int, int, int, int, int, int, int, int, int, int, int, int);
@@ -289,9 +269,15 @@ extern "C" int FUNC_001874_DrawPlanet(unsigned char *DrawMdl, char *cmd)
 	return (int)command;
 }
 
+extern MODEL modelList[6000];
+extern int modelNum;
+
 ffeVertex *vertex1ptr, *vertex2ptr, *vertex3ptr, *originptr;
 ffePoint center; 
 int diam;
+
+extern inline signed char getByte(void *offs, int num);
+extern inline void getVertex(float *p, unsigned char num, float *origin, unsigned char scale, unsigned char orient);
 
 int C_FUNC_001874_DrawPlanet(DrawMdl_t *drawModel, char *cmd)
 {
@@ -337,8 +323,97 @@ int C_FUNC_001874_DrawPlanet(DrawMdl_t *drawModel, char *cmd)
 	center.v3y = (vertex3ptr->y - originptr->y);
 	center.v3z = (vertex3ptr->z - originptr->z);
 
+
+	D3DXVECTOR3 p1, p2, p3;
+	ffeVertex* vertex;
+
+	vertex = FUNC_001470_getVertex(drawModel, 0);
+	p1.x=(float)vertex->x/DIVIDER;
+	p1.y=(float)vertex->y/DIVIDER;
+	p1.z=(float)vertex->z/DIVIDER;
+
+	vertex = FUNC_001470_getVertex(drawModel, 2);
+	p2.x=(float)vertex->x/DIVIDER;
+	p2.y=(float)vertex->y/DIVIDER;
+	p2.z=(float)vertex->z/DIVIDER;
+
+	vertex = FUNC_001470_getVertex(drawModel, 4);
+	p3.x=(float)vertex->x/DIVIDER;
+	p3.y=(float)vertex->y/DIVIDER;
+	p3.z=(float)vertex->z/DIVIDER;
+
+	D3DXMATRIX oneMatrix,rot;
+	D3DXMatrixRotationX(&rot, -M_PI/2);
+	D3DXMatrixInverse(&oneMatrix,NULL, &mainRotMatrixO);
+	D3DXMatrixMultiply(&oneMatrix, &oneMatrix, &rot);
+	D3DXVec3TransformCoord(&p1,&p1,&oneMatrix);
+	D3DXVec3TransformCoord(&p2,&p2,&oneMatrix);
+	D3DXVec3TransformCoord(&p3,&p3,&oneMatrix);
+
+	modelList[modelNum].scaleMat._11=p1.x;
+	modelList[modelNum].scaleMat._12=p1.y;
+	modelList[modelNum].scaleMat._13=p1.z;
+
+	modelList[modelNum].scaleMat._21=p2.x;
+	modelList[modelNum].scaleMat._22=p2.y;
+	modelList[modelNum].scaleMat._23=p2.z;
+
+	modelList[modelNum].scaleMat._31=p3.x;
+	modelList[modelNum].scaleMat._32=p3.y;
+	modelList[modelNum].scaleMat._33=p3.z;
+
+	modelList[modelNum].scaleMat._41=0.0f;
+	modelList[modelNum].scaleMat._42=0.0f;
+	modelList[modelNum].scaleMat._43=0.0f;
+
+	modelList[modelNum].scaleMat._14=0.0f;
+	modelList[modelNum].scaleMat._24=0.0f;
+	modelList[modelNum].scaleMat._34=0.0f;
+	modelList[modelNum].scaleMat._44=1.0f;
+
+	//if (heightmaps[modelList[modelNum].instanceIndex] != NULL)
+	//	return 0;
+	//else {
+	//	if ( FAILED(D3DXCreateTexture(renderSystem->GetDevice(), 1024, 1024, 1, 0, D3DFMT_R32F, D3DPOOL_MANAGED, &heightmaps[modelList[modelNum].instanceIndex])) ) {
+	//		return 0;
+	//	}
+	//	for(int i = 0; i < 1024*1024; i++) {
+	//		heightmapbuf[i] = 1.0f;//(float)((u32)modelList[modelNum].uid >> 4)/DIVIDER;
+	//	}
+	//	//heightmapbuf[0] += C_FUNC_001846((int)heightmapbuf[0],0,0);
+	//	//for(int i = 1; i < 1024*1024; i++) {
+	//	//	heightmapbuf[i] += (float)C_FUNC_001846((int)heightmapbuf[i-1],(int)heightmapbuf[i],0) * 0.02f;
+	//	//}
+	//	//for(int h = 0; h < 1024; h++)
+	//	//	for(int w = 0; w < 1024; w++) {
+	//	//		heightmapbuf[w*h] = (float)getHeight(w * 64, h * 64);
+	//	//	}
+	//}
+		//for(int h = 0; h < 1024; h++)
+		//	for(int w = 0; w < 1024; w++) {
+		//		heightmapbuf[w][h] = 0.0f;
+		//	}
 	//return FUNC_001876(0, 0, *(int *)(DrawMdl + 0x14c), (int)DrawMdl, (int)(cmd + 0xc), (int)&originptr->nx, (int)&center.v1x, (int)*(short *)(cmd + 6), (int)*(short *)(cmd + 10), (int)(*(short *)(cmd + 8) << 0x10), (int)*(short*)(cmd), 0);
-	return C_FUNC_001876(0, 0, drawModel->modelInstance, drawModel, (int)(cmd + 0xc), (ffeVector *)&originptr->nx, (ffePoint *)&center.v1x, (int)*(short *)(cmd + 6), (int)*(short *)(cmd + 10), (int)(*(short *)(cmd + 8) << 0x10), (int)*(short*)(cmd), 0);
+	//int res = C_FUNC_001876(0, 0, drawModel->modelInstance, drawModel, (int)(cmd + 0xc), (ffeVector *)&originptr->nx, (ffePoint *)&center.v1x, (int)*(short *)(cmd + 6), (int)*(short *)(cmd + 10), (int)(*(short *)(cmd + 8) << 0x10), (int)*(short*)(cmd), 0);
+
+	//D3DLOCKED_RECT sLockedRect; 
+	//if ( FAILED(heightmaps[modelList[modelNum].instanceIndex]->LockRect(0, &sLockedRect, 0, 0))) {
+	//	heightmaps[modelList[modelNum].instanceIndex]->Release();
+	//	heightmaps[modelList[modelNum].instanceIndex] = NULL;
+	//}
+
+	//u8 *ptr = (u8*)sLockedRect.pBits;
+
+	//for(int h = 0; h < 1024; h++) {
+	//	float *row = (float *)(ptr + h * sLockedRect.Pitch);
+	//	for(int w = 0; w < 1024; w++) {
+	//		row[w] = heightmapbuf[w, h];
+	//	}
+	//}
+	////memcpy(sLockedRect.pBits, heightmapbuf, 1024 * 1024 * sizeof(float)); 
+	//heightmaps[modelList[modelNum].instanceIndex]->UnlockRect(0);
+
+	return 0;
 }
 
 extern int vertexNum;
@@ -546,19 +621,27 @@ void SphereMap2(ffeVertex* v1, ffeVertex* v2, ffeVertex* v3, CUSTOMVERTEX* cv1, 
 	D3DXVec3TransformCoord(&p2, &p2, &tmpMatrix);
 	D3DXVec3TransformCoord(&p3, &p3, &tmpMatrix);
 
-	cv1->tu = (float)(0.5*(1.0 - atan2(p1.x, p1.z) * M_1_PI));
-	cv1->tv = (float)(acos(p1.y) * M_1_PI);
+	cv1->tu = /*MAX(MIN(*/(float)(0.5*(1.0 - atan2(p1.x, p1.z) * M_1_PI))/*, 1.0f), 0.0f)*/;
+	cv1->tv = /*MAX(MIN(*/(float)(acos(p1.y) * M_1_PI)/*, 1.0f), 0.0f)*/;
+	heightmapbuf[(int)(cv1->tv * 1024)][(int)(cv1->tu * 1024)] = (float)v1->x_2/DIVIDER;
 
-	cv2->tu = (float)(0.5*(1.0 - atan2(p2.x, p2.z) * M_1_PI));
-	cv2->tv = (float)(acos(p2.y) * M_1_PI);
+	cv2->tu = /*MAX(MIN(*/(float)(0.5*(1.0 - atan2(p2.x, p2.z) * M_1_PI))/*, 1.0f), 0.0f)*/;
+	cv2->tv = /*MAX(MIN(*/(float)(acos(p2.y) * M_1_PI)/*, 1.0f), 0.0f)*/;
+	heightmapbuf[(int)(cv2->tv * 1024)][(int)(cv2->tu * 1024)] = (float)v2->x_2/DIVIDER;
 
-	cv3->tu = (float)(0.5*(1.0 - atan2(p3.x, p3.z) * M_1_PI));
-	cv3->tv = (float)(acos(p3.y) * M_1_PI);
-
+	cv3->tu = /*MAX(MIN(*/(float)(0.5*(1.0 - atan2(p3.x, p3.z) * M_1_PI))/*, 1.0f), 0.0f)*/;
+	cv3->tv = /*MAX(MIN(*/(float)(acos(p3.y) * M_1_PI)/*, 1.0f), 0.0f)*/;
+	heightmapbuf[(int)(cv3->tv * 1024)][(int)(cv3->tu * 1024)] = (float)v3->x_2/DIVIDER;
 }
 
 inline int classify_point2D(ffeVertex *p0, ffeVertex *p1, ffeVertex *p2) {
 	return (p1->orto_x-p0->orto_x)*(p2->orto_y-p0->orto_y) - (p2->orto_x-p0->orto_x)*(p1->orto_y-p0->orto_y);
+}
+
+bool checkOrientation(ffeVertex *p1, ffeVertex *p2, ffeVertex *p3) 
+{
+	return (((double)p2->nx/p2->nz - (double)p1->nx/p1->nz) * ((double)p3->ny/p3->nz - (double)p1->ny/p1->nz) - 
+			((double)p3->nx/p3->nz - (double)p1->nx/p1->nz) * ((double)p2->ny/p2->nz - (double)p1->ny/p1->nz)) > 0;
 }
 
 void DrawRealPoint(float *p1, unsigned int radius);
@@ -597,7 +680,6 @@ int C_FUNC_001876(int A8, int Ac, ModelInstance_t *inst, DrawMdl_t *drawModel, i
 	ffeVertex** edges[30]; // ebp - 2436 // Массив указателей на вершины
 	int eax, ebx;
 	
-
 	memcpy (&faces[0], DATA_007893, 4*6*20);
 	memcpy (&array2[0], DATA_007894, 4*60);
 
@@ -651,8 +733,10 @@ int C_FUNC_001876(int A8, int Ac, ModelInstance_t *inst, DrawMdl_t *drawModel, i
 	dist1 = C_FUNC_001521_MulWithNormalize(minPlanetRadius, 0x54000000);
 	dist1 *=2;
 
-	if(A34_flag == 0 && currentModel==449) { //
-		*(int*)DATA_007837 = *(int*)DATA_008812_GraphicsDetailRelated - 1;
+	*(int*)DATA_007837 = *(int*)DATA_008812_GraphicsDetailRelated + 5;
+	if(A34_flag == 0 && (currentModel==445 || currentModel==447 || currentModel==449)) { //
+		//*(int*)DATA_007837 = *(int*)DATA_008812_GraphicsDetailRelated - 1;
+		*(int*)DATA_007837 = *(int*)DATA_007837 - 1;
 
 		x = CurrentPlanetPosition->x;
 		y = CurrentPlanetPosition->y;
@@ -660,38 +744,38 @@ int C_FUNC_001876(int A8, int Ac, ModelInstance_t *inst, DrawMdl_t *drawModel, i
 		w = x*x+y*y+z*z;	
 		dist3 = (int)sqrt(w);
 
-		if((minPlanetRadius >> 4) + minPlanetRadius < dist3) {
-			*(int*)DATA_007837 = *(int*)DATA_007837 + 1;
-			//*(int*)DATA_007837 = *(int*)DATA_007837 - 1;
-			if((minPlanetRadius >> 3) + minPlanetRadius < dist3) {
-				*(int*)DATA_007837 = *(int*)DATA_007837 + 1;
-				//*(int*)DATA_007837 = *(int*)DATA_007837 - 1;
-			}
-		}
+		//if((minPlanetRadius >> 4) + minPlanetRadius < dist3) {
+		//	//*(int*)DATA_007837 = *(int*)DATA_007837 + 1;
+		//	*(int*)DATA_007837 = *(int*)DATA_007837 - 1;
+		//	if((minPlanetRadius >> 3) + minPlanetRadius < dist3) {
+		//		//*(int*)DATA_007837 = *(int*)DATA_007837 + 1;
+		//		*(int*)DATA_007837 = *(int*)DATA_007837 - 1;
+		//	}
+		//}
 
 	} else { //
 		// ... not need for call from FUNC_001874
 		// DATA_008812_GraphicsDetailRelated - graphics detail related - -1/0/1
-		*(int*)DATA_007837 = *(int*)DATA_008812_GraphicsDetailRelated - 1;
+		//*(int*)DATA_007837 = *(int*)DATA_008812_GraphicsDetailRelated + 5;
 	}
 	// set level of detail
-	//*(int*)DATA_009269 = C_FUNC_001656_FindMSB(dist1) + *(int*)DATA_007837;
-	*(int*)DATA_009269 = *(int*)DATA_007837;
+	*(int*)DATA_009269 = C_FUNC_001656_FindMSB(dist1) + *(int*)DATA_007837;
+	//*(int*)DATA_009269 = *(int*)DATA_007837;
 
 //	if (C_FUNC_001656_FindMSB(dist1)>=8)
 //		*(int*)DATA_009269 -= 10-C_FUNC_001656_FindMSB(abs(CurrentPlanetPosition->z-CurrentPlanetMatrix->v1z));
 	
-	if (currentModel>=125 && currentModel<=132) { // earth type
-		*(int*)DATA_009269 += max_divide_deep;
-	} else if (currentModel==445) { // gas giant intro
-		*(int*)DATA_009269 += 3;
-	} else if (currentModel==447) { // earth intro #1
-		*(int*)DATA_009269 = C_FUNC_001656_FindMSB(dist1) + *(int*)DATA_007837 + 4;
-	} else if (currentModel==449) { // earth intro #2
-		*(int*)DATA_009269 = C_FUNC_001656_FindMSB(dist1) + *(int*)DATA_007837 + 3;
-	} else { // simple type
-		*(int*)DATA_009269 += max_divide_deep;
-	}
+	//if (currentModel>=125 && currentModel<=132) { // earth type
+	//	*(int*)DATA_009269 += max_divide_deep;
+	//} else if (currentModel==445) { // gas giant intro
+	//	*(int*)DATA_009269 += 3;
+	//} else if (currentModel==447) { // earth intro #1
+	//	*(int*)DATA_009269 = C_FUNC_001656_FindMSB(dist1) + *(int*)DATA_007837 + 4;
+	//} else if (currentModel==449) { // earth intro #2
+	//	*(int*)DATA_009269 = C_FUNC_001656_FindMSB(dist1) + *(int*)DATA_007837 + 3;
+	//} else { // simple type
+	//	*(int*)DATA_009269 += max_divide_deep;
+	//}
 
 	int counter = 0;
 	ffeVector *icosahedron = (ffeVector *)DATA_007892_Icosahedron; // икосаэдр
@@ -728,7 +812,7 @@ int C_FUNC_001876(int A8, int Ac, ModelInstance_t *inst, DrawMdl_t *drawModel, i
 
 		if(A34_flag != 1) { //
 			// calculate orto xy
-			C_FUNC_001479_doOrtoXY((int*)&vertices[counter].orto_x, (ffeVector*)&vertices[counter].nx);
+			C_FUNC_001479_doOrtoXY(&vertices[counter].orto_x, (ffeVector*)&vertices[counter].nx);
 			//FUNC_001479((int*)&CurrentPlanetArray[counter].orto_x, (int*)&CurrentPlanetArray[counter].nx);
 		}
 
@@ -1094,7 +1178,7 @@ int C_FUNC_001833(DrawMdl_t *drawModel, int dist, int extra1, int flag)
         *(int*)DATA_009281 = (int)FUNC_001716;
         *(int*)DATA_009282 = (int)FUNC_001847;
     }
-	ecx = drawModel != 0 ? drawModel->actualScale : 0; // alt_Scale
+	ecx = drawModel != 0 ? drawModel->actualScale: 0; // alt_Scale
     *(int*)DATA_009264 = 500000000 >> (unsigned char)ecx;
     *(int*)DATA_009270 = *(int*)ebx;
 	shiftCall = (char *(*)(int)) *(int*)((char*)ebx + 4); // pointer to func
@@ -1309,12 +1393,12 @@ inline void C_FUNC_001869(ffeVertex *A8, ffeVertex *Ac, ffeVertex *A10, ffeVerte
                 if(A8->nz < 64 || Ac->nz < 64 || A10->nz < 64) {
                     goto L00468c26;
                 }
-/*
-				// Определение ориентации треугольника (classify point 2d)
-				ebp_44 = (Ac->orto_y - A8->orto_y) * (A10->orto_x - A8->orto_x)
-					- (Ac->orto_x - A8->orto_x) * (A10->orto_y - A8->orto_y);
 
-*/				
+				//// Определение ориентации треугольника (classify point 2d)
+				//s32 ebp_44 = (Ac->orto_y - A8->orto_y) * (A10->orto_x - A8->orto_x)
+				//	- (Ac->orto_x - A8->orto_x) * (A10->orto_y - A8->orto_y);
+
+				
 				{ // фикс. затыкает злостный баг, но надо искать истинную причину
 					int big,sml;
 					if(Ac->nz > A8->nz) {
@@ -1336,59 +1420,79 @@ inline void C_FUNC_001869(ffeVertex *A8, ffeVertex *Ac, ffeVertex *A10, ffeVerte
 						return;
 				}
 
-				eax = (A10->x_2 <= 0) + (Ac->x_2 <= 0) + (A8->x_2 <= 0);
+				u32 x = (A10->x_2 <= 0) + (Ac->x_2 <= 0) + (A8->x_2 <= 0);
 
 				// зависимость, ровная ли поверхность?
-				if ( eax && eax != 3 )
-					eax = esi - 1;
-				else
-					eax = esi;
+				//if ( x && x != 3)
+				//	eax = esi - 1;
+				//else
+				//	eax = esi;
 
-                if(esi <= 10) {
+				eax = esi;
+
+				//if (x == 0 || x == 3) {
+				//	if (esi > 4) {
+				//		esi++;
+				//		eax++;
+				//	} else if (esi > 2) {
+				//		eax += 2;
+				//	} else {
+				//		//eax++;
+				//	}
+				//}
+
+				ffeVertex *min, *max;
+				u32 dtest = 0;
+
+				min = A8->orto_x < Ac->orto_x ? A8 : Ac;
+				min = min->orto_x < A10->orto_x ? min : A10;
+				max = A8->orto_x > Ac->orto_x ? A8 : Ac;
+				max = max->orto_x > A10->orto_x ? max : A10;
+
+				dtest += (max->orto_x - min->orto_x) < 3;
+
+				min = A8->orto_y < Ac->orto_y ? A8 : Ac;
+				min = min->orto_y < A10->orto_y ? min : A10;
+				max = A8->orto_y > Ac->orto_y ? A8 : Ac;
+				max = max->orto_y > A10->orto_y ? max : A10;
+
+				dtest += (max->orto_y - min->orto_y) < 3;
+
+				u32 ebp_44 = checkOrientation(A8, Ac, A10);//classify_point2D(A8, Ac, A10);
+                //if(esi <= 10) {
 					// Если еще остались треугольники которые надо поделить...
 					if (eax <= A8->z_2 || eax <= Ac->z_2 || eax <= A10->z_2) {
 						// До этой глубины деления делим, иначе рисуем
-						if (eax <= 8)
-							goto L00468ad1;
+						if (/*ebp_44 >= 0x96 || ebp_44 < 0 || */eax <= 14/* && dtest != 2*/)
+								goto L00468ad1;
 					}
-				}
+				//}
+				
+				//bool backface = (A8->normal_z + Ac->normal_z + A10->normal_z) < 0;
 				//if (classify_point2D(A8, Ac, A10) > 100)
 				//	return;
-/*
+
 				// Попробуем нормальный фруструм сделать
-				if (A8->orto_x < -64 && Ac->orto_x < -64 && A10->orto_x < -64)
-					return;
-				if (A8->orto_x > 320+64 && Ac->orto_x > 320+64 && A10->orto_x > 320+64)
-					return;
-				if (A8->orto_y < -64 && Ac->orto_y < -64 && A10->orto_y < -64)
-					return;
-				if (A8->orto_y > 160+64 && Ac->orto_y > 160+64 && A10->orto_y > 160+64)
-					return;
-
-				if (A8->nz <= -100 && Ac->nz <= -100 && A10->nz <= -100)
-					return;				
-*/
-
-				//if (A8->nz <= 200 || Ac->nz <= 200 || A10->nz <= 200) {
-					//if (A8->orto_y>100)
-						//A8->ny-=10000;
-					//if (Ac->orto_y>100)
-						//Ac->ny-=10000;
-					//if (A10->orto_y>100)
-						//A10->ny-=10000;
-				//}
+				//if (A8->orto_x < 0 && Ac->orto_x < 0 && A10->orto_x < 0)
+				//	return;
+				//if (A8->orto_x > w_orto && Ac->orto_x > w_orto && A10->orto_x > w_orto)
+				//	return;
+				//if (A8->orto_y < 0 && Ac->orto_y < 0 && A10->orto_y < 0)
+				//	return;
+				//if (A8->orto_y > h_orto && Ac->orto_y > h_orto && A10->orto_y > h_orto)
+				//	return;
 
 				eax =	Ac->orto_x_2 | A8->orto_x_2 | A10->orto_x_2;
 
-				if(*(int*)(eax * 4 + (int)DATA_007838) == 0) {
+				if(1/**(int*)(eax * 4 + (int)DATA_007838) == 0*/) {
 
 					eax =	Ac->orto_y_2 | A8->orto_y_2 | A10->orto_y_2;
 
-					if(*(int*)(eax * 4 + DATA_007838) == 0) {
-				        eax = (A10->x_2 <= 0) + (Ac->x_2 <= 0) + (A8->x_2 <= 0);
+					if(1/**(int*)(eax * 4 + DATA_007838) == 0*/) {
+
 						ebp_48 = (A10->x_2 <= 0) + (Ac->x_2 <= 0) + (A8->x_2 <= 0);
 
-						if(1) {//ebp_48 == 1 || ebp_48 == 2 || ebp_44 > 0) {
+						if (1/*ebp_48 == 1 || ebp_48 == 2 || *//*ebp_44 > 0*/) {
 							
 							//newVertexXYZ.x = A8->nx;
 							//newVertexXYZ.y = A8->ny;
@@ -1399,7 +1503,7 @@ inline void C_FUNC_001869(ffeVertex *A8, ffeVertex *Ac, ffeVertex *A10, ffeVerte
                             //*(int*)DATA_009286 = esi;
 							//C_FUNC_001827_CalculateNewVertexXYZ((ffeVector*)&newVertexXYZ.x, (ffeVector*)&A8->nx, (ffeVector*)&Ac->nx, (ffeVector*)&A10->nx);
 							
-							shiftCall3 = (int (*)(int*,int*,int*,int*,int)) *(int*)DATA_009270;
+							//shiftCall3 = (int (*)(int*,int*,int*,int*,int)) *(int*)DATA_009270;
 							
 							/*							
 							eax = shiftCall3((int*)A8,
@@ -1427,29 +1531,6 @@ inline void C_FUNC_001869(ffeVertex *A8, ffeVertex *Ac, ffeVertex *A10, ffeVerte
 								int vv1, vv2, vv3;
 								int eax;
 
-								//old_A8 = A8;
-								//old_Ac = Ac;
-								//old_A10 = A10;
-
-								// A8 > Ac > A10
-								/*
-								if(Ac->x_2 > A8->x_2) {
-									V = A8;
-									A8 = Ac;
-									Ac = V;
-								}
-								if(A10->x_2 > A8->x_2) {
-									V = A8;
-									A8 = A10;
-									A10 = V;
-								}
-
-								if(Ac->x_2 < A10->x_2) {
-									V = Ac;
-									Ac = A10;
-									A10 = V;
-								}
-								*/
 								if(A8->x_2 > Ac->x_2) {
 									V1 = A8;
 									V2 = Ac;
@@ -1482,7 +1563,7 @@ inline void C_FUNC_001869(ffeVertex *A8, ffeVertex *Ac, ffeVertex *A10, ffeVerte
 								eax = (A8->x_2<=0) + (Ac->x_2<=0) + (A10->x_2<=0) - 1;
 
 								etex=0;
-								if (eax > 0) {
+								if (eax > 0 && eax-1 > 0) {
 									//if (eax-1 > 0) {
 										if (V1->x_2 >= 0x400000) {
 											/*
@@ -1737,7 +1818,7 @@ inline void C_FUNC_001869(ffeVertex *A8, ffeVertex *Ac, ffeVertex *A10, ffeVerte
 							tessVerts[2].p.x=(float)(A10->nx);
 							tessVerts[2].p.y=(float)(A10->ny);
 							tessVerts[2].p.z=(float)(A10->nz);
-							///////////////////////
+							/////////////////////////
 
 							tessVerts[0].n.x=(float)A8->normal_x / DIVIDER;
 							tessVerts[0].n.y=(float)A8->normal_y / DIVIDER;
@@ -1873,21 +1954,21 @@ L00468ce0:
 														} while(ebp_24 < 2); 	// три прохода   
 													}
                                                     if(esi < 5) { // Сколько раз тесселлировать (скруглять) экосаэдр
-														//callTriangleDeliver((int*)A18, Ac, A10, A8, esi, funcNum+4);
-														//callTriangleDeliver((int*)A1c, A10, A8, Ac, esi, funcNum+4);
-														//callTriangleDeliver((int*)A14, A8, Ac, A10, esi, funcNum+4);
-														shiftCall3 = (int (*)(int*,int*,int*,int*,int)) *(int*)DATA_009278;
-                                                        shiftCall3((int*)A18, (int*)Ac, (int*)A10, (int*)A8, esi);
-                                                        shiftCall3((int*)A1c, (int*)A10, (int*)A8, (int*)Ac, esi);
-                                                        shiftCall3((int*)A14, (int*)A8, (int*)Ac, (int*)A10, esi);
+														callTriangleDeliver((int*)A18, Ac, A10, A8, esi, funcNum+4);
+														callTriangleDeliver((int*)A1c, A10, A8, Ac, esi, funcNum+4);
+														callTriangleDeliver((int*)A14, A8, Ac, A10, esi, funcNum+4);
+														//shiftCall3 = (int (*)(int*,int*,int*,int*,int)) *(int*)DATA_009278;
+              //                                          shiftCall3((int*)A18, (int*)Ac, (int*)A10, (int*)A8, esi);
+              //                                          shiftCall3((int*)A1c, (int*)A10, (int*)A8, (int*)Ac, esi);
+              //                                          shiftCall3((int*)A14, (int*)A8, (int*)Ac, (int*)A10, esi);
                                                     } else {
-														//callTriangleDeliver((int*)A18, Ac, A10, A8, esi, funcNum);
-														//callTriangleDeliver((int*)A1c, A10, A8, Ac, esi, funcNum);
-														//callTriangleDeliver((int*)A14, A8, Ac, A10, esi, funcNum);
-														shiftCall3 = (int (*)(int*,int*,int*,int*,int)) *(int*)DATA_009279;
-                                                        shiftCall3((int*)A18, (int*)Ac, (int*)A10, (int*)A8, esi);
-                                                        shiftCall3((int*)A1c, (int*)A10, (int*)A8, (int*)Ac, esi);
-														shiftCall3((int*)A14, (int*)A8, (int*)Ac, (int*)A10, esi);
+														callTriangleDeliver((int*)A18, Ac, A10, A8, esi, funcNum);
+														callTriangleDeliver((int*)A1c, A10, A8, Ac, esi, funcNum);
+														callTriangleDeliver((int*)A14, A8, Ac, A10, esi, funcNum);
+														//shiftCall3 = (int (*)(int*,int*,int*,int*,int)) *(int*)DATA_009279;
+              //                                          shiftCall3((int*)A18, (int*)Ac, (int*)A10, (int*)A8, esi);
+              //                                          shiftCall3((int*)A1c, (int*)A10, (int*)A8, (int*)Ac, esi);
+														//shiftCall3((int*)A14, (int*)A8, (int*)Ac, (int*)A10, esi);
                                                     }
                                                     ebp_8 = C_FUNC_001820_ArrayCreateNewElement();
                                                     *ebp_8 = A18[2];
@@ -2751,6 +2832,9 @@ extern "C" int C_FUNC_001849(int* A8, ffeVertex* Ac, ffeVertex* A10, ffeVertex* 
 				
             }
         } else {
+			int ebp_12 = (esi->x_2 + A10->x_2) >> 1;
+			ebx->x_2 = C_FUNC_001846( esi->x_2, A10->x_2, A18) + ebp_12;
+
 			eax = C_FUNC_001521_MulWithNormalize(ebx->normal_x, (int)edi);
 			ebx->nx = eax + ((esi->nx + A10->nx) >> 1);
 			eax = C_FUNC_001521_MulWithNormalize(ebx->normal_y, (int)edi);
@@ -2803,14 +2887,11 @@ extern "C" int C_FUNC_001850(int* A8, ffeVertex* Ac, ffeVertex* A10, ffeVertex* 
 		ebx->normal_z = Ac->normal_z;
 		edi=0;
 		if(A18 > Ac->z_2 && A18 > A10->z_2) {
-			eax = Ac->x_2;
-			ebx->x_2 = (eax + A10->x_2) >> 1;
-			eax = Ac->nx;
-			ebx->nx = (eax + A10->nx) >> 1;
-			eax = Ac->ny;
-			ebx->ny = (eax + A10->ny) >> 1;
-			eax = Ac->nz;
-			ebx->nz = (eax + A10->nz) >> 1;
+			ebx->x_2 = (Ac->x_2 + A10->x_2) >> 1;
+			ebx->nx = (Ac->nx + A10->nx) >> 1;
+			ebx->ny = (Ac->ny + A10->ny) >> 1;
+			ebx->nz = (Ac->nz + A10->nz) >> 1;
+
 			if(Ac->nz < 0x40 || A10->nz < 0x40) {
                 //*L006c7348(ebx); //call near [DATA_009282]
 				shiftCall = (char *(*)(int)) *(int*)(DATA_009282); // pointer to func
@@ -2861,15 +2942,12 @@ extern "C" int C_FUNC_001850(int* A8, ffeVertex* Ac, ffeVertex* A10, ffeVertex* 
 
             }
         } else {
-			int ebp_12 = (Ac->x_2 + A10->x_2) >> 1;
-			ebx->x_2 = C_FUNC_001846( Ac->x_2, A10->x_2, A18) + ebp_12;
+			ebx->x_2 = C_FUNC_001846( Ac->x_2, A10->x_2, A18) + ((Ac->x_2 + A10->x_2) >> 1);
 
-			eax = C_FUNC_001521_MulWithNormalize(ebx->normal_x, (int)edi);
-			ebx->nx = eax + ((Ac->nx + A10->nx) >> 1);
-			eax = C_FUNC_001521_MulWithNormalize(ebx->normal_y, (int)edi);
-			ebx->ny = eax + ((Ac->ny + A10->ny) >> 1);
-			eax = C_FUNC_001521_MulWithNormalize(ebx->normal_z, (int)edi);
-			ebx->nz = eax + ((Ac->nz + A10->nz) >> 1);
+			ebx->nx = C_FUNC_001521_MulWithNormalize(ebx->normal_x, (int)edi) + ((Ac->nx + A10->nx) >> 1);
+			ebx->ny = C_FUNC_001521_MulWithNormalize(ebx->normal_y, (int)edi) + ((Ac->ny + A10->ny) >> 1);
+			ebx->nz = C_FUNC_001521_MulWithNormalize(ebx->normal_z, (int)edi) + ((Ac->nz + A10->nz) >> 1);
+
             //*L006c7348(ebx); // call near [DATA_009282]
 			shiftCall = (char *(*)(int)) *(int*)(DATA_009282); // pointer to func
 			shiftCall((int)ebx);
@@ -5256,13 +5334,14 @@ FUNC_001829:			; Pos = 62a34
 
 extern "C" inline void C_FUNC_001829_GetTriangulateDepth_2(ffeVertex* AN, ffeVertex* A8, ffeVertex* Ac, ffeVertex* A10)
 {
+	int eax;
     int  esi;
     int  edi;
 	int c_dist;
 	int m_d_deep;
 	int opt_c;
 
-	C_FUNC_001829_GetTriangulateDepth(AN);
+	//C_FUNC_001829_GetTriangulateDepth(AN);
 	/*
 	int scaleFactor = (mod->Scale + mod->Scale2 - 8);
 	int radius=(mod->field_2C-1);
@@ -5276,47 +5355,106 @@ extern "C" inline void C_FUNC_001829_GetTriangulateDepth_2(ffeVertex* AN, ffeVer
 	}
 	AN->x_2=radius;
 	*/
-	c_dist = control_dist;
-	opt_c = smart_optimizer_c;
 
 	esi = AN->nz;
-	edi = *(int*)DATA_009269;
 
-	if (currentModel==447 || currentModel==449) {
-		C_FUNC_001829_GetTriangulateDepth(AN);
+    if(esi < 0x400) {
+        esi = 0x400;
+    }
+
+	ffeVertex *V1, *V2, *V3;
+
+	if(A8->x_2 > Ac->x_2) {
+		V1 = A8;
+		V2 = Ac;
 	} else {
-		if (esi<c_dist) {
-			edi = edi;
-		} else if (esi<c_dist*2) {
-			edi = edi-1;
-		} else if (esi<c_dist*4) {
-			edi = edi-2;
-		} else if (esi<c_dist*8) {
-			edi = edi-3;
-		} else if (esi<c_dist*16) {
-			edi = edi-4;
-		} else if (esi<c_dist*32) {
-			edi = edi-5;
-		} else if (esi<c_dist*64) {
-			edi = edi-6;
-		} else if (esi<c_dist*128) {
-			edi = edi-7;
-		} else if (esi<c_dist*256) {
-			edi = edi-8;
-		} else if (esi<c_dist*512) {
-			edi = edi-9;
-		} else {
-			edi = 1;
-		}
-		if (smart_optimizer) {
-			edi -= C_FUNC_001656_FindMSB(*(int*)DATA_009276_ArraySize)/2-opt_c;
-		}
-		AN->z_2 = edi;
-		edi--;
-		if(edi<=0) {
-			AN->z_2 = 1;
+		V1 = Ac;
+		V2 = A8;
+	}
+	if(A10->x_2 > V1->x_2) {
+		V3 = V2;
+		V2 = V1;
+		V1 = A10;
+	} else if (A10->x_2 < V2->x_2) {
+		V3 = A10;
+	} else {
+		V3 = V2;
+		V2 = A10;
+	}
+
+    eax = C_FUNC_001656_FindMSB(esi);
+	edi = *(int*)DATA_009269 - eax;
+
+	eax = (A8->x_2<=0) + (Ac->x_2<=0) + (A10->x_2<=0) - 1;
+
+	if (eax > 0 && eax-1 > 0) {
+		//if (eax-1 > 0) {
+			if (V1->x_2 >= 0x400000) {
+
+			} else { // вода
+				//edi -= 4;
+			}
+		//}
+	} else if (eax == 0) {
+			if (V1->x_2 >= 0x400000) {
+
+			} else { 
+
+			}
+	} else {
+		if (V1->x_2 - V3->x_2 >= 0x400000) {
+	
+		} else { // ровная поверхность
+			//edi -= 4;
 		}
 	}
+
+	AN->z_2 = edi;
+	edi--;
+    if(edi<=0) {
+		AN->z_2 = 1;
+    }
+	//c_dist = control_dist;
+	//opt_c = smart_optimizer_c;
+
+	//esi = AN->nz;
+	//edi = *(int*)DATA_009269;
+
+	//if (currentModel==447 || currentModel==449) {
+	//	C_FUNC_001829_GetTriangulateDepth(AN);
+	//} else {
+	//	if (esi<c_dist) {
+	//		edi = edi;
+	//	} else if (esi<c_dist*2) {
+	//		edi = edi-1;
+	//	} else if (esi<c_dist*4) {
+	//		edi = edi-2;
+	//	} else if (esi<c_dist*8) {
+	//		edi = edi-3;
+	//	} else if (esi<c_dist*16) {
+	//		edi = edi-4;
+	//	} else if (esi<c_dist*32) {
+	//		edi = edi-5;
+	//	} else if (esi<c_dist*64) {
+	//		edi = edi-6;
+	//	} else if (esi<c_dist*128) {
+	//		edi = edi-7;
+	//	} else if (esi<c_dist*256) {
+	//		edi = edi-8;
+	//	} else if (esi<c_dist*512) {
+	//		edi = edi-9;
+	//	} else {
+	//		edi = 1;
+	//	}
+	//	if (smart_optimizer) {
+	//		edi -= C_FUNC_001656_FindMSB(*(int*)DATA_009276_ArraySize)/2-opt_c;
+	//	}
+	//	AN->z_2 = edi;
+	//	edi--;
+	//	if(edi<=0) {
+	//		AN->z_2 = 1;
+	//	}
+	//}
 }
 
 
@@ -5327,6 +5465,9 @@ extern "C" inline void C_FUNC_001829_GetTriangulateDepth(ffeVertex* A8)
     int  esi;
     int  edi;
 
+	C_FUNC_001829_GetTriangulateDepth_2(A8,A8,A8,A8);
+	return;
+
 	esi = A8->nz;
 
     if(esi < 0x400) {
@@ -5334,6 +5475,7 @@ extern "C" inline void C_FUNC_001829_GetTriangulateDepth(ffeVertex* A8)
     }
     eax = C_FUNC_001656_FindMSB(esi);
 	edi = *(int*)DATA_009269 - eax;
+
 	A8->z_2 = edi;
 	edi--;
     if(edi<=0) {
@@ -5345,41 +5487,40 @@ void callTriangleDeliver(int* A8, ffeVertex* Ac, ffeVertex* A10, ffeVertex* A14,
 {
 	
 	switch(num) {
+		case 0:		FUNC_001849(A8, Ac, A10, A14, A18); break;
+		case 1:		FUNC_001849(A8, Ac, A10, A14, A18); break;
+		case 2:		FUNC_001849(A8, Ac, A10, A14, A18); break;
+		case 3:		FUNC_001849(A8, Ac, A10, A14, A18); break;
+		case 4:		FUNC_001849(A8, Ac, A10, A14, A18); break;
+		case 5:		FUNC_001849(A8, Ac, A10, A14, A18); break;
+		case 6:		FUNC_001849(A8, Ac, A10, A14, A18); break;
+		case 7:		FUNC_001849(A8, Ac, A10, A14, A18); break;
+		case 8:		FUNC_001850(A8, Ac, A10, A14, A18); break;
+		case 9:		FUNC_001851(A8, Ac, A10, A14, A18); break;
+		case 10:	FUNC_001852(A8, Ac, A10, A14, A18); break;
+		case 11:	FUNC_001853(A8, Ac, A10, A14, A18); break;
+		case 12:	FUNC_001854(A8, Ac, A10, A14, A18); break;
+		case 13:	FUNC_001855(A8, Ac, A10, A14, A18); break; // bug in C version
+		case 14:	FUNC_001856(A8, Ac, A10, A14, A18); break;
+		case 15:	FUNC_001857(A8, Ac, A10, A14, A18); break; // bug in C version
+		case 16:	FUNC_001858(A8, Ac, A10, A14, A18); break;
+		case 17:	FUNC_001859(A8, Ac, A10, A14, A18); break;
+		case 18:	FUNC_001860(A8, Ac, A10, A14, A18); break;
+		case 19:	FUNC_001861(A8, Ac, A10, A14, A18); break;
+		case 20:	FUNC_001862(A8, Ac, A10, A14, A18); break;
+		case 21:	FUNC_001863(A8, Ac, A10, A14, A18); break; // bug in C version
+		case 22:	FUNC_001864(A8, Ac, A10, A14, A18); break;
+		case 23:	FUNC_001865(A8, Ac, A10, A14, A18); break; // bug in C version
+		case 24:	FUNC_001866(A8, Ac, A10, A14, A18); break;
+		case 25:	FUNC_001866(A8, Ac, A10, A14, A18); break;
+		case 26:	FUNC_001866(A8, Ac, A10, A14, A18); break;
+		case 27:	FUNC_001866(A8, Ac, A10, A14, A18); break;
+		case 28:	FUNC_001867(A8, Ac, A10, A14, A18); break;
+		case 29:	FUNC_001867(A8, Ac, A10, A14, A18); break;
+		case 30:	FUNC_001867(A8, Ac, A10, A14, A18); break;
+		case 31:	FUNC_001867(A8, Ac, A10, A14, A18); break;
 
-		case 0:		C_FUNC_001849(A8, Ac, A10, A14, A18); break;
-		case 1:		C_FUNC_001849(A8, Ac, A10, A14, A18); break;
-		case 2:		C_FUNC_001849(A8, Ac, A10, A14, A18); break;
-		case 3:		C_FUNC_001849(A8, Ac, A10, A14, A18); break;
-		case 4:		C_FUNC_001849(A8, Ac, A10, A14, A18); break;
-		case 5:		C_FUNC_001849(A8, Ac, A10, A14, A18); break;
-		case 6:		C_FUNC_001849(A8, Ac, A10, A14, A18); break;
-		case 7:		C_FUNC_001849(A8, Ac, A10, A14, A18); break;
-		case 8:		C_FUNC_001850(A8, Ac, A10, A14, A18); break;
-		case 9:		C_FUNC_001851(A8, Ac, A10, A14, A18); break;
-		case 10:	C_FUNC_001852(A8, Ac, A10, A14, A18); break;
-		case 11:	C_FUNC_001853(A8, Ac, A10, A14, A18); break;
-		case 12:	C_FUNC_001854(A8, Ac, A10, A14, A18); break;
-		case 13:	C_FUNC_001855(A8, Ac, A10, A14, A18); break;
-		case 14:	C_FUNC_001856(A8, Ac, A10, A14, A18); break;
-		case 15:	C_FUNC_001857(A8, Ac, A10, A14, A18); break;
-		case 16:	C_FUNC_001858(A8, Ac, A10, A14, A18); break;
-		case 17:	C_FUNC_001859(A8, Ac, A10, A14, A18); break;
-		case 18:	C_FUNC_001860(A8, Ac, A10, A14, A18); break;
-		case 19:	C_FUNC_001861(A8, Ac, A10, A14, A18); break;
-		case 20:	C_FUNC_001862(A8, Ac, A10, A14, A18); break;
-		case 21:	C_FUNC_001863(A8, Ac, A10, A14, A18); break;
-		case 22:	C_FUNC_001864(A8, Ac, A10, A14, A18); break;
-		case 23:	C_FUNC_001865(A8, Ac, A10, A14, A18); break;
-		case 24:	C_FUNC_001866(A8, Ac, A10, A14, A18); break;
-		case 25:	C_FUNC_001866(A8, Ac, A10, A14, A18); break;
-		case 26:	C_FUNC_001866(A8, Ac, A10, A14, A18); break;
-		case 27:	C_FUNC_001866(A8, Ac, A10, A14, A18); break;
-		case 28:	C_FUNC_001867(A8, Ac, A10, A14, A18); break;
-		case 29:	C_FUNC_001867(A8, Ac, A10, A14, A18); break;
-		case 30:	C_FUNC_001867(A8, Ac, A10, A14, A18); break;
-		case 31:	C_FUNC_001867(A8, Ac, A10, A14, A18); break;
-
-		default:	C_FUNC_001849(A8, Ac, A10, A14, A18); break;
+		default:	FUNC_001849(A8, Ac, A10, A14, A18); break;
 	}
 }
 

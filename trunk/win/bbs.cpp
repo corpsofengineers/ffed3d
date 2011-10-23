@@ -1,18 +1,18 @@
-#include <math.h>
-#include "misc.h"
+
+#include "ffe3d.h"
 
 // I may never understand the syntax for C function pointers...
-typedef INT32 (*pBBSFunc)(starport_t*, bbsAdvert_t*);						  
+typedef u32 (*pBBSFunc)(starport_t*, bbsAdvert_t*);						  
 
 // Possible BBS constructors, important ones are in missions.c
-extern "C" INT32 BBS_MakeSmugglerAd(starport_t *starport, bbsAdvert_t *slot);
-extern "C" INT32 BBS_MakeFakeSmugglerAd(starport_t *starport, bbsAdvert_t *slot);
-extern "C" INT32 BBS_MakeMilitaryAd(starport_t *starport, bbsAdvert_t *slot);
-extern "C" INT32 BBS_MakeMissingPersonAd(starport_t *starport, bbsAdvert_t *slot);
-extern "C" INT32 BBS_MakePassengerAd(starport_t *starport, bbsAdvert_t *slot);
-extern "C" INT32 BBS_MakeAssassinationAd(starport_t *starport, bbsAdvert_t *slot);
-extern "C" INT32 BBS_MakeCrewAd(starport_t *starport, bbsAdvert_t *slot);
-extern "C" INT32 BBS_MakeDonationAd(starport_t *starport, bbsAdvert_t *slot);
+extern "C" u32 BBS_MakeSmugglerAd(starport_t *starport, bbsAdvert_t *slot);
+extern "C" u32 BBS_MakeFakeSmugglerAd(starport_t *starport, bbsAdvert_t *slot);
+extern "C" u32 BBS_MakeMilitaryAd(starport_t *starport, bbsAdvert_t *slot);
+extern "C" u32 BBS_MakeMissingPersonAd(starport_t *starport, bbsAdvert_t *slot);
+extern "C" u32 BBS_MakePassengerAd(starport_t *starport, bbsAdvert_t *slot);
+extern "C" u32 BBS_MakeAssassinationAd(starport_t *starport, bbsAdvert_t *slot);
+extern "C" u32 BBS_MakeCrewAd(starport_t *starport, bbsAdvert_t *slot);
+extern "C" u32 BBS_MakeDonationAd(starport_t *starport, bbsAdvert_t *slot);
 
 // constructors are pulled out of here at random
 pBBSFunc BBSConstructors[] = 
@@ -50,7 +50,7 @@ pBBSFunc BBSConstructors[] =
 	BBS_MakeCrewAd,
 };
 
-extern "C" void CreateBBSAdvert(starport_t *starport, bbsAdvert_t *slot, INT32 string, INT32 d1, INT32 d2, INT32 d3, INT32 d4, INT32 d5)
+extern "C" void CreateBBSAdvert(starport_t *starport, bbsAdvert_t *slot, u32 string, u32 d1, u32 d2, u32 d3, u32 d4, u32 d5)
 {
 	starport->numAdverts++;
 
@@ -65,11 +65,11 @@ extern "C" void CreateBBSAdvert(starport_t *starport, bbsAdvert_t *slot, INT32 s
 	slot->data5 = d5;
 }
 
-extern "C" INT32 BBS_MakeSmugglerAd(starport_t *starport, bbsAdvert_t *slot)
+extern "C" u32 BBS_MakeSmugglerAd(starport_t *starport, bbsAdvert_t *slot)
 {
 	ModelInstance_t *starportObj;
-	INT8 i;
-	INT32 randSeed, rand;
+	u8 i;
+	u32 randSeed, rand;
 
 	if (starport->flags & 0x1)
 		return 0;
@@ -95,10 +95,10 @@ extern "C" INT32 BBS_MakeSmugglerAd(starport_t *starport, bbsAdvert_t *slot)
 	return 1;
 }
 
-extern "C" INT32 BBS_MakeFakeSmugglerAd(starport_t *starport, bbsAdvert_t *slot)
+extern "C" u32 BBS_MakeFakeSmugglerAd(starport_t *starport, bbsAdvert_t *slot)
 {
-	INT8 i;
-	INT32 rand;
+	u8 i;
+	u32 rand;
 
 	if (starport->flags & 0x2)
 		return 0;
@@ -124,7 +124,7 @@ extern "C" INT32 BBS_MakeFakeSmugglerAd(starport_t *starport, bbsAdvert_t *slot)
 	return 1;
 }
 
-extern "C" INT32 BBS_MakeMilitaryAd(starport_t *starport, bbsAdvert_t *slot)
+extern "C" u32 BBS_MakeMilitaryAd(starport_t *starport, bbsAdvert_t *slot)
 {
 	switch (DATA_CurrentAllegiance)
 	{
@@ -149,9 +149,9 @@ extern "C" INT32 BBS_MakeMilitaryAd(starport_t *starport, bbsAdvert_t *slot)
 	}
 }
 
-extern "C" INT32 BBS_MakeMissingPersonAd(starport_t *starport, bbsAdvert_t *slot)
+extern "C" u32 BBS_MakeMissingPersonAd(starport_t *starport, bbsAdvert_t *slot)
 {
-	INT32 targetSystem, stringID, cash, rand;
+	u32 targetSystem, stringID, cash, rand;
 	float temp;
 
 	DATA_RandomizerFunc();
@@ -169,13 +169,13 @@ extern "C" INT32 BBS_MakeMissingPersonAd(starport_t *starport, bbsAdvert_t *slot
 	temp = FloatRandom();
 	temp *= temp;
 
-	cash = 500 + ((INT32)(20*temp))*800;
+	cash = 500 + ((u32)(20*temp))*800;
 
 	CreateBBSAdvert(starport, slot, stringID, 1, targetSystem, 0, cash, rand);
 	return 1;
 }
 
-extern "C" INT32 BBS_MakeDonationAd(starport_t *starport, bbsAdvert_t *slot)
+extern "C" u32 BBS_MakeDonationAd(starport_t *starport, bbsAdvert_t *slot)
 {
 	DATA_RandomizerFunc();
 
@@ -186,7 +186,7 @@ extern "C" INT32 BBS_MakeDonationAd(starport_t *starport, bbsAdvert_t *slot)
 	return 1;
 }
 
-extern "C" INT32 BBS_MakeCrewAd(starport_t *starport, bbsAdvert_t *slot)
+extern "C" u32 BBS_MakeCrewAd(starport_t *starport, bbsAdvert_t *slot)
 {
 	DATA_RandomizerFunc();
 
@@ -196,9 +196,9 @@ extern "C" INT32 BBS_MakeCrewAd(starport_t *starport, bbsAdvert_t *slot)
 	return 1;
 }
 
-extern "C" INT32 BBSCreateRandom(starport_t *starport, bbsAdvert_t *slot)
+extern "C" u32 BBSCreateRandom(starport_t *starport, bbsAdvert_t *slot)
 {
-	INT32 idx;
+	u32 idx;
 
 	idx = DATA_RandomizerFunc() % (sizeof(BBSConstructors) / sizeof(BBSConstructors[0]));
 
@@ -225,7 +225,7 @@ extern "C" void DeflagAdvert(bbsAdvert_t *ad, starport_t *starport)
 }
 
 // deletes an ad at any index
-extern "C" void DeleteBBSAdvert(INT32 idx, starport_t *starport)
+extern "C" void DeleteBBSAdvert(u32 idx, starport_t *starport)
 {
 	if (starport->adverts[idx].string == 0)
 		return;
@@ -236,9 +236,9 @@ extern "C" void DeleteBBSAdvert(INT32 idx, starport_t *starport)
 	starport->numAdverts--;
 }
 
-extern "C" INT32 GetEmptyAdSlot(starport_t *starport)
+extern "C" u32 GetEmptyAdSlot(starport_t *starport)
 {
-	INT8 k;
+	u8 k;
 
 	// search for empty slots
 	for (k = 0; k < 18; k++)
@@ -259,7 +259,7 @@ extern "C" INT32 GetEmptyAdSlot(starport_t *starport)
 
 extern "C" void CreateBBSData(starport_t *starport)
 {
-	SINT32 numAds, i, j;
+	s32 numAds, i, j;
 	
 	numAds = DATA_CurrentPopulation + 9;
 	if (numAds > 18)
@@ -280,7 +280,7 @@ extern "C" void CreateBBSData(starport_t *starport)
 // remove & replace ads
 extern "C" void RefreshBBSData(starport_t *starport)
 {
-	SINT32 i, j, idx, numModify, temp;
+	s32 i, j, idx, numModify, temp;
 	bbsAdvert_t prospectiveAd;
 
 	numModify = (DATA_CurrentPopulation + 2) * (0.3 + 1.4*FloatRandom());
@@ -322,12 +322,12 @@ extern "C" void RefreshBBSData(starport_t *starport)
 
 }
 
-typedef INT32 (*pMilFunc)(INT32);						  
+typedef u32 (*pMilFunc)(u32);						  
 
-extern "C" INT32 MIL_MakePackage(INT32 rank);
-extern "C" INT32 MIL_MakeAssassination(INT32 rank);
-extern "C" INT32 MIL_MakePhotography(INT32 rank);
-extern "C" INT32 MIL_MakeBombing(INT32 rank);
+extern "C" u32 MIL_MakePackage(u32 rank);
+extern "C" u32 MIL_MakeAssassination(u32 rank);
+extern "C" u32 MIL_MakePhotography(u32 rank);
+extern "C" u32 MIL_MakeBombing(u32 rank);
 
 pMilFunc MilConstructors[] =
 {
@@ -347,9 +347,9 @@ pMilFunc MilConstructors[] =
 	MIL_MakeBombing,
 };
 
-extern "C" void CreateMilitaryEntry(INT32 string, INT32 data1, INT32 data2, INT32 data3, INT32 data4, INT32 data5)
+extern "C" void CreateMilitaryEntry(u32 string, u32 data1, u32 data2, u32 data3, u32 data4, u32 data5)
 {
-	INT8 i;
+	u8 i;
 
 	for (i = 0; i < 26; i++)
 	{
@@ -370,10 +370,10 @@ extern "C" void CreateMilitaryEntry(INT32 string, INT32 data1, INT32 data2, INT3
 //	DATA_MilitaryMissions[i+1].string = 0;
 }
 
-extern "C" INT32 MilCreateRandom()
+extern "C" u32 MilCreateRandom()
 {
-	INT8 i;
-	SINT32 milRank;
+	u8 i;
+	s32 milRank;
 
 	for (i = 0; i < 26; i++)
 	{
@@ -398,8 +398,8 @@ extern "C" INT32 MilCreateRandom()
 	
 extern "C" void CreateMilitaryData()
 {
-	SINT32 i, j;
-	INT32 b1, b2, milActivity, numMissions, b4;
+	s32 i, j;
+	u32 b1, b2, milActivity, numMissions, b4;
 	
 	FUNC_000871_GetSystemDataExt2(DATA_CurrentSystem, &b1, &b2, &milActivity, &b4, &DATA_MilRankSub, &DATA_MilRankBase);
 
@@ -417,7 +417,7 @@ extern "C" void CreateMilitaryData()
 
 extern "C" void RefreshMilitaryData()
 {
-	SINT32 i, j, idx, numModify, temp;
+	s32 i, j, idx, numModify, temp;
 	
 	numModify = (DATA_SystemMilitaryActivity/4 + 2) * (0.5+FloatRandom());
 

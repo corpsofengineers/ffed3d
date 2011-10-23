@@ -1,5 +1,7 @@
 float4x4 viewprojmat;	// view*proj
 float4x4 worldmat;	// world
+float4x4 scalemat;	// scale
+float4x4 rotmat;	// scale
 float4x4 worldInverse;	// world inv mat
 float3 tangent;
 float3 light;		// light source
@@ -11,7 +13,21 @@ texture wave2;		// 723
 texture permTexture;
 texture permTexture2d;
 
+texture heightmap;
+
+float x_off, y_off, div, div2, type;
+
 float time;
+
+sampler heightSampler = sampler_state 
+{
+    texture = <heightmap>;
+    AddressU  = WRAP;        
+    AddressV  = WRAP;
+    MIPFILTER = LINEAR;
+    MINFILTER = LINEAR;
+    MAGFILTER = LINEAR;
+};
 
 sampler permSampler = sampler_state 
 {
@@ -101,13 +117,13 @@ VS_OUTPUT V_Water(
 	Out.eye = mul(matTangentSpace, -normalize(vertex.xyz));
 
 	//вычисляем новые текстурные координаты
-	Out.tex_vu2.x = tex_vu.x + time*0.05;
+	Out.tex_vu2.x = tex_vu.x + time*0.1;
 	//т.е. смещаем данные текстурные координаты
-	Out.tex_vu2.y = tex_vu.y + time*0.05;
+	Out.tex_vu2.y = tex_vu.y + time*0.1;
 	//для обеих карт по и против
-	Out.tex_vu3.x = tex_vu.x - time*0.05;
+	Out.tex_vu3.x = tex_vu.x - time*0.1;
 	//часовой стрелки по окружности соответственно
-	Out.tex_vu3.y = tex_vu.y - time*0.05;
+	Out.tex_vu3.y = tex_vu.y - time*0.1;
 
     return Out;
 }
@@ -248,6 +264,121 @@ float4 P_Atmo(
 	return diffuse;
 }
 
+#define M_PI  3.14159265358979323846
+#define M_1_PI 0.318309886183790671538
+
+VS_OUTPUT V_Test(
+    float3 pos		: POSITION,
+    float3 nor		: NORMAL
+    )
+{
+    VS_OUTPUT Out = (VS_OUTPUT)0;
+
+	float3 v, p;
+
+	// divide
+	p.x = pos.x / div;
+	p.y = pos.y / div;
+	p.z = pos.z;
+
+	// offsets
+	p.x = p.x + (abs(p.x) + x_off);
+	p.y = p.y + (abs(p.y) + y_off);
+
+	v.x = p.x;
+	v.y = p.y;
+	v.z = p.z;
+
+	// sides
+	if (type == 1) {
+		v.y = p.z;
+		v.z = p.y;		
+	}
+	if (type == 2) {
+		v.y = -p.z;
+		v.z = p.y;		
+	}
+	if (type == 3) {
+		v.x = p.z;
+		v.z = p.x;		
+	}
+	if (type == 4) {
+		v.x = -p.z;
+		v.z = p.x;		
+	}
+	if (type == 5) {
+		v.z = -p.z;		
+	}
+
+	float4 vertex;
+	vertex.x = v.x * sqrt(1.0 - v.y * v.y * 0.5 - v.z * v.z * 0.5 + v.y * v.y * v.z * v.z / 3.0);
+	vertex.y = v.y * sqrt(1.0 - v.z * v.z * 0.5 - v.x * v.x * 0.5 + v.z * v.z * v.x * v.x / 3.0);
+	vertex.z = v.z * sqrt(1.0 - v.x * v.x * 0.5 - v.y * v.y * 0.5 + v.x * v.x * v.y * v.y / 3.0);
+
+	float4 uv;
+	uv.x = 1.0 - (atan2(vertex.x, vertex.z) / (2. * M_PI) + 0.5);
+	uv.y = asin(vertex.y) / M_PI + 0.5;
+	uv.z = 1.0f;
+	uv.w = 1.0f;
+
+	float height = tex2Dlod(heightSampler, uv).r;
+
+	vertex *= 1.0+(1.0 / 32 * height);// / 65536.0f;
+
+	vertex.xyz = mul(vertex, (float3x3)scalemat/div2/10000);
+
+	float3 normal = normalize(vertex.xyz);
+
+	vertex = mul(float4(vertex.xyz, 1), worldmat);
+
+	Out.tex_vu = uv.xy;
+
+    Out.position = mul(vertex, viewprojmat);
+    Out.normal = normalize(mul(normal, (float3x3)rotmat)); 
+    Out.color = float4(height,height,height,0.0);
+	
+	Out.lightDir = normalize(light);//normalize(mul(-normalize(light), -(float3x3)rotmat));
+	Out.eye = -normalize(vertex.xyz);
+
+    return Out;
+}
+
+float4 P_Test(
+	float2 tex_vu	: TEXCOORD0,
+   float3 normal	: TEXCOORD1,
+    float3 lightDir : TEXCOORD2,
+    float3 eye	: TEXCOORD3,
+    float4 color	: COLOR0
+  ) : COLOR0
+{
+
+	float4 tex = tex2D(s_tex, tex_vu);
+
+	float offset_x = 1.0/5400;
+	float offset_y = 1.0/2700;
+	
+	float3 d;
+	d.x = tex2D( heightSampler, tex_vu + float2( offset_x, 0 ) ) .r*1- tex2D( heightSampler, tex_vu + float2( -offset_x, 0 ) ).r*1; 
+	d.y = tex2D( heightSampler, tex_vu + float2( 0, offset_y ) ) .r*1- tex2D( heightSampler, tex_vu + float2( 0, -offset_y ) ).r*1;
+	d.z = 0.0;
+
+	d = mul(d, -(float3x3)rotmat); 
+
+	float3 norm = normalize( float3( normal.x  + 5.0 * d.x, normal.y + 5.0 * d.y, normal.z) ); 
+
+	float nrmd_light = dot(norm, normalize(lightDir));
+	float4 diffuse = tex * nrmd_light;
+
+//	float3 R = normalize(reflect(-lightDir, norm));
+//	float VdotR = saturate(dot(R, normalize(eye)));
+//	VdotR /= 32.0 - VdotR * 32.0 + VdotR;
+//	float4 specular = (lightcol * VdotR) * 0.25;
+
+//	diffuse += specular;
+
+	return diffuse;
+}
+
 technique Main
 {
     pass P0
@@ -269,5 +400,10 @@ technique Main
     {
         VertexShader = compile vs_3_0 V_Land();
         PixelShader  = compile ps_3_0 P_Atmo();
+    } 
+    pass P4
+    {
+        VertexShader = compile vs_3_0 V_Test();
+        PixelShader  = compile ps_3_0 P_Test();
     } 
 }

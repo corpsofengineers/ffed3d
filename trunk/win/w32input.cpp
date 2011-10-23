@@ -11,7 +11,7 @@
 #define INITGUID
 #include <objbase.h>
 #include <dinput.h>
-#include "ffescr.h"
+#include "ffe3d.h"
 
 extern int console;
 char* con_text= new char[255];

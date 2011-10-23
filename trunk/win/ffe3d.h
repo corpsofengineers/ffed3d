@@ -2,10 +2,29 @@
 #include <process.h>
 #include <stdio.h>
 #include <io.h>
-#include "xmath.h"
+#include <string.h>
+#include <memory.h>
+#include <math.h>
+#include "ffetypes.h"
 #include "XFile/Utility.h"
 #include "XFile/XfileEntity.h"
-#include "ffetypes.h"
+#include "ffescr.h"
+#include "misc.h"
+#include "xmath.h"
+
+extern D3DXMATRIX matView, matProj, matWorld;
+extern void doPerspectiveFar();
+extern void doPerspectiveNear();
+
+/* Standard MIN/MAX macros */
+#ifndef MIN
+#define MIN(x,y)                        ((x) < (y) ? (x) : (y))
+#endif
+#ifndef MAX
+#define MAX(x,y)                        ((x) > (y) ? (x) : (y))
+#endif
+
+#define D3DFVF_MESH ( D3DFVF_XYZ | D3DFVF_NORMAL | D3DFVF_TEX1)
 
 #define MAXVERT	3000000
 
@@ -74,17 +93,16 @@ struct FFELIGHT {
 
 struct MODEL {
 	int index;
+	int instanceIndex;
+	int uid;
 	bool subObject;
-	D3DXMATRIX world;
+	D3DXMATRIX world, scaleMat, rotMat;
 	char doMatrix;
 	bool zwrite;
 	bool zenable;
 	bool zclear;
 	bool backsprite;
 	D3DXVECTOR3 lightPos;
-	unsigned char splineR;
-	unsigned char splineG;
-	unsigned char splineB;
 	unsigned char localR;
 	unsigned char localG;
 	unsigned char localB;
@@ -94,6 +112,7 @@ struct MODEL {
 	char cull;
 	unsigned char missile[10];
 	float dist;
+	u32 scale;
 	FFELIGHT light[10];
 	unsigned short landingGear;
 	unsigned int skinnum;

@@ -1,30 +1,26 @@
 /*	Missions.c - In-game, non handcoded mission funcs */
 
-#include <math.h>
-#include <memory.h>
-#include <stdio.h>
-#include "misc.h"
-#include "ffescr.h"
+#include "ffe3d.h"
 
 typedef struct 
 {
-	INT32 cash;
-	INT32 baseShips;
-	INT32 addShips;
-	INT8 *shipData;
+	u32 cash;
+	u32 baseShips;
+	u32 addShips;
+	u8 *shipData;
 	eliteranking_t rankRequirement;
 } packageinfo_t;
 
 typedef struct
 {
-	INT32 cash;
-	INT32 stringIdx;
-	INT32 shipIdx;
+	u32 cash;
+	u32 stringIdx;
+	u32 shipIdx;
 	eliteranking_t ranking;
 } assassinationInfo_t;
 
 // opposing core systems for allegiances
-INT32 CoreSystems[] =
+u32 CoreSystems[] =
 {
 	0x12a49718,
 	0x12a49718,
@@ -58,42 +54,42 @@ assassinationInfo_t AssassinationData[] =
 };
 
 // cheap ships used by the Mafia.
-INT8 MafiaShips[] = 
+u8 MafiaShips[] = 
 {
 	0x1c, 0x1c, 0x1c, 0x1c, 0x1a, 0x1a, 0x1b, 0x1b,
 	0x24, 0x24, 0x25, 0x26, 0x1b, 0x1b, 0x1f, 0x1b,
 };
 
 // ships used by individuals with vendettas.
-INT8 IndyShips[] =
+u8 IndyShips[] =
 {
 	0x1c, 0x1c, 0x1d, 0x1d, 0x26, 0x26, 0x26, 0x26,
 	0x28, 0x28, 0x28, 0x28, 0x27, 0x27, 0x24, 0x24,
 };
 
 // sleek ships used by the Mega-Corps.
-INT8 CorporateShips[] =
+u8 CorporateShips[] =
 {	
 	0x30, 0x30, 0x2f, 0x29, 0x22, 0x22, 0x23, 0x23, 
 	0x2a, 0x2a, 0x2a, 0x1f, 0x1f, 0x28, 0x28, 0x28,
 };
 
 // ships used by the cops.
-INT8 PoliceShips[] =
+u8 PoliceShips[] =
 {
 	0x1e, 0x1e, 0x1e, 0x1e, 0x1e, 0x1e, 0x1e, 0x1e,
 	0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22, 0x22,
 };
 
 // ships used by the federal military.
-INT8 FederalShips[] =
+u8 FederalShips[] =
 {
 	0x28, 0x28, 0x28, 0x28, 0x27, 0x27, 0x29, 0x29, 
 	0x2f, 0x2f, 0x2f, 0x30, 0x30, 0x2a, 0x2a, 0x2d, 
 };
 
 // imperial military - watch out!
-INT8 ImperialShips[] =
+u8 ImperialShips[] =
 {
 	0x17, 0x19, 0x19, 0x30, 0x30, 0x2a, 0x2a, 0x2a,
 	0x38, 0x38, 0x38, 0x29, 0x29, 0x2f, 0x2a, 0x2a,
@@ -101,7 +97,7 @@ INT8 ImperialShips[] =
 
 // index of first package mission, all before it are passenger
 // missions and all after it are package missions
-INT32 firstPackageMission = 16;
+u32 firstPackageMission = 16;
 
 // New info table for new package/passenger missions.
 // see below the table for calculation code
@@ -181,10 +177,10 @@ float DangerExponent[] =
 float princeBonus = 1.5;
 
 // exponential range limit for excellent photos
-INT8 excellentRange = 8;
+u8 excellentRange = 8;
 
 // indexed by passenger number.
-INT16 passengerStrings[] =
+u16 passengerStrings[] =
 {
 	0x9918,	// passage for one
 	0x9919,	// passage for two
@@ -196,12 +192,12 @@ INT16 passengerStrings[] =
 	0x991c, // a small package
 };
 
-extern "C" INT32 GetPackageRankRequired(INT32 mission_idx)
+extern "C" u32 GetPackageRankRequired(u32 mission_idx)
 {
 	return PackageData[mission_idx].rankRequirement;
 }
 
-extern "C" INT32 GetPackageWeighting(INT32 idx)
+extern "C" u32 GetPackageWeighting(u32 idx)
 {
 	float shipMean, mult, temp;
 
@@ -249,18 +245,18 @@ extern "C" INT32 GetPackageWeighting(INT32 idx)
 
 
 // civvie package/passenger missions.
-extern "C" INT32 BBS_MakePassengerAd(starport_t *starport, bbsAdvert_t *slot)
+extern "C" u32 BBS_MakePassengerAd(starport_t *starport, bbsAdvert_t *slot)
 {
-	INT8 *c1, mission_idx;
-	SINT8 numPassengers;
-	SINT32 cash, cashunit;
-	INT16 ships;
-	SINT8 cashdigits;
-	INT32 basic_data;
-	INT32 d1, d2, d3, pirates, d5, traders, d7, government;
-	INT32 population, danger, c4, targetAllegiance;
-	INT32 targetSystem;
-	INT32 i, totalWeight, rand;
+	u8 *c1, mission_idx;
+	s8 numPassengers;
+	s32 cash, cashunit;
+	u16 ships;
+	s8 cashdigits;
+	u32 basic_data;
+	u32 d1, d2, d3, pirates, d5, traders, d7, government;
+	u32 population, danger, c4, targetAllegiance;
+	u32 targetSystem;
+	u32 i, totalWeight, rand;
 	float addCash, fTemp;
 
 	packageinfo_t pInfo;
@@ -285,7 +281,7 @@ extern "C" INT32 BBS_MakePassengerAd(starport_t *starport, bbsAdvert_t *slot)
 	for (i = 0; i < NUM_ELEMENTS(PackageData)-2; i++)
 		totalWeight += GetPackageWeighting(i);
 
-	rand = ((INT32)DATA_RandomizerFunc() << 16) | DATA_RandomizerFunc();
+	rand = ((u32)DATA_RandomizerFunc() << 16) | DATA_RandomizerFunc();
 	rand %= (totalWeight+1);
 	totalWeight = 0;
 	for (i = 0; i < NUM_ELEMENTS(PackageData)-2; i++)
@@ -343,7 +339,7 @@ extern "C" INT32 BBS_MakePassengerAd(starport_t *starport, bbsAdvert_t *slot)
 	cash += DATA_RandomizerFunc() % (cashunit+1);
 	cash -= cashunit/2;
 	
-	cashdigits = (SINT8)(log(cash) / log(10)) - 2;
+	cashdigits = (s8)(log(cash) / log(10)) - 2;
 
 	cashunit = pow(10, cashdigits);
 
@@ -356,7 +352,7 @@ extern "C" INT32 BBS_MakePassengerAd(starport_t *starport, bbsAdvert_t *slot)
 
 	basic_data = numPassengers & 0xff;
 	basic_data |= (mission_idx & 0x7f) << 9;
-	basic_data |= ((INT32)ships & 0xffff) << 16;
+	basic_data |= ((u32)ships & 0xffff) << 16;
 
 	// hack
 	if (cash < 0 || cash > 999999)
@@ -367,14 +363,14 @@ extern "C" INT32 BBS_MakePassengerAd(starport_t *starport, bbsAdvert_t *slot)
 }
 
 // civvie assassinations.
-extern "C" INT32 BBS_MakeAssassinationAd(starport_t *starport, bbsAdvert_t *slot)
+extern "C" u32 BBS_MakeAssassinationAd(starport_t *starport, bbsAdvert_t *slot)
 {
-	INT8 *c1, mission_idx;
-	INT32 cash, cashExtra, rand, date;
-	INT32 basic_data;
-	INT32 d1, d2, d3, pirates, d5, traders, d7, government;
-	INT32 population, danger, c4, targetAllegiance;
-	INT32 targetSystem;
+	u8 *c1, mission_idx;
+	u32 cash, cashExtra, rand, date;
+	u32 basic_data;
+	u32 d1, d2, d3, pirates, d5, traders, d7, government;
+	u32 population, danger, c4, targetAllegiance;
+	u32 targetSystem;
 
 	float temp;
 
@@ -428,13 +424,13 @@ extern "C" INT32 BBS_MakeAssassinationAd(starport_t *starport, bbsAdvert_t *slot
 	return 1;
 }
 
-extern "C" INT32 MIL_MakePackage(INT32 militaryRank)
+extern "C" u32 MIL_MakePackage(u32 militaryRank)
 {
-	INT32 cash, cashunit, cashdigits, date;
-	INT32 d1, d2, d3, pirates, d5, traders, d7, government;
-	INT8 *c1;
-	INT32 population, danger, c4;
-	INT32 missionAdditive, targetSystem, missionStr, rand;
+	u32 cash, cashunit, cashdigits, date;
+	u32 d1, d2, d3, pirates, d5, traders, d7, government;
+	u8 *c1;
+	u32 population, danger, c4;
+	u32 missionAdditive, targetSystem, missionStr, rand;
 	float fTemp;
 
 	targetSystem = GetNearbySystem(-1);
@@ -507,7 +503,7 @@ extern "C" INT32 MIL_MakePackage(INT32 militaryRank)
 	if (militaryRank >= 25736)
 		cash *= princeBonus;
 
-	cashdigits = (SINT8)(log(cash) / log(10)) - 2;
+	cashdigits = (s8)(log(cash) / log(10)) - 2;
 
 	cashunit = pow(10, cashdigits);
 
@@ -524,11 +520,11 @@ extern "C" INT32 MIL_MakePackage(INT32 militaryRank)
 	return 1;
 }
 
-extern "C" INT32 MIL_MakeAssassination(INT32 militaryRank)
+extern "C" u32 MIL_MakeAssassination(u32 militaryRank)
 {
-	INT16 baseName, nameAdditive, rand;
-	INT32 cashunit, cashdigits, range;
-	INT32 cash, date, name, targetSystem;
+	u16 baseName, nameAdditive, rand;
+	u32 cashunit, cashdigits, range;
+	u32 cash, date, name, targetSystem;
 	
 	rand = DATA_RandomizerFunc() & 0x3;
  
@@ -588,7 +584,7 @@ extern "C" INT32 MIL_MakeAssassination(INT32 militaryRank)
 	if (militaryRank >= 25736)
 		cash *= princeBonus;
 
-	cashdigits = (SINT8)(log(cash) / log(10)) - 2;
+	cashdigits = (s8)(log(cash) / log(10)) - 2;
 
 	cashunit = pow(10, cashdigits);
 
@@ -603,11 +599,11 @@ extern "C" INT32 MIL_MakeAssassination(INT32 militaryRank)
 	return 1;
 }
 
-extern "C" INT32 MIL_MakePhotography(INT32 militaryRank)
+extern "C" u32 MIL_MakePhotography(u32 militaryRank)
 {
-	INT16 baseName, nameAdditive, rand;
-	INT32 cashunit, cashdigits, range;
-	INT32 cash, date, name, targetSystem;
+	u16 baseName, nameAdditive, rand;
+	u32 cashunit, cashdigits, range;
+	u32 cash, date, name, targetSystem;
 
 	date = DATA_GameDays + 30 + BoundRandom(43);
 	
@@ -671,7 +667,7 @@ extern "C" INT32 MIL_MakePhotography(INT32 militaryRank)
 	if (militaryRank >= 25736)
 		cash *= princeBonus;
 
-	cashdigits = (SINT8)(log(cash) / log(10)) - 2;
+	cashdigits = (s8)(log(cash) / log(10)) - 2;
 
 	cashunit = pow(10, cashdigits);
 
@@ -685,11 +681,11 @@ extern "C" INT32 MIL_MakePhotography(INT32 militaryRank)
 	return 1;
 }
 
-extern "C" INT32 MIL_MakeBombing(INT32 militaryRank)
+extern "C" u32 MIL_MakeBombing(u32 militaryRank)
 {
-	INT16 baseName, nameAdditive, rand;
-	INT32 cashunit, cashdigits, range;
-	INT32 cash, date, name, targetSystem;
+	u16 baseName, nameAdditive, rand;
+	u32 cashunit, cashdigits, range;
+	u32 cash, date, name, targetSystem;
 
 	date = DATA_GameDays + 50 + BoundRandom(63);
 	
@@ -752,7 +748,7 @@ extern "C" INT32 MIL_MakeBombing(INT32 militaryRank)
 	if (militaryRank >= 25736)
 		cash *= princeBonus;
 
-	cashdigits = (SINT8)(log(cash) / log(10)) - 2;
+	cashdigits = (s8)(log(cash) / log(10)) - 2;
 
 	cashunit = pow(10, cashdigits);
 
@@ -770,9 +766,9 @@ extern "C" INT32 MIL_MakeBombing(INT32 militaryRank)
 // gets data for a photo or bombing mission.
 typedef struct 
 {
-	INT32 totalShips;
-	INT32 maxShips;
-	INT32 shipFrequency;
+	u32 totalShips;
+	u32 maxShips;
+	u32 shipFrequency;
 } missionDifficulty_t;
 
 // indexed by mission additive, photos then bombings.
@@ -797,15 +793,15 @@ missionDifficulty_t missionDiffs[] =
 	{46, 12, 255},	// L3 Bombing - Military installation
 };	
 
-extern "C" INT32 GetNumFreeSlots()
+extern "C" u32 GetNumFreeSlots()
 {
-	SINT32 numFreeSlots, i;
-	INT8 specialID, missionID, *mission;
+	s32 numFreeSlots, i;
+	u8 specialID, missionID, *mission;
 
 	numFreeSlots = 0;
 	for (i = 0x72; i >= 0x14; i--)
 	{
-		if (INT8_AT(DATA_ObjectArray+i) == 0x0 || (INT8_AT(DATA_ObjectArray+i) & 0x20))
+		if (u8_AT(DATA_ObjectArray+i) == 0x0 || (u8_AT(DATA_ObjectArray+i) & 0x20))
 			numFreeSlots++;
 	}
 
@@ -818,7 +814,7 @@ extern "C" INT32 GetNumFreeSlots()
 			continue;
 		if (specialID < 3)
 			continue;
-		if (INT32_AT(mission+6) != DATA_CurrentSystem)
+		if (u32_AT(mission+6) != DATA_CurrentSystem)
 			continue;
 		
 		missionID = mission[4] >> 4;
@@ -852,10 +848,10 @@ char missionStrs[8][3] =
 };
 
 // called when a military base object is spawned.
-extern "C" void MilitaryBaseInit(INT8 *base, INT8 *mission)
+extern "C" void MilitaryBaseInit(u8 *base, u8 *mission)
 {
-	INT8 specialID, missionID;
-	SINT32 randSeed, randSeed2, rnd;
+	u8 specialID, missionID;
+	s32 randSeed, randSeed2, rnd;
 	char *idStr;
 
 	specialID = mission[4] & 0xf;
@@ -865,9 +861,9 @@ extern "C" void MilitaryBaseInit(INT8 *base, INT8 *mission)
 	if (specialID > 4)
 		missionID += 8;
 	
-	INT16_AT(base+0xd8) = missionDiffs[missionID].totalShips;
+	u16_AT(base+0xd8) = missionDiffs[missionID].totalShips;
 	
-	randSeed = INT32_AT(base+0xa0);
+	randSeed = u32_AT(base+0xa0);
 	randSeed = randSeed2 = (randSeed << 0x4) | (randSeed >> 0x1c);
 
 	rnd = DATA_FixedRandomFunc(0x10000, &randSeed, &randSeed2) % 1000;
@@ -879,7 +875,7 @@ extern "C" void MilitaryBaseInit(INT8 *base, INT8 *mission)
 extern "C" void SetBaseShipCounters()
 {
 	ModelInstance_t *obj;
-	INT8 specialID, missionID, *mission, i;
+	u8 specialID, missionID, *mission, i;
 
 	// find photo/bombing mission and set base params.
 	for (mission = DATA_ContractArray, i = 0; i < DATA_NumContracts; i++, mission += 52)
@@ -890,10 +886,10 @@ extern "C" void SetBaseShipCounters()
 			continue;
 		if (specialID < 3)
 			continue;
-		if (INT32_AT(mission+6) != DATA_CurrentSystem)
+		if (u32_AT(mission+6) != DATA_CurrentSystem)
 			continue;
 
-		obj = GetInstance(INT8_AT(mission+0x1a), DATA_ObjectArray);
+		obj = GetInstance(u8_AT(mission+0x1a), DATA_ObjectArray);
 
 		if (obj != 0x0)
 		{
@@ -903,7 +899,7 @@ extern "C" void SetBaseShipCounters()
 			if (specialID > 4)
 				missionID += 8;
 
-			INT16_AT(obj+0xd8) = missionDiffs[missionID].totalShips;
+			u16_AT(obj+0xd8) = missionDiffs[missionID].totalShips;
 		}
 	}
 }
@@ -953,11 +949,11 @@ extern "C" void OnSystemInit()
 	return;
 }
 
-extern "C" void SpawnAssassins(INT32 ships, INT32 missionIdx, INT32 name)
+extern "C" void SpawnAssassins(u32 ships, u32 missionIdx, u32 name)
 {
-	INT8 groupSize, numSpawned, *shipArray, shipIDByte;
+	u8 groupSize, numSpawned, *shipArray, shipIDByte;
 	float maxGroup, fTemp;
-	INT32 numFreeSlots;
+	u32 numFreeSlots;
 
 	maxGroup = sqrt(ships);
 	shipArray = PackageData[missionIdx].shipData;
@@ -994,13 +990,13 @@ extern "C" void SpawnAssassins(INT32 ships, INT32 missionIdx, INT32 name)
 // called every second by a "+rontier" type object
 // returns 0 if a ship shouldn't be spawned, otherwise it
 // returns a pointer to the appropriate ship table
-extern "C" INT8 *MilitaryBaseTick(ModelInstance_t *base)
+extern "C" u8 *MilitaryBaseTick(ModelInstance_t *base)
 {
 	ModelInstance_t *obj;
-	INT8 maxShips, *shipArray, allegiance, specialID;
-	INT8 *mission, missionID;
-	INT16 *shipsLeft;
-	SINT32 numFreeSlots, i, numChildShips;
+	u8 maxShips, *shipArray, allegiance, specialID;
+	u8 *mission, missionID;
+	u16 *shipsLeft;
+	s32 numFreeSlots, i, numChildShips;
 
 	// too far away
 //	if (base->dist > 0x26)
@@ -1015,10 +1011,10 @@ extern "C" INT8 *MilitaryBaseTick(ModelInstance_t *base)
 			continue;
 		if (specialID < 3)
 			continue;
-		if (INT32_AT(mission+6) != DATA_CurrentSystem)
+		if (u32_AT(mission+6) != DATA_CurrentSystem)
 			continue;
 
-		if (INT8_AT(mission+0x1a) == base->index)
+		if (u8_AT(mission+0x1a) == base->index)
 			break;
 	}
 
@@ -1036,7 +1032,7 @@ extern "C" INT8 *MilitaryBaseTick(ModelInstance_t *base)
 		return 0;
 
 	maxShips = (missionDiffs[missionID].maxShips & 0xf) + 1;
-	shipsLeft = (INT16*)(base+0xd8);
+	shipsLeft = (u16*)(base+0xd8);
 
 	if (maxShips > *shipsLeft)
 		maxShips = *shipsLeft;
@@ -1053,9 +1049,9 @@ extern "C" INT8 *MilitaryBaseTick(ModelInstance_t *base)
 
 	for (i = 0x72; i >= 0x14; i--)
 	{
-		if (INT8_AT(DATA_ObjectArray+i) == 0x0 || (INT8_AT(DATA_ObjectArray+i) & 0x20))
+		if (u8_AT(DATA_ObjectArray+i) == 0x0 || (u8_AT(DATA_ObjectArray+i) & 0x20))
 			numFreeSlots++;
-		else if (INT8_AT(DATA_ObjectArray+i) == 0x4f)
+		else if (u8_AT(DATA_ObjectArray+i) == 0x4f)
 		{
 			obj = GetInstance(i, DATA_ObjectArray);
 			if (obj->object_type == OBJTYPE_ARMY)
@@ -1092,12 +1088,12 @@ extern "C" INT8 *MilitaryBaseTick(ModelInstance_t *base)
 extern "C" void DoNukeDamage(ModelInstance_t *base)
 {
 	ModelInstance_t *obj;
-	INT8 i, expDist;
+	u8 i, expDist;
 	float dist, temp, damage;
 
 	for (i = 0; i < 0x72; i++)
 	{
-		if (INT8_AT(DATA_ObjectArray+i) != 0 && !(INT8_AT(DATA_ObjectArray+i) & 0x20))
+		if (u8_AT(DATA_ObjectArray+i) != 0 && !(u8_AT(DATA_ObjectArray+i) & 0x20))
 		{
 			if (i == DATA_PlayerIndex)
 			{
@@ -1107,7 +1103,7 @@ extern "C" void DoNukeDamage(ModelInstance_t *base)
 			else
 			{
 				obj = GetInstance(i, DATA_ObjectArray);
-				expDist = abs((SINT16)base->dist_cam - (SINT16)obj->dist_cam);
+				expDist = abs((s16)base->dist_cam - (s16)obj->dist_cam);
 			}
 
 			if (expDist < 16 && obj->model_num >= 4 && obj->model_num <= 0x47)
@@ -1137,7 +1133,7 @@ extern "C" void DoNukeDamage(ModelInstance_t *base)
 	}
 }
 
-INT8 medalCodes[] =
+u8 medalCodes[] =
 {
 	-1, // civ. assassination - no medal
 	8,	// imp. assassination - Golden Spike
@@ -1148,21 +1144,21 @@ INT8 medalCodes[] =
 	5,	// fed. bombing - frontier medal
 };
 
-extern "C" INT32 FinishMission(INT8 *mission)
+extern "C" u32 FinishMission(u8 *mission)
 {
-	INT8 missionID, complete, allegiance;
-	SINT32 pointGain;
-	INT32 baseSystem, missionTics, missionDays, string, cash, medal;
-	INT8 additive;
-	INT32 contractsAhead, strData[11], winData[11];
+	u8 missionID, complete, allegiance;
+	s32 pointGain;
+	u32 baseSystem, missionTics, missionDays, string, cash, medal;
+	u8 additive;
+	u32 contractsAhead, strData[11], winData[11];
 
-	missionID = INT8_AT(mission+0x4) & 0xf;
-	additive = INT8_AT(mission+0x4) >> 4;
-	complete = INT8_AT(mission+0x5);
-	baseSystem = INT32_AT(mission+0x30);
-	missionTics = INT32_AT(mission+0xa);
-	missionDays = INT32_AT(mission+0xe);
-	cash = INT32_AT(mission+0x12) * 10;
+	missionID = u8_AT(mission+0x4) & 0xf;
+	additive = u8_AT(mission+0x4) >> 4;
+	complete = u8_AT(mission+0x5);
+	baseSystem = u32_AT(mission+0x30);
+	missionTics = u32_AT(mission+0xa);
+	missionDays = u32_AT(mission+0xe);
+	cash = u32_AT(mission+0x12) * 10;
 
 	if (DATA_CurrentSystem != baseSystem)
 		return 0;
@@ -1264,7 +1260,7 @@ extern "C" INT32 FinishMission(INT8 *mission)
 			{
 				DATA_PlayerCash += cash;
 				
-				if (INT8_AT(mission+0x1b) > excellentRange)
+				if (u8_AT(mission+0x1b) > excellentRange)
 				{
 					pointGain *= 0.75;
 					string = 0x9c2d; // The film is OK.
@@ -1345,7 +1341,7 @@ extern "C" INT32 FinishMission(INT8 *mission)
 	strData[9] = string;
 	
 	// show congratulations message.
-	FUNC_001344_StringExpandFFCode(DATA_009148_StringArray, 0x9c67+allegiance, (INT8*)strData);
+	FUNC_001344_StringExpandFFCode(DATA_009148_StringArray, 0x9c67+allegiance, (u8*)strData);
 	winData[0] = strData[9];
 	winData[1] = strData[5];
 	winData[2] = strData[6];
@@ -1365,7 +1361,7 @@ extern "C" INT32 FinishMission(INT8 *mission)
 	winData[7] = 0;
 
 	// finally!
-	FUNC_000349_ShowCommMessage((INT8*)winData);
+	FUNC_000349_ShowCommMessage((u8*)winData);
 
 	// for civilian missions, we're finished
 	if (allegiance == 0)
@@ -1376,9 +1372,9 @@ extern "C" INT32 FinishMission(INT8 *mission)
 	
 	// advance military rank/give medals
 	if (allegiance == ALLY_FEDERAL)
-		FUNC_000304_AddFederalRank(pointGain, (INT8*)(strData+8), medal);
+		FUNC_000304_AddFederalRank(pointGain, (u8*)(strData+8), medal);
 	else
-		FUNC_000305_AddImperialRank(pointGain, (INT8*)(strData+8), medal);
+		FUNC_000305_AddImperialRank(pointGain, (u8*)(strData+8), medal);
 
 	FUNC_000148_Unknown(0x19, 0x0);
 	return 1;
@@ -1388,7 +1384,7 @@ extern "C" INT32 FinishMission(INT8 *mission)
 // replaces F300, what a mess that was
 extern "C" void FinishMissions()
 {
-	INT8 i;
+	u8 i;
 
 	// must be docked - doh!
 	if (DATA_PlayerState != 0x2a && DATA_PlayerState != 0x30)
