@@ -333,33 +333,31 @@ int C_FUNC_001874_DrawPlanet(DrawMdl_t *drawModel, char *cmd)
 	p1.z=(float)vertex->z/DIVIDER;
 
 	vertex = FUNC_001470_getVertex(drawModel, 2);
-	p2.x=(float)vertex->x/DIVIDER;
-	p2.y=(float)vertex->y/DIVIDER;
-	p2.z=(float)vertex->z/DIVIDER;
-
-	vertex = FUNC_001470_getVertex(drawModel, 4);
 	p3.x=(float)vertex->x/DIVIDER;
 	p3.y=(float)vertex->y/DIVIDER;
 	p3.z=(float)vertex->z/DIVIDER;
 
-	D3DXMATRIX oneMatrix,rot;
-	D3DXMatrixRotationX(&rot, -M_PI/2);
-	D3DXMatrixInverse(&oneMatrix,NULL, &mainRotMatrixO);
-	D3DXMatrixMultiply(&oneMatrix, &oneMatrix, &rot);
-	D3DXVec3TransformCoord(&p1,&p1,&oneMatrix);
-	D3DXVec3TransformCoord(&p2,&p2,&oneMatrix);
-	D3DXVec3TransformCoord(&p3,&p3,&oneMatrix);
+	vertex = FUNC_001470_getVertex(drawModel, 4);
+	p2.x=(float)vertex->x/DIVIDER;
+	p2.y=(float)vertex->y/DIVIDER;
+	p2.z=(float)vertex->z/DIVIDER;
+
+	D3DXMATRIX invrot;
+	D3DXMatrixInverse(&invrot,NULL, &mainRotMatrixO);
+	D3DXVec3TransformCoord(&p1,&p1,&invrot);
+	D3DXVec3TransformCoord(&p2,&p2,&invrot);
+	D3DXVec3TransformCoord(&p3,&p3,&invrot);
 
 	modelList[modelNum].scaleMat._11=p1.x;
-	modelList[modelNum].scaleMat._12=p1.y;
-	modelList[modelNum].scaleMat._13=p1.z;
+	modelList[modelNum].scaleMat._12=0.0f;//p1.y;
+	modelList[modelNum].scaleMat._13=0.0f;//p1.z;
 
-	modelList[modelNum].scaleMat._21=p2.x;
+	modelList[modelNum].scaleMat._21=0.0f;//p2.x;
 	modelList[modelNum].scaleMat._22=p2.y;
-	modelList[modelNum].scaleMat._23=p2.z;
+	modelList[modelNum].scaleMat._23=0.0f;//p2.z;
 
-	modelList[modelNum].scaleMat._31=p3.x;
-	modelList[modelNum].scaleMat._32=p3.y;
+	modelList[modelNum].scaleMat._31=0.0f;//p3.x;
+	modelList[modelNum].scaleMat._32=0.0f;//p3.y;
 	modelList[modelNum].scaleMat._33=p3.z;
 
 	modelList[modelNum].scaleMat._41=0.0f;

@@ -995,7 +995,7 @@ void loadModels()
 	
 }
 
-#define chunk_size 64
+#define chunk_size 48
 
 IDirect3DVertexDeclaration9* chunk_declaration = NULL;
 ID3DXMesh* chunk;
@@ -1010,7 +1010,7 @@ void GenerateChunks()
 	float x, y, z;
 
 	size = chunk_size;
-	width = 2.0f / size;
+	width = 1.0f / size;
 
 	HRESULT res = D3DXCreateMeshFVF(size * size * 2, (size + 1) * (size + 1), 
 								D3DXMESH_MANAGED | D3DXMESH_32BIT | D3DXMESH_WRITEONLY, D3DFVF_XYZ, 
@@ -1027,11 +1027,11 @@ void GenerateChunks()
 	D3DXVECTOR3 *pVertex=NULL;
 	chunk->LockVertexBuffer( 0, (void**)&pVertex );
 
-	y = -(width * size / 2);
-	z = -1.0;
+	y = 0.0f;
+	z = -1.0f;
 	for(h = 0; h <= size; h++, y += width) 
 	{
-		x = -(width * size / 2);
+		x = 0.0f;
 		for(w = 0; w <= size; w++, x += width) 
 		{
 			pVertex->x = x;
@@ -1074,42 +1074,30 @@ void GenerateChunks()
 
 }
 
-int GetDist(float x, float y, float z)
+int inline GetDist(float x, float y, float z)
 {
-	float dist = sqrt(x * x + y * y + z * z);
-	return dist;
-	//return max((int)(dist / 10000.0f), 9);
+	return sqrt(x * x + y * y + z * z);
 }
 
 float georadius;
+float size_x, size_y;
 
-void DrawChunk(float xoff, float yoff, float width, float div, float div2, float mindist, int onlyside, int m, int currModIndex)
+void DrawChunk(float xoff, float yoff, float width_x, float width_y, float mindist, int onlyside, int m, int currModIndex)
 {
 	float type;
 	float x_off, y_off;
-	D3DXVECTOR3 chunk_pos, temp, v;
-
-	if (div == 131072/*0x80000000*/) {
-		if (div2 == 1)
-			div2 == 0;
-		div2 += div/10000;
-		div = 1;
-	}
-
-	//effectList[currModIndex]->SetMatrix("scalemat",&modelList[m].scaleMat);
+	D3DXVECTOR3 pos, v;
 
 	y_off = yoff;
 	for (int h = 0; h < 2; h++)
-	//while (y_off < (yoff + width) / div) 
 	{
 		x_off = xoff;
 		for (int w = 0; w < 2; w++)
-		//while (x_off < (xoff + width) / div) 
 		{
 		
-			temp.x = x_off + (width / 4);
-			temp.y = y_off + (width / 4);
-			temp.z = -1.0f;
+			pos.x = (x_off + (width_x * 0.5)) / size_x;
+			pos.y = (y_off + (width_y * 0.5)) / size_y;
+			pos.z = -1.0f;
 
 			for (int i = 0; i < 6; i++)
 			{
@@ -1117,67 +1105,69 @@ void DrawChunk(float xoff, float yoff, float width, float div, float div2, float
 					continue;
 				}
 
-				v = temp;
+				v = pos;
 
 				switch(i) 
 				{
 					case 1:
-						v.y = temp.z;
-						v.z = temp.y;		
+						v.y = pos.z;
+						v.z = pos.y;		
 						break;
 					case 2:
-						v.y = -temp.z;
-						v.z = temp.y;		
+						v.y = -pos.z;
+						v.z = pos.y;		
 						break;
 					case 3:
-						v.x = temp.z;
-						v.z = temp.x;		
+						v.x = pos.z;
+						v.z = pos.x;		
 						break;
 					case 4:
-						v.x = -temp.z;
-						v.z = temp.x;		
+						v.x = -pos.z;
+						v.z = pos.x;		
 						break;
 					case 5:
-						v.z = -temp.z;		
+						v.z = -pos.z;		
 						break;
 					default: break;
 				}
 
-				chunk_pos.x = v.x * sqrt(1.0f - v.y * v.y * 0.5f - v.z * v.z * 0.5f + v.y * v.y * v.z * v.z / 3.0f);
-				chunk_pos.y = v.y * sqrt(1.0f - v.z * v.z * 0.5f - v.x * v.x * 0.5f + v.z * v.z * v.x * v.x / 3.0f);
-				chunk_pos.z = v.z * sqrt(1.0f - v.x * v.x * 0.5f - v.y * v.y * 0.5f + v.x * v.x * v.y * v.y / 3.0f);
+				v.x = v.x * sqrt(1.0f - v.y * v.y * 0.5f - v.z * v.z * 0.5f + v.y * v.y * v.z * v.z / 3.0f);
+				v.y = v.y * sqrt(1.0f - v.z * v.z * 0.5f - v.x * v.x * 0.5f + v.z * v.z * v.x * v.x / 3.0f);
+				v.z = v.z * sqrt(1.0f - v.x * v.x * 0.5f - v.y * v.y * 0.5f + v.x * v.x * v.y * v.y / 3.0f);
 
-				D3DXVec3TransformCoord(&chunk_pos,&chunk_pos,&modelList[m].scaleMat);
-				D3DXVec3TransformCoord(&chunk_pos,&chunk_pos,&modelList[m].world);
+				D3DXVec3TransformCoord(&v,&v,&modelList[m].scaleMat);
+				D3DXVec3TransformCoord(&v,&v,&modelList[m].world);
 
-				//chunk_pos *= modelList[m].scale;
-
-				float dist = GetDist(chunk_pos.x, chunk_pos.y, chunk_pos.z);// - georadius;
-
-				if (dist < mindist) {
-					DrawChunk(x_off, y_off, width / 2, div * 2, div2, mindist / 2, i, m, currModIndex);
+				float dist = GetDist(v.x, v.y, v.z);// - georadius;
+				if (mindist <= 1000) {
+					int a = 0;
+				}
+				if (dist < mindist && mindist > 1000) {
+					DrawChunk(x_off, y_off, width_x * 0.5f, width_y * 0.5f, mindist * 0.5f, i, m, currModIndex);
 				} else {
 
 					if (i & 1)
-						renderSystem->SetRenderState(D3DRS_CULLMODE, CULL_CW);
-					else
 						renderSystem->SetRenderState(D3DRS_CULLMODE, CULL_CCW);
+					else
+						renderSystem->SetRenderState(D3DRS_CULLMODE, CULL_CW);
 
 					type = i;
 
 					effectList[currModIndex]->SetValue("x_off",&x_off, D3DX_DEFAULT);
 					effectList[currModIndex]->SetValue("y_off",&y_off, D3DX_DEFAULT);
-					effectList[currModIndex]->SetValue("div",&div, D3DX_DEFAULT);
-					effectList[currModIndex]->SetValue("div2",&div2, D3DX_DEFAULT);
+					effectList[currModIndex]->SetValue("width_x",&width_x, D3DX_DEFAULT);
+					effectList[currModIndex]->SetValue("width_y",&width_y, D3DX_DEFAULT);
+					effectList[currModIndex]->SetValue("size_x",&size_x, D3DX_DEFAULT);
+					effectList[currModIndex]->SetValue("size_y",&size_y, D3DX_DEFAULT);
 					effectList[currModIndex]->SetValue("type",&type, D3DX_DEFAULT);
 					effectList[currModIndex]->BeginPass(4);
 					chunk->DrawSubset(0);
 					effectList[currModIndex]->EndPass();
 				}
 			}
-			x_off += width / 2;
+			x_off += width_x;
 		}
-		y_off += width / 2;
+		y_off += width_y;
 	}
 }
 
@@ -1187,6 +1177,16 @@ void DrawGeosphere(int m, int currModIndex)
 
 	renderSystem->GetDevice()->SetVertexDeclaration(chunk_declaration);
 
+	D3DXVECTOR3 v;
+	v.x = -1.0f;
+	v.y = -1.0f;
+	v.z = -1.0f;
+
+	D3DXVec3TransformCoord(&v,&v,&modelList[m].scaleMat);
+
+	size_x = abs(v.x);
+	size_y = abs(v.y);
+
 	//effectList[currModIndex]->SetTexture("heightmap",heightmaps[modelList[m].instanceIndex]);
 	effectList[currModIndex]->SetTexture("heightmap",textures[800]);
 	effectList[currModIndex]->SetTexture("tex",textures[713]);
@@ -1194,16 +1194,15 @@ void DrawGeosphere(int m, int currModIndex)
 	effectList[currModIndex]->SetMatrix("scalemat",&modelList[m].scaleMat);
 	effectList[currModIndex]->SetMatrix("rotmat",&modelList[m].rotMat);
 
-	georadius = GetDist(modelList[m].scaleMat._11, modelList[m].scaleMat._12, modelList[m].scaleMat._13);
+	georadius = GetDist(modelList[m].scaleMat._11, modelList[m].scaleMat._22, modelList[m].scaleMat._33);
 
 	effectList[currModIndex]->Begin(&pass,0);
 
-	//if (DATA_PlayerObject && DATA_ObjectArray->instances[DATA_PlayerObject->parent_index].model_num == currModIndex) 
 	if (modelList[m].scale > 5)
 	{
-		DrawChunk(-1.0f, -1.0f, 2.0f, 2.0f, 1.0f/10000, 40000.0f, -1, m, currModIndex);
+		DrawChunk(v.x, v.y, abs(v.x), abs(v.y), 40000.0f, -1, m, currModIndex);
 	} else {
-		DrawChunk(-1.0f, -1.0f, 2.0f, 2.0f, 1.0f/10000, 80000.0f, -1, m, currModIndex);
+		DrawChunk(v.x, v.y, abs(v.x), abs(v.y), 80000.0f, -1, m, currModIndex);
 	}
 	
 	

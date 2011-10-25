@@ -15,7 +15,7 @@ texture permTexture2d;
 
 texture heightmap;
 
-float x_off, y_off, div, div2, type;
+float x_off, y_off, width_x, width_y, size_x, size_y, type;
 
 float time;
 
@@ -277,13 +277,13 @@ VS_OUTPUT V_Test(
 	float3 v, p;
 
 	// divide
-	p.x = pos.x / div;
-	p.y = pos.y / div;
+	p.x = pos.x * (width_x/size_x);
+	p.y = pos.y * (width_y/size_y);
 	p.z = pos.z;
 
 	// offsets
-	p.x = p.x + (abs(p.x) + x_off);
-	p.y = p.y + (abs(p.y) + y_off);
+	p.x = p.x + x_off/size_x;
+	p.y = p.y + y_off/size_y;
 
 	v.x = p.x;
 	v.y = p.y;
@@ -316,16 +316,16 @@ VS_OUTPUT V_Test(
 	vertex.z = v.z * sqrt(1.0 - v.x * v.x * 0.5 - v.y * v.y * 0.5 + v.x * v.x * v.y * v.y / 3.0);
 
 	float4 uv;
-	uv.x = 1.0 - (atan2(vertex.x, vertex.z) / (2. * M_PI) + 0.5);
+	uv.x = atan2(vertex.x, vertex.z) / (2. * M_PI) + 0.5;
 	uv.y = asin(vertex.y) / M_PI + 0.5;
 	uv.z = 1.0f;
 	uv.w = 1.0f;
 
 	float height = tex2Dlod(heightSampler, uv).r;
 
-	vertex *= 1.0+(1.0 / 32 * height);// / 65536.0f;
+	vertex *= 1.0 + (1.0 / 32 * height);
 
-	vertex.xyz = mul(vertex, (float3x3)scalemat/div2/10000);
+	vertex.xyz = mul(vertex, (float3x3)scalemat);
 
 	float3 normal = normalize(vertex.xyz);
 
