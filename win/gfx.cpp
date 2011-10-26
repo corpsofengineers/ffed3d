@@ -5862,8 +5862,8 @@ extern "C" int C_Break(DrawMdl_t *drawModel, unsigned short *cmd)
 			//		modelList[modelNum].zclear=true;
 			//	}
 			//} else {
-				if (DATA_PlayerObject && DATA_PlayerObject->uchar_57 != 0)
-					modelList[modelNum].zclear=true;
+				//if (DATA_PlayerObject && DATA_PlayerObject->uchar_57 != 0)
+				//	modelList[modelNum].zclear=true;
 			//}
 		} else {
 			//modelList[modelNum].zclear=true;
@@ -5969,8 +5969,8 @@ extern "C" int C_Break(DrawMdl_t *drawModel, unsigned short *cmd)
 	}
 
 	D3DXMatrixMultiply(&modelList[modelNum].world, &mainRotMatrix, &posMatrix);
-	D3DXMatrixScaling(&matScale, scale2, scale2, scale2);
-	D3DXMatrixMultiply(&modelList[modelNum].world, &matScale, &modelList[modelNum].world);
+	//D3DXMatrixScaling(&matScale, scale2, scale2, scale2);
+	//D3DXMatrixMultiply(&modelList[modelNum].world, &matScale, &modelList[modelNum].world);
 
 	copyMatrix(&matWorld, &modelList[modelNum].world);
 	copyMatrix(&modelList[modelNum].rotMat, &mainRotMatrix);

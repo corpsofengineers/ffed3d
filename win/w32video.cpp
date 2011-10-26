@@ -71,6 +71,13 @@ D3DMATERIAL9 m_matMaterial;
 D3DLIGHT9 d3dLight;
 LPD3DXFONT m_pFont, m_tFont;
 
+D3DXMATRIX matProj;
+D3DXMATRIX matView;
+D3DXMATRIX matViewProj;
+
+D3DVIEWPORT9 viewport;
+D3DXPLANE m_frustum[6];
+
 VERTEXTYPE vertexType[MAXVERT];
 int vertexNum=0;
 MODEL modelList[6000];
@@ -995,7 +1002,7 @@ void loadModels()
 	
 }
 
-#define chunk_size 48
+#define chunk_size 32
 
 IDirect3DVertexDeclaration9* chunk_declaration = NULL;
 ID3DXMesh* chunk;
@@ -1079,25 +1086,22 @@ int inline GetDist(float x, float y, float z)
 	return sqrt(x * x + y * y + z * z);
 }
 
-float georadius;
-float size_x, size_y;
-
-void DrawChunk(float xoff, float yoff, float width_x, float width_y, float mindist, int onlyside, int m, int currModIndex)
+void DrawChunk(float xoff, float yoff, float width, float div, float mindist, int onlyside, int m, int currModIndex)
 {
 	float type;
 	float x_off, y_off;
-	D3DXVECTOR3 pos, v;
+	D3DXVECTOR3 pos1, v1, v1t;
+	D3DXVECTOR4 v1p;
 
 	y_off = yoff;
 	for (int h = 0; h < 2; h++)
 	{
 		x_off = xoff;
 		for (int w = 0; w < 2; w++)
-		{
-		
-			pos.x = (x_off + (width_x * 0.5)) / size_x;
-			pos.y = (y_off + (width_y * 0.5)) / size_y;
-			pos.z = -1.0f;
+		{	
+			pos1.x = x_off + (width*0.5f);
+			pos1.y = y_off + (width*0.5f);
+			pos1.z = -1.0f;
 
 			for (int i = 0; i < 6; i++)
 			{
@@ -1105,45 +1109,57 @@ void DrawChunk(float xoff, float yoff, float width_x, float width_y, float mindi
 					continue;
 				}
 
-				v = pos;
+				v1 = pos1;
 
 				switch(i) 
 				{
 					case 1:
-						v.y = pos.z;
-						v.z = pos.y;		
+						v1.y = pos1.z;
+						v1.z = pos1.y;
 						break;
 					case 2:
-						v.y = -pos.z;
-						v.z = pos.y;		
+						v1.y = -pos1.z;
+						v1.z = pos1.y;
 						break;
 					case 3:
-						v.x = pos.z;
-						v.z = pos.x;		
+						v1.x = pos1.z;
+						v1.z = pos1.x;
 						break;
 					case 4:
-						v.x = -pos.z;
-						v.z = pos.x;		
+						v1.x = -pos1.z;
+						v1.z = pos1.x;
 						break;
 					case 5:
-						v.z = -pos.z;		
+						v1.z = -pos1.z;
 						break;
 					default: break;
 				}
 
-				v.x = v.x * sqrt(1.0f - v.y * v.y * 0.5f - v.z * v.z * 0.5f + v.y * v.y * v.z * v.z / 3.0f);
-				v.y = v.y * sqrt(1.0f - v.z * v.z * 0.5f - v.x * v.x * 0.5f + v.z * v.z * v.x * v.x / 3.0f);
-				v.z = v.z * sqrt(1.0f - v.x * v.x * 0.5f - v.y * v.y * 0.5f + v.x * v.x * v.y * v.y / 3.0f);
+				v1.x = v1.x * sqrt(1.0f - v1.y * v1.y * 0.5f - v1.z * v1.z * 0.5f + v1.y * v1.y * v1.z * v1.z / 3.0f);
+				v1.y = v1.y * sqrt(1.0f - v1.z * v1.z * 0.5f - v1.x * v1.x * 0.5f + v1.z * v1.z * v1.x * v1.x / 3.0f);
+				v1.z = v1.z * sqrt(1.0f - v1.x * v1.x * 0.5f - v1.y * v1.y * 0.5f + v1.x * v1.x * v1.y * v1.y / 3.0f);
 
-				D3DXVec3TransformCoord(&v,&v,&modelList[m].scaleMat);
-				D3DXVec3TransformCoord(&v,&v,&modelList[m].world);
+				D3DXVec3TransformCoord(&v1,&v1,&modelList[m].scaleMat);
+				D3DXVec3TransformCoord(&v1,&v1,&modelList[m].world);
 
-				float dist = GetDist(v.x, v.y, v.z);// - georadius;
-				if (mindist <= 1000) {
-					int a = 0;
+				bool out;
+				// check frustum
+				for (int f = 0; f < 6; f++ )
+				{
+					out = false;
+					if ( D3DXPlaneDotCoord( &m_frustum[i], &v1) < -width * modelList[m].scaleMat._11 * 1.5f)
+					{
+						out = true;
+						break;
+					}
 				}
-				if (dist < mindist && mindist > 1000) {
-					DrawChunk(x_off, y_off, width_x * 0.5f, width_y * 0.5f, mindist * 0.5f, i, m, currModIndex);
+
+				if (out) continue;
+
+				float dist = GetDist(v1.x, v1.y, v1.z);
+
+				if (div < 16384 && dist < mindist) {
+					DrawChunk(x_off, y_off, width * 0.5f, div * 2.0f, mindist * 0.5f, i, m, currModIndex);
 				} else {
 
 					if (i & 1)
@@ -1155,19 +1171,16 @@ void DrawChunk(float xoff, float yoff, float width_x, float width_y, float mindi
 
 					effectList[currModIndex]->SetValue("x_off",&x_off, D3DX_DEFAULT);
 					effectList[currModIndex]->SetValue("y_off",&y_off, D3DX_DEFAULT);
-					effectList[currModIndex]->SetValue("width_x",&width_x, D3DX_DEFAULT);
-					effectList[currModIndex]->SetValue("width_y",&width_y, D3DX_DEFAULT);
-					effectList[currModIndex]->SetValue("size_x",&size_x, D3DX_DEFAULT);
-					effectList[currModIndex]->SetValue("size_y",&size_y, D3DX_DEFAULT);
+					effectList[currModIndex]->SetValue("div",&div, D3DX_DEFAULT);
 					effectList[currModIndex]->SetValue("type",&type, D3DX_DEFAULT);
 					effectList[currModIndex]->BeginPass(4);
 					chunk->DrawSubset(0);
 					effectList[currModIndex]->EndPass();
 				}
 			}
-			x_off += width_x;
+			x_off += width;
 		}
-		y_off += width_y;
+		y_off += width;
 	}
 }
 
@@ -1177,16 +1190,6 @@ void DrawGeosphere(int m, int currModIndex)
 
 	renderSystem->GetDevice()->SetVertexDeclaration(chunk_declaration);
 
-	D3DXVECTOR3 v;
-	v.x = -1.0f;
-	v.y = -1.0f;
-	v.z = -1.0f;
-
-	D3DXVec3TransformCoord(&v,&v,&modelList[m].scaleMat);
-
-	size_x = abs(v.x);
-	size_y = abs(v.y);
-
 	//effectList[currModIndex]->SetTexture("heightmap",heightmaps[modelList[m].instanceIndex]);
 	effectList[currModIndex]->SetTexture("heightmap",textures[800]);
 	effectList[currModIndex]->SetTexture("tex",textures[713]);
@@ -1194,19 +1197,15 @@ void DrawGeosphere(int m, int currModIndex)
 	effectList[currModIndex]->SetMatrix("scalemat",&modelList[m].scaleMat);
 	effectList[currModIndex]->SetMatrix("rotmat",&modelList[m].rotMat);
 
-	georadius = GetDist(modelList[m].scaleMat._11, modelList[m].scaleMat._22, modelList[m].scaleMat._33);
-
 	effectList[currModIndex]->Begin(&pass,0);
 
 	if (modelList[m].scale > 5)
 	{
-		DrawChunk(v.x, v.y, abs(v.x), abs(v.y), 40000.0f, -1, m, currModIndex);
+		DrawChunk(-1.0f, -1.0f, 1.0f, 1.0f, 40000.0f, -1, m, currModIndex);
 	} else {
-		DrawChunk(v.x, v.y, abs(v.x), abs(v.y), 80000.0f, -1, m, currModIndex);
+		DrawChunk(-1.0f, -1.0f, 1.0f, 1.0f, 80000.0f, -1, m, currModIndex);
 	}
 	
-	
-
 	effectList[currModIndex]->End();
 }
 
@@ -1327,7 +1326,6 @@ bool InitD3D(HWND hWnd)
 }
 
 void ViewPort(bool enable) {
-	D3DVIEWPORT9 viewport;
 
 	if (aspectfix) {
 		viewport.X = 0;
@@ -1647,53 +1645,73 @@ void doMatrixes(D3DXMATRIX world) {
 
 #define corrector 0.0f
 
-D3DXMATRIX matProj;
-D3DXMATRIX matView;
+void BuildViewFrustum()
+{
+    D3DXMatrixMultiply(&matViewProj, &matView, &matProj);
+
+    m_frustum[0].a = matViewProj._14 + matViewProj._11; // Левая плоскость
+    m_frustum[0].b = matViewProj._24 + matViewProj._21;
+    m_frustum[0].c = matViewProj._34 + matViewProj._31;
+    m_frustum[0].d = matViewProj._44 + matViewProj._41;
+    D3DXPlaneNormalize(&m_frustum[0], &m_frustum[0]);
+
+    m_frustum[1].a = matViewProj._14 - matViewProj._11; // Правая плоскость
+    m_frustum[1].b = matViewProj._24 - matViewProj._21;
+    m_frustum[1].c = matViewProj._34 - matViewProj._31;
+    m_frustum[1].d = matViewProj._44 - matViewProj._41;
+    D3DXPlaneNormalize(&m_frustum[1], &m_frustum[1]);
+
+    m_frustum[2].a = matViewProj._14 - matViewProj._12; // Верхняя плоскость
+    m_frustum[2].b = matViewProj._24 - matViewProj._22;
+    m_frustum[2].c = matViewProj._34 - matViewProj._32;
+    m_frustum[2].d = matViewProj._44 - matViewProj._42;
+    D3DXPlaneNormalize(&m_frustum[2], &m_frustum[2]);
+
+    m_frustum[3].a = matViewProj._14 + matViewProj._12; // Нижняя плоскость
+    m_frustum[3].b = matViewProj._24 + matViewProj._22;
+    m_frustum[3].c = matViewProj._34 + matViewProj._32;
+    m_frustum[3].d = matViewProj._44 + matViewProj._42;
+    D3DXPlaneNormalize(&m_frustum[3], &m_frustum[3]);
+
+    // Вычисление плоскостей
+    m_frustum[4].a = /*matViewProj._14 + */matViewProj._13; // Передняя плоскость
+    m_frustum[4].b = /*matViewProj._24 + */matViewProj._23;
+    m_frustum[4].c = /*matViewProj._34 + */matViewProj._33;
+    m_frustum[4].d = /*matViewProj._44 + */matViewProj._43;
+    D3DXPlaneNormalize(&m_frustum[4], &m_frustum[4]);
+
+    m_frustum[5].a = matViewProj._14 - matViewProj._13; // Задняя плоскость
+    m_frustum[5].b = matViewProj._24 - matViewProj._23;
+    m_frustum[5].c = matViewProj._34 - matViewProj._33;
+    m_frustum[5].d = matViewProj._44 - matViewProj._43;
+    D3DXPlaneNormalize(&m_frustum[5], &m_frustum[5]);
+
+}
 
 void doPerspectiveNear()
 {
-	D3DXMatrixLookAtLH(&matView, &D3DXVECTOR3(0.0f, corrector, 0.0f), //Camera Position
-		&D3DXVECTOR3(0.0f, corrector, 1.0f), //Look At Position
-		&D3DXVECTOR3(0.0f, 1.0f, 0.0f)); //Up Direction
+	D3DXMatrixLookAtLH(&matView, &D3DXVECTOR3(0.0f, 0.0f, 0.0f), //Camera Position
+								 &D3DXVECTOR3(0.0f, 0.0f, 1.0f), //Look At Position
+								 &D3DXVECTOR3(0.0f, 1.0f, 0.0f)); //Up Direction
 	renderSystem->GetDevice()->SetTransform(D3DTS_VIEW, &matView);
 
-	float ratio, fov;
-
-	//ratio = 2.012f;
-	//fov = 0.6f;
-	ratio = 2.0253f;
-	//fov = 0.5972f;
-	fov = 0.5972f;
-	//fov = 0.8726f;
-	
-	// ближнюю плоскость отсечения ставить меньше нельзя, будут проблемы с 
-	// буфером глубины. Возникает проблема с лазером, он начинает рисоваться на 
-	// некотором расстоянии.
-	D3DXMatrixPerspectiveFovLH(&matProj, fov, ratio, 0.1f, 300000);
+	D3DXMatrixPerspectiveFovLH(&matProj, (float)D3DXToRadian(35), 2.0f, 0.1f, 300000);
 	renderSystem->GetDevice()->SetTransform(D3DTS_PROJECTION, &matProj);
+
+	BuildViewFrustum();
 }
 
 void doPerspectiveFar()
 {
-	D3DXMatrixLookAtLH(&matView, &D3DXVECTOR3(0.0f, corrector, 0.0f), //Camera Position
-		&D3DXVECTOR3(0.0f, corrector, 1.0f), //Look At Position
-		&D3DXVECTOR3(0.0f, 1.0f, 0.0f)); //Up Direction
+	D3DXMatrixLookAtLH(&matView, &D3DXVECTOR3(0.0f, 0.0f, 0.0f), //Camera Position
+								 &D3DXVECTOR3(0.0f, 0.0f, 1.0f), //Look At Position
+								 &D3DXVECTOR3(0.0f, 1.0f, 0.0f)); //Up Direction
 	renderSystem->GetDevice()->SetTransform(D3DTS_VIEW, &matView);
 
-	float ratio, fov;
-
-	//ratio = 2.012f;
-	//fov = 0.6f;
-	ratio = 2.0253f;
-	//fov = 0.5972f;
-	fov = 0.5972f;
-	//fov = 0.8726f;
-	
-	// ближнюю плоскость отсечения ставить меньше нельзя, будут проблемы с 
-	// буфером глубины. Возникает проблема с лазером, он начинает рисоваться на 
-	// некотором расстоянии.
-	D3DXMatrixPerspectiveFovLH(&matProj, fov, ratio, 1.0f, 10e6);
+	D3DXMatrixPerspectiveFovLH(&matProj, (float)D3DXToRadian(35), 2.0f, 0.1f, 300000);
 	renderSystem->GetDevice()->SetTransform(D3DTS_PROJECTION, &matProj);
+
+	BuildViewFrustum();
 }
 extern DWORD fullAmbientColor;
 extern bool inAtmo;
@@ -2530,8 +2548,8 @@ void Render()
 			mdworld[11]=0.0f;
 
 			mdworld[12]=-0.35f;
-			mdworld[13]=-1.07f+corrector;
-			mdworld[14]=4.0f;
+			mdworld[13]=-1.085f+corrector;
+			mdworld[14]=3.95f;
 			doMatrixes(mdworld);
 			panelObj->FrameMove(0,0,&mdworld);
 			renderSystem->GetDevice()->SetTexture(0, panelTex);
@@ -2566,7 +2584,7 @@ void Render()
 	ViewPort(true);
 
 	unsigned int pass;
-	D3DXMATRIX Full, WorldInverse;
+	D3DXMATRIX WorldInverse;
 
 	for(int m=0;m<modelNum;m++) {
 		if (modelList[m].index==315 || 
@@ -2585,6 +2603,7 @@ void Render()
 			} else {
 				doPerspectiveNear();
 			}
+
 			for(int ii=0;ii<=10 && !modelList[m].subObject;ii++) {
 				renderSystem->GetDevice()->LightEnable(ii, false);
 			}
@@ -2609,8 +2628,8 @@ void Render()
 
 				effectList[currModIndex]->SetValue("skinnum", &modelList[m].skinnum, D3DX_DEFAULT);
 
-				D3DXMatrixMultiply(&Full, &matProj, &matView);
-				effectList[currModIndex]->SetMatrix("viewprojmat",&Full);
+				//D3DXMatrixMultiply(&matViewProj, &matProj, &matView);
+				effectList[currModIndex]->SetMatrix("viewprojmat",&matViewProj);
 				effectList[currModIndex]->SetMatrix("worldInverse",&WorldInverse);
 
 				effectList[currModIndex]->SetTexture("permTexture",permTexture);

@@ -349,15 +349,15 @@ int C_FUNC_001874_DrawPlanet(DrawMdl_t *drawModel, char *cmd)
 	D3DXVec3TransformCoord(&p3,&p3,&invrot);
 
 	modelList[modelNum].scaleMat._11=p1.x;
-	modelList[modelNum].scaleMat._12=0.0f;//p1.y;
-	modelList[modelNum].scaleMat._13=0.0f;//p1.z;
+	modelList[modelNum].scaleMat._12=p1.y;
+	modelList[modelNum].scaleMat._13=p1.z;
 
-	modelList[modelNum].scaleMat._21=0.0f;//p2.x;
+	modelList[modelNum].scaleMat._21=p2.x;
 	modelList[modelNum].scaleMat._22=p2.y;
-	modelList[modelNum].scaleMat._23=0.0f;//p2.z;
+	modelList[modelNum].scaleMat._23=p2.z;
 
-	modelList[modelNum].scaleMat._31=0.0f;//p3.x;
-	modelList[modelNum].scaleMat._32=0.0f;//p3.y;
+	modelList[modelNum].scaleMat._31=p3.x;
+	modelList[modelNum].scaleMat._32=p3.y;
 	modelList[modelNum].scaleMat._33=p3.z;
 
 	modelList[modelNum].scaleMat._41=0.0f;
