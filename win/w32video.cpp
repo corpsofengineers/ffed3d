@@ -1002,7 +1002,7 @@ void loadModels()
 	
 }
 
-#define chunk_size 32
+#define chunk_size 64
 
 IDirect3DVertexDeclaration9* chunk_declaration = NULL;
 ID3DXMesh* chunk;
@@ -1090,8 +1090,7 @@ void DrawChunk(float xoff, float yoff, float width, float div, float mindist, in
 {
 	float type;
 	float x_off, y_off;
-	D3DXVECTOR3 pos1, v1, v1t;
-	D3DXVECTOR4 v1p;
+	D3DXVECTOR3 pos, v, r;
 
 	y_off = yoff;
 	for (int h = 0; h < 2; h++)
@@ -1099,9 +1098,9 @@ void DrawChunk(float xoff, float yoff, float width, float div, float mindist, in
 		x_off = xoff;
 		for (int w = 0; w < 2; w++)
 		{	
-			pos1.x = x_off + (width*0.5f);
-			pos1.y = y_off + (width*0.5f);
-			pos1.z = -1.0f;
+			pos.x = x_off + (width*0.5f);
+			pos.y = y_off + (width*0.5f);
+			pos.z = -1.0f;
 
 			for (int i = 0; i < 6; i++)
 			{
@@ -1109,45 +1108,45 @@ void DrawChunk(float xoff, float yoff, float width, float div, float mindist, in
 					continue;
 				}
 
-				v1 = pos1;
+				v = pos;
 
 				switch(i) 
 				{
 					case 1:
-						v1.y = pos1.z;
-						v1.z = pos1.y;
+						v.y = pos.z;
+						v.z = pos.y;
 						break;
 					case 2:
-						v1.y = -pos1.z;
-						v1.z = pos1.y;
+						v.y = -pos.z;
+						v.z = pos.y;
 						break;
 					case 3:
-						v1.x = pos1.z;
-						v1.z = pos1.x;
+						v.x = pos.z;
+						v.z = pos.x;
 						break;
 					case 4:
-						v1.x = -pos1.z;
-						v1.z = pos1.x;
+						v.x = -pos.z;
+						v.z = pos.x;
 						break;
 					case 5:
-						v1.z = -pos1.z;
+						v.z = -pos.z;
 						break;
 					default: break;
 				}
 
-				v1.x = v1.x * sqrt(1.0f - v1.y * v1.y * 0.5f - v1.z * v1.z * 0.5f + v1.y * v1.y * v1.z * v1.z / 3.0f);
-				v1.y = v1.y * sqrt(1.0f - v1.z * v1.z * 0.5f - v1.x * v1.x * 0.5f + v1.z * v1.z * v1.x * v1.x / 3.0f);
-				v1.z = v1.z * sqrt(1.0f - v1.x * v1.x * 0.5f - v1.y * v1.y * 0.5f + v1.x * v1.x * v1.y * v1.y / 3.0f);
+				r.x = v.x * sqrt(1.0f - v.y * v.y * 0.5f - v.z * v.z * 0.5f + v.y * v.y * v.z * v.z / 3.0f);
+				r.y = v.y * sqrt(1.0f - v.z * v.z * 0.5f - v.x * v.x * 0.5f + v.z * v.z * v.x * v.x / 3.0f);
+				r.z = v.z * sqrt(1.0f - v.x * v.x * 0.5f - v.y * v.y * 0.5f + v.x * v.x * v.y * v.y / 3.0f);
 
-				D3DXVec3TransformCoord(&v1,&v1,&modelList[m].scaleMat);
-				D3DXVec3TransformCoord(&v1,&v1,&modelList[m].world);
+				D3DXVec3TransformCoord(&r,&r,&modelList[m].scaleMat);
+				D3DXVec3TransformCoord(&r,&r,&modelList[m].world);
 
 				bool out;
 				// check frustum
 				for (int f = 0; f < 6; f++ )
 				{
 					out = false;
-					if ( D3DXPlaneDotCoord( &m_frustum[i], &v1) < -width * modelList[m].scaleMat._11 * 1.5f)
+					if ( D3DXPlaneDotCoord( &m_frustum[i], &r) < -width * modelList[m].scaleMat._11 * 1.5f)
 					{
 						out = true;
 						break;
@@ -1156,7 +1155,7 @@ void DrawChunk(float xoff, float yoff, float width, float div, float mindist, in
 
 				if (out) continue;
 
-				float dist = GetDist(v1.x, v1.y, v1.z);
+				float dist = GetDist(r.x, r.y, r.z);
 
 				if (div < 16384 && dist < mindist) {
 					DrawChunk(x_off, y_off, width * 0.5f, div * 2.0f, mindist * 0.5f, i, m, currModIndex);
