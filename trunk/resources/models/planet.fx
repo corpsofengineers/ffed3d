@@ -15,7 +15,7 @@ texture permTexture2d;
 
 texture heightmap;
 
-float x_off, y_off, div, div2, type;
+float x_off, y_off, div, type;
 
 float time;
 
@@ -358,16 +358,16 @@ float4 P_Test(
 	float offset_y = 1.0/2700;
 	
 	float3 d;
-	d.x = tex2D( heightSampler, tex_vu + float2( offset_x, 0 ) ) .r*1- tex2D( heightSampler, tex_vu + float2( -offset_x, 0 ) ).r*1; 
-	d.y = tex2D( heightSampler, tex_vu + float2( 0, offset_y ) ) .r*1- tex2D( heightSampler, tex_vu + float2( 0, -offset_y ) ).r*1;
+	d.x = tex2D( heightSampler, tex_vu + float2( offset_x, 0 ) ) .r- tex2D( heightSampler, tex_vu + float2( -offset_x, 0 ) ).r; 
+	d.y = tex2D( heightSampler, tex_vu + float2( 0, offset_y ) ) .r- tex2D( heightSampler, tex_vu + float2( 0, -offset_y ) ).r;
 	d.z = 0.0;
 
-	d = mul(d, -(float3x3)rotmat); 
+	//d = mul(d, -(float3x3)rotmat); 
 
-	float3 norm = normalize( float3( normal.x  + 5.0 * d.x, normal.y + 5.0 * d.y, normal.z) ); 
+	float3 norm = normalize( float3( normal.x  + 3.0 * d.x, normal.y + 3.0 * d.y, normal.z) ); 
 
 	float nrmd_light = dot(norm, normalize(lightDir));
-	float4 diffuse = tex;// * nrmd_light;
+	float4 diffuse = tex * nrmd_light;
 
 //	float3 R = normalize(reflect(-lightDir, norm));
 //	float VdotR = saturate(dot(R, normalize(eye)));
