@@ -15,7 +15,7 @@ texture permTexture2d;
 
 texture heightmap;
 
-float x_off, y_off, width_x, width_y, size_x, size_y, type;
+float x_off, y_off, div, div2, type;
 
 float time;
 
@@ -277,13 +277,13 @@ VS_OUTPUT V_Test(
 	float3 v, p;
 
 	// divide
-	p.x = pos.x * (width_x/size_x);
-	p.y = pos.y * (width_y/size_y);
+	p.x = pos.x / div;
+	p.y = pos.y / div;
 	p.z = pos.z;
 
 	// offsets
-	p.x = p.x + x_off/size_x;
-	p.y = p.y + y_off/size_y;
+	p.x = p.x + x_off;
+	p.y = p.y + y_off;
 
 	v.x = p.x;
 	v.y = p.y;
@@ -323,13 +323,13 @@ VS_OUTPUT V_Test(
 
 	float height = tex2Dlod(heightSampler, uv).r;
 
-	vertex *= 1.0 + (1.0 / 32 * height);
-
 	vertex.xyz = mul(vertex, (float3x3)scalemat);
 
 	float3 normal = normalize(vertex.xyz);
 
-	vertex = mul(float4(vertex.xyz, 1), worldmat);
+	vertex *= 1.0+(1.0 / 32 * height);
+
+	vertex = mul(float4(vertex.xyz, 1.0), worldmat);
 
 	Out.tex_vu = uv.xy;
 
@@ -367,7 +367,7 @@ float4 P_Test(
 	float3 norm = normalize( float3( normal.x  + 5.0 * d.x, normal.y + 5.0 * d.y, normal.z) ); 
 
 	float nrmd_light = dot(norm, normalize(lightDir));
-	float4 diffuse = tex * nrmd_light;
+	float4 diffuse = tex;// * nrmd_light;
 
 //	float3 R = normalize(reflect(-lightDir, norm));
 //	float VdotR = saturate(dot(R, normalize(eye)));
