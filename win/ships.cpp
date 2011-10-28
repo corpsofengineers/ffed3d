@@ -347,7 +347,7 @@ ModelInstance_t *CreateShip(ModelInstance_t *copyfrom, u8 object_type, int model
 		edx = 0xffff;		
 	if (edx > 0xf000 && object_type != 1) { 
 		//cargo_space--; 
-		equipment |= EQUIP_HS_CLOUD_ANALYSER; 
+		equipment |= EQUIP_HYPER_CLOUD_ANALYZER; 
 	}
 
 	if (object_type == 0xe) { // police
@@ -363,7 +363,7 @@ ModelInstance_t *CreateShip(ModelInstance_t *copyfrom, u8 object_type, int model
 	}
 
 	ship_instance->fuel_tank = DATA_DriveTankFuel[drive] << 0x18;		// fuel
-	u32 cargo_fuel = DATA_DriveCargoFuel[drive];
+	u32 cargo_fuel = DATA_DriveCargoFuel[drive] * 2;
 	if (cargo_fuel >= cargo_space) 
 		cargo_fuel = cargo_space;		
 	cargo_space -= cargo_fuel;	// J3101
@@ -375,7 +375,7 @@ ModelInstance_t *CreateShip(ModelInstance_t *copyfrom, u8 object_type, int model
 	// for military ships, assassins, and police, no extra cargo
 	if (object_type < 0x13 && object_type != 0xe)
 	{
-		u16 usedWeight = 0.1 + 0.1*FloatRandom();
+		u16 usedWeight = 0.1f + 0.1f*FloatRandom();
 		
 		if (object_type < 0xa)
 			usedWeight *= 2;
@@ -390,18 +390,18 @@ ModelInstance_t *CreateShip(ModelInstance_t *copyfrom, u8 object_type, int model
 	//if (shields > 0x12c) shields = 0x12c;
 
 	if (object_type == 1) 
-		shields = cargo_space * 0.2;
+		shields = cargo_space * 0.2f + 0.2f*BoundRandom(10);
 	else if (object_type == 0xc)
-		shields = cargo_space * 0.8;
+		shields = cargo_space * 0.8f + 0.2f*BoundRandom(10);
 	else
-		shields = cargo_space * 0.4;
+		shields = cargo_space * 0.4f + 0.2f*BoundRandom(10);
 
-	shields = (shields >> 2) << 2; // round to 4t
+	shields = (shields >> 2); // round to 4t
 	//shields = shields * max_tech_level / 0xffff;
 	//shields = BoundRandom(shields);
 	//shields = BoundRandom(shields) * 2;
-	cargo_space -= shields;
-	ship_instance->globalvars.shields = ship_instance->globalvars.max_shields = shields >> 2;
+	cargo_space -= shields << 2;
+	ship_instance->globalvars.shields = ship_instance->globalvars.max_shields = shields << 5; // 1 shield = 4t = 64 units
 
 	if (cargo_space >= 5) {
 		u32 techlevel = BoundRandom(max_tech_level);
@@ -415,26 +415,6 @@ ModelInstance_t *CreateShip(ModelInstance_t *copyfrom, u8 object_type, int model
 		}
 	}	
 
-	if (cargo_space >= 5) {
-		if (BoundRandom(8) < 3) {
-			equipment |= EQUIP_ESCAPE_CAPSULE;
-			cargo_space -= 5;
-		}
-	}
-
-	if (cargo_space >= 1) {
-		if (object_type == 0xa) {
-			equipment |= EQUIP_ENERGY_BOMB;
-			cargo_space -= 1;
-		}
-	}
-
-	if (cargo_space >= 5) {
-		if (BoundRandom(8) < 3) {
-			equipment |= EQUIP_ESCAPE_CAPSULE;
-			cargo_space -= 5;
-		}
-	}
 	//if (cargo_space > 0) {
 		u16 missiles = ship_def->Missiles;						// missiles
 		missiles = BoundRandom(missiles);
@@ -449,17 +429,17 @@ ModelInstance_t *CreateShip(ModelInstance_t *copyfrom, u8 object_type, int model
 	//}
 	// J3108
 	//if (cargo_space > 0) {
-		u32 techlevel = BoundRandom(max_tech_level);
-		if (techlevel >= 0x800) { 
-			//cargo_space--; 
+		//u32 techlevel = BoundRandom(max_tech_level);
+		//if (techlevel >= 0x800) { 
+		//	//cargo_space--; 
 			equipment |= EQUIP_SCANNER; 
-		}
+		//}
 		//techlevel = BoundRandom(max_tech_level);
 		//if (techlevel >= 0xfc00 && cargo_space >= 4 && ship_instance->object_type != 0xe) {
 		//	cargo_space--; equipment |= EQUIP_ENERGY_BOMB;
 		//}
 	//}
-	equipment |= EQUIP_ATMO_SHIELD;								// atmos. shield
+	equipment |= EQUIP_ATMOSPHERIC_SHIELD;								// atmos. shield
 
 	//u32 more_fuel = cargo_space * DATA_DriveCargoFuel2[ship_instance->object_type];
 	//if (more_fuel > 0xaf) 
@@ -949,7 +929,7 @@ extern "C" void RegenerateShields(ModelInstance_t *ship)
 
 	realGain = (float)DATA_FrameTime * SHIELD_REGEN_RATE * (maxShields / sfArea);	
 
-	if (ship->globalvars.equip & EQUIP_ENERGY_BOOSTER)
+	if (ship->globalvars.equip & EQUIP_ENERY_BOOSTER_UNIT)
 		realGain *= 1.65;
 
 	shieldRechargeAccum[shipIdx] += realGain;

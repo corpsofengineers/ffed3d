@@ -48914,7 +48914,7 @@ FUNC_000718:			; Pos = 2e654
 ;		jz .NotUltraECM
 ;		inc eax
 ;	.NotUltraECM:
-		test dword [esi+0xc8],0x800000
+		test dword [esi+0xc8],0x8000000
 		jz .NotNavalECM
 		inc eax
 	.NotNavalECM:
@@ -76105,7 +76105,6 @@ FUNC_000998:			; Pos = 40194  Related to start pos?
 		mov [DATA_008911],eax
 		xor eax,eax
 		mov [DATA_009091],eax
-
 		xor edx,edx
 		mov eax,DATA_009095
 	JUMP_004140:			; Pos = 401d4
@@ -76114,71 +76113,60 @@ FUNC_000998:			; Pos = 40194  Related to start pos?
 		inc edx
 		add eax,byte +0x4
 		cmp edx,byte +0x6
-		jl JUMP_004140	
+		jl JUMP_004140
 		mov eax,[DATA_008881]
 		dec eax
-		jz near JUMP_004143	; 1 - Ross 154 start
+		jz near JUMP_004143
 		dec eax
-		jz JUMP_004141	; 2 - Sol start
+		jz JUMP_004141
 		dec eax
-		jz near JUMP_004142	; 3 - Lave start
-		sub eax,0x3
-		jz near JUMP_FrontierStart
+		jz near JUMP_004142
 		jmp JUMP_004144
-	JUMP_004141:			; Pos = 401fc SOL START?
-		mov dword [DATA_008888],500000
-
+	JUMP_004141:			; Pos = 401fc
+		mov dword [DATA_008888],0x3e8
 		push dword 0x4a0d
-		push byte +0x14	; Falcon
+		push byte +0x17
 		call FUNC_000996
 		add esp,byte +0x8
 		mov ebx,eax
-		
-		mov byte [ebx+0x119],0x0
-
-		mov byte [ebx+0xd0],0xa
+		mov byte [ebx+0xd0],0x1
 		mov byte [ebx+0xd2],0xa0
-		mov byte [ebx+0xd6],0x84
-		mov byte [ebx+0xd7],0x84
+		mov byte [ebx+0xd6],0x82
+		mov byte [ebx+0xd7],0x82
 		mov word [ebx+0xe2],0x0
-		mov dword [ebx+0xc8],0x402C0020
-		sub dword [DATA_008889],byte +14
+		mov dword [ebx+0xc8],0x40000000
+		sub dword [DATA_008889],byte +0xc
 		xor eax,eax
 		mov [DATA_008907],eax
-		mov [DATA_008891],dword 4
-		mov [DATA_008902],dword 4
-
-		mov dword [ebx+0x11e],0x20000000
+		xor eax,eax
+		mov [DATA_008891],eax
+		mov dword [ebx+0x11e],0x40000000
 		mov byte [ebx+0x56],0x60
 		push byte +0x5f
 		push ebx
 		call FUNC_000994
 		add esp,byte +0x8
 		jmp JUMP_004145
-	JUMP_004142:			; Pos = 40279	LAVE START?
-		mov dword [DATA_008888],152
+	JUMP_004142:			; Pos = 40279
+		mov dword [DATA_008888],0x3e8
 		push dword 0x941a
-		push byte +0x1c	; Gecko
+		push byte +0x26
 		call FUNC_000996
 		add esp,byte +0x8
 		mov ebx,eax
-		
-		mov byte [ebx+0x119],0x0
-
 		mov byte [ebx+0xd0],0x3
-		mov byte [ebx+0xd2],0xa0
-;		mov byte [ebx+0xd6],0x82
-;		mov byte [ebx+0xd7],0x82
-;		mov byte [ebx+0xd8],0x83
-;		mov byte [ebx+0xd9],0x83
+		mov byte [ebx+0xd2],0x88
+		mov byte [ebx+0xd6],0x82
+		mov byte [ebx+0xd7],0x82
+		mov byte [ebx+0xd8],0x82
+		mov byte [ebx+0xd9],0x82
 		mov word [ebx+0xe2],0x0
-		mov dword [ebx+0xc8],0x12c0400
-		sub dword [DATA_008889],byte +36
+		mov dword [ebx+0xc8],0x40000
+		sub dword [DATA_008889],byte +0x1f
 		mov dword [DATA_008907],0x320
 		mov dword [ebx+0x11e],0x40000000
-		mov word [DATA_008901],0x0
-		mov word [DATA_Liquor],0x1
-		mov dword [DATA_008891],0x1
+		mov word [DATA_008901],0x4
+		mov dword [DATA_008891],0x4
 		mov dword [DATA_009097],0xaae60
 		mov dword [DATA_009096],0xaae60
 		mov dword [DATA_008909],0x1f4
@@ -76204,25 +76192,22 @@ FUNC_000998:			; Pos = 40194  Related to start pos?
 		mov byte [edx+eax],0x4b
 		mov dword [DATA_008867],0xffffffff
 		jmp JUMP_004145
-	JUMP_004143:			; Pos = 40389 ROSS 154 START
-		mov dword [DATA_008888],500000
+	JUMP_004143:			; Pos = 40389
+		mov dword [DATA_008888],0x3e8
 		push dword 0xde27
-		push byte +0x35	; used to be 0x17 - Eagle MkI?
+		push byte +0x17
 		call FUNC_000996
 		add esp,byte +0x8
 		mov ebx,eax
-		
-		mov byte [ebx+0x119],0x0
-
-		mov byte [ebx+0xd0],0x4
-		mov byte [ebx+0xd2],0xa0	; 1MW beamer
-		mov dword [ebx+0xc8],0x40240020
-;		mov byte [ebx+0xd6],0x82
-;		mov byte [ebx+0xd7],0x82
-		sub dword [DATA_008889],byte +55
-		mov word [DATA_008901],0x9
-		mov dword [DATA_008891],0x9
-		mov dword [ebx+0x11e],0x60000000
+		mov byte [ebx+0xd0],0x2
+		mov byte [ebx+0xd2],0x88
+		mov dword [ebx+0xc8],0x40240000
+		mov byte [ebx+0xd6],0x82
+		mov byte [ebx+0xd7],0x82
+		sub dword [DATA_008889],byte +0x10
+		mov word [DATA_008901],0x1
+		mov dword [DATA_008891],0x1
+		mov dword [ebx+0x11e],0x20000000
 		mov dword [DATA_008907],0x3e8
 		mov byte [ebx+0x56],0x6f
 		push byte +0x6e
@@ -76236,20 +76221,17 @@ FUNC_000998:			; Pos = 40194  Related to start pos?
 		call FUNC_000996
 		add esp,byte +0x8
 		mov ebx,eax
-		
-		mov byte [ebx+0x119],0x0
-
-		mov dword [DATA_008888],10000
-		mov byte [ebx+0xd2],0x88	; laser
-		mov word [DATA_008902],4	; milfuel
-		mov dword [DATA_008891],4
-		sub dword [DATA_008889],13
+		mov dword [DATA_008888],0x2710
+		mov byte [ebx+0xd2],0x88
+		mov word [DATA_008901],0x1
+		mov dword [DATA_008891],0x1
+		sub dword [DATA_008889],byte +0x10
 		mov dword [DATA_008907],0x42f
-		mov byte [ebx+0xd0],0xb	; drive type
-		mov dword [ebx+0xc8],0x40240020	; equipment
-		mov byte [ebx+0xd6],0x83	; missiles
-		mov byte [ebx+0xd7],0x83
-		mov dword [ebx+0x11e],0x20000000	; fuel tank
+		mov byte [ebx+0xd0],0x2
+		mov dword [ebx+0xc8],0x40240020
+		mov byte [ebx+0xd6],0x82
+		mov byte [ebx+0xd7],0x82
+		mov dword [ebx+0x11e],0x20000000
 		mov byte [ebx+0x56],0x6c
 		push byte +0x6a
 		push ebx
@@ -76275,87 +76257,6 @@ FUNC_000998:			; Pos = 40194  Related to start pos?
 		push eax
 		call FUNC_001575
 		pop ecx
-		
-		jmp JUMP_004145
-	JUMP_FrontierStart:
-
-		mov byte [_DATA_ExtendedUniverse],0x1
-		mov dword [_DATA_GameDays],0x1381a7
-		mov dword [_DATA_GameTics],0xc0000000
-		mov dword [DATA_008888],1000
-		push dword 0xde27
-		push byte +0x22	; viper mk2
-		call FUNC_000996
-		add esp,byte +0x8
-		mov ebx,eax
-		
-		mov byte [ebx+0x119],0x0
-
-		mov byte [ebx+0xd0],0xc
-		mov byte [ebx+0xd2],0xa0
-		mov byte [ebx+0xd6],0x82
-		mov byte [ebx+0xd7],0x82
-		mov word [ebx+0xe2],0x0
-		mov dword [ebx+0xc8],0x402c0020
-		sub dword [DATA_008889],10
-		mov dword [DATA_008907],0x320
-		mov dword [ebx+0x11e],0x20000000
-		mov word [DATA_008902],0x0
-		mov dword [DATA_008891],0x0
-		mov dword [DATA_009097],9000000
-		mov dword [DATA_009096],9000000
-		mov dword [DATA_009098],9000000
-		mov dword [DATA_008909],0x1f4
-		mov dword [DATA_008910],0x1f4
-		mov byte [ebx+0x56],0x6c
-		push byte +0x6b
-		push ebx
-		call FUNC_000994
-		add esp,byte +0x8
-;		push ebx
-;		call FUNC_000997
-;		pop ecx
-		mov ax,[DATA_007266]
-		mov [ebp-0x23],ax
-		mov al,[DATA_007267]
-		mov [ebp-0x21],al
-		mov ax,[ebp-0x23]
-		mov [DATA_008815],ax
-		mov al,[ebp-0x21]
-		mov [DATA_008817],al
-		mov ax,[ebp-0x23]
-		mov [DATA_009136],ax
-		mov al,[ebp-0x21]
-		mov [DATA_009137],al
-		mov dword [DATA_008814],0xffffffff
-
-;		mov dword [ebx+0x18],0x00420000
-		lea eax,[ebp-0x23]
-		push eax
-		call FUNC_001575
-		pop ecx
-
-		; set orientation
-;		xor ecx,ecx
-;		mov dword [ebx],0x0066e27a
-;		mov dword [ebx+0x4],0x0066f252
-;		mov dword [ebx+0x8],0x02000000
-;		mov dword [ebx+0xc],ecx
-;		mov dword [ebx+0x10],ecx
-;		mov dword [ebx+0x14],ecx
-;		mov dword [ebx+0x1c],ecx
-;		mov dword [ebx+0x20],0x30
-
-;		mov dword [ebx+0x5a],ecx
-;		mov dword [ebx+0x5e],ecx
-;		mov dword [ebx+0x62],0x02000000
-;		mov dword [ebx+0x66],ecx
-;		mov dword [ebx+0x6a],0x0000fca8
-;		mov dword [ebx+0x6e],ecx
-;		mov dword [ebx+0x72],ecx
-;		mov dword [ebx+0x76],ecx
-;		mov dword [ebx+0x7a],ecx
-
 	JUMP_004145:			; Pos = 404e1
 		pop esi
 		pop ebx
@@ -83101,7 +83002,7 @@ FUNC_001099:			; Pos = 44a88
 		push edi
 		call near [DATA_007644]    ; FUNC_001399_StringDrawWrapShadow
 		add esp,byte +0x18
-		test byte [esi+0xcb],0x1
+		test dword [esi+0xc8],0x10000000 ; HS Cloud Analyzer
 		jz JUMP_004536
 		push byte +0x0
 		push byte +0x33
@@ -83112,14 +83013,25 @@ FUNC_001099:			; Pos = 44a88
 		call near [DATA_007644]    ; FUNC_001399_StringDrawWrapShadow
 		add esp,byte +0x18
 	JUMP_004536:			; Pos = 45049
-		test dword [esi+0xc8],0x410
+		test dword [esi+0xc8],0x8000000 ; Naval ECM
+		jz Check_ECM
+		push byte +0x0
+		push byte +0x3d
+		push dword 0xeb
+		push byte +0x5f
+		push byte +0x0
+		push dword 0x989c
+		call near [DATA_007644]    ; FUNC_001399_StringDrawWrapShadow
+		add esp,byte +0x18
+	Check_ECM:
+		test dword [esi+0xc8],0x800000 ; ECM
 		jz JUMP_004537
 		push byte +0x0
 		push byte +0x3d
 		push dword 0xeb
 		push byte +0x5f
 		push byte +0x0
-		push dword 0x989e
+		push dword 0x988c
 		call near [DATA_007644]    ; FUNC_001399_StringDrawWrapShadow
 		add esp,byte +0x18
 	JUMP_004537:			; Pos = 45070
