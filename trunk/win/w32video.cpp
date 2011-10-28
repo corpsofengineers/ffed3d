@@ -1,6 +1,5 @@
 #include <windows.h>
 #include <assert.h>
-#include <ddraw.h>
 #include <d3dx9.h>
 #include <sys/stat.h>
 

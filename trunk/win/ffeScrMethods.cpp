@@ -26,7 +26,8 @@ int currentPirates (void);
 int currentTraders (void);
 int spawnPirates_conv (void);
 int spawnTraders_conv (void);
-
+int playerAddEquip (void);
+int playerRemoveEquip (void);
 
 void scrInit (void)
 {
@@ -51,6 +52,9 @@ void scrInit (void)
 	scr->newFunction (currentTraders);       scr->registerVariable ("CurrentTraders");
 	scr->newFunction (spawnPirates_conv);    scr->registerVariable ("SpawnPirates");
 	scr->newFunction (spawnTraders_conv);    scr->registerVariable ("SpawnTraders");
+
+	scr->newFunction (playerAddEquip);    scr->registerVariable ("playerAddEquip");
+	scr->newFunction (playerRemoveEquip);    scr->registerVariable ("playerRemoveEquip");
 }
 
 //Game CLASSES Pushing To Lua
@@ -210,6 +214,20 @@ int spawnTraders_conv (void)
 	int traderLevel = scriptSystem::getSingleton()->getAsInteger (1);
 	int bInitial = scriptSystem::getSingleton()->getAsInteger (2);
 	SpawnTraders (traderLevel, bInitial);
+	return 0;
+}
+
+int playerAddEquip (void)
+{
+	int equip = scriptSystem::getSingleton()->getAsInteger (1);
+	DATA_PlayerObject->globalvars.equip |= (1 << equip) & 0xffffffff;
+	return 0;
+}
+
+int playerRemoveEquip (void)
+{
+	int equip = scriptSystem::getSingleton()->getAsInteger (1);
+	DATA_PlayerObject->globalvars.equip &= ~(1 << equip) & 0xffffffff;
 	return 0;
 }
 
