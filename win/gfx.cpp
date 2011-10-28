@@ -1,5 +1,4 @@
 #include <windows.h>
-#include <ddraw.h>
 #include <stdio.h>
 #include <math.h>
 #include <direct.h>
