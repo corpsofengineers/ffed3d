@@ -351,7 +351,7 @@ extern "C" void GetCargoAmounts(ModelInstance_t *ship, u32 *cargoAmounts)
 	if (driveType == 0x80)
 		driveType = ship_def->Drive;
 
-	amountToSpawn = ship->cargo_space;
+	amountToSpawn = ship->cargo_fuel;
 
 	// totalCargo = radioactives, amountToSpawn = fuel
 	if (driveType >= 0xa)
@@ -383,10 +383,10 @@ extern "C" void GetCargoAmounts(ModelInstance_t *ship, u32 *cargoAmounts)
 		return; 
 
 	// get info on the last system docked at.
-	FUNC_000869_GetSystemData(ship->bounty, &d1, &d2, &d3, &pirates, &d5, &traders, &d7, &government);
-	FUNC_000870_GetSystemDataExt(ship->bounty, &stockFlags, &population, &danger, &c4);
+	//FUNC_000869_GetSystemData(ship->bounty, &d1, &d2, &d3, &pirates, &d5, &traders, &d7, &government);
+	//FUNC_000870_GetSystemDataExt(ship->bounty, &stockFlags, &population, &danger, &c4);
 
-	if (population < 3)
+	if (DATA_CurrentPopulation < 3)
 		return;
 
 	// spawn real cargo now
@@ -412,7 +412,7 @@ extern "C" void GetCargoAmounts(ModelInstance_t *ship, u32 *cargoAmounts)
 				if (cargoAmounts[j] > 0)
 					continue;
 
-				totalWeight += GetCargoWeighting(j, stockFlags[j]);
+				totalWeight += GetCargoWeighting(j, DATA_StockFlags[j]);
 			}
 
 			if (totalWeight == 0)
@@ -432,7 +432,7 @@ extern "C" void GetCargoAmounts(ModelInstance_t *ship, u32 *cargoAmounts)
 				if (cargoAmounts[j] > 0)
 					continue;
 
-				totalWeight += GetCargoWeighting(j, stockFlags[j]);
+				totalWeight += GetCargoWeighting(j, DATA_StockFlags[j]);
 				if (totalWeight > rand)
 					break;
 			}
@@ -460,8 +460,8 @@ extern "C" void GetCargoAmounts(ModelInstance_t *ship, u32 *cargoAmounts)
 				// pseudorandom effect, same all the time
 				cargoMult = (rand&0x7fff) / 32768.0;
 
-				cargoToSpawn = cargoMult*(MarketData[j].baseAvail + 0.5*PopVarMults[population]*DangerVarMults[danger]*SupplyVarMults[j]*MarketData[j].availVar);
-				cargoToSpawn *= sqrt(PopAvailMults[population]) / 3.0;
+				cargoToSpawn = cargoMult*(MarketData[j].baseAvail + 0.5*PopVarMults[DATA_CurrentPopulation]*DangerVarMults[DATA_CurrentDanger]*SupplyVarMults[j]*MarketData[j].availVar);
+				cargoToSpawn *= sqrt(PopAvailMults[DATA_CurrentPopulation]) / 3.0;
 			}
 
 			if (cargoToSpawn < 1)
