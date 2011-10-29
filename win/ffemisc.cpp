@@ -189,10 +189,15 @@ extern "C" void MakeCargoString(ModelInstance_t *cargoObj)
 {
 	char *nameStr, newStr[40];
 	char *inStr, oldStr[40];
+	char amount[10];
 
 	nameStr = (char*)&cargoObj->name;
 
 	inStr = strchr(nameStr, '(');
+
+	amount[0] = 0;
+	if (cargoObj->cargo_space > 1)
+		sprintf(amount, "(%d)", cargoObj->cargo_space);
 
 	if (inStr)
 	{
@@ -200,10 +205,10 @@ extern "C" void MakeCargoString(ModelInstance_t *cargoObj)
 
 		strcpy(oldStr, nameStr); // get the beginning
 
-		sprintf(newStr, "%s(%d)", oldStr, cargoObj->cargo_fuel);
+		sprintf(newStr, "%s%s", oldStr, amount);
 	}
 	else
-		sprintf(newStr, "%s (%d)", nameStr, cargoObj->cargo_fuel);
+		sprintf(newStr, "%s %s", nameStr, amount);
 
 	newStr[19] = 0;
 	strncpy(nameStr, newStr, 20);
