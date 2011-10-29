@@ -390,7 +390,7 @@ extern "C" void GetCargoAmounts(ModelInstance_t *ship, u32 *cargoAmounts)
 		return;
 
 	// spawn real cargo now
-	amountToSpawn = (ship->cargo_space & 0x7fff); // internal capacity
+	amountToSpawn = (ship->cargo_space & 0x7fff) / ((ship->globalvars.unique_Id & 0xf) + 1); // internal capacity
 	
 	totalCargo = 0;
 	if (amountToSpawn > 0)
@@ -484,17 +484,23 @@ extern "C" void GetCargoAmounts(ModelInstance_t *ship, u32 *cargoAmounts)
 extern "C" void DoSpawnCargo(ModelInstance_t *ship)
 {
 	u8 *cargo_obj;
-	u32 cargoAmounts[33], i;
+	u32 cargoAmounts[33], i, n, amount;
 	u16 hullMass, hullArmorPieces;
 	ShipDef_t *ship_def;
 
 	GetCargoAmounts(ship, cargoAmounts);
 
-	for (i = 0; i <= 32; i++)
-	{
-		if (cargoAmounts[i] > 0)
-			cargo_obj = FUNC_000926_SpawnCargo(0x8e00 + DATA_JettisonedCargoTypes[i], ship, cargoAmounts[i]);
-	}
+	for (n = BoundRandom(3); n <= 3; n++)
+		for (i = 0; i <= 32; i++)
+		{
+			if (cargoAmounts[i] > 0) {
+				amount = BoundRandom(cargoAmounts[i]);
+				if (amount) {
+					cargoAmounts[i] -= amount;
+					cargo_obj = FUNC_000926_SpawnCargo(0x8e00 + DATA_JettisonedCargoTypes[i], ship, amount);
+				}
+			}
+		}
 
 	ship_def = GetModel(ship->model_num)->Shipdef_ptr;
 	hullMass = ship_def->Mass;
