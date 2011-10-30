@@ -13,10 +13,190 @@
 LPDIRECT3DTEXTURE9 heightmaps[100];
 float heightmapbuf[1024][1024];
 
-void Vec32to64 (__int64 *dst, int *src) {
+int fix31 (__int64 in) {
+	return (int)(in >> 31);
+}
+
+void Vec32to64 (__int64 *dst, int *src) 
+{
 	dst[0] = (__int64)src[0];
 	dst[1] = (__int64)src[1];
 	dst[2] = (__int64)src[2];
+}
+
+void Vec64Truncate(Point64 *vec, u32 size)
+{
+	//u32 cursize_x = C_FUNC_001656_FindMSB(vec->x.full);
+	//u32 cursize_y = C_FUNC_001656_FindMSB(vec->y.full);
+	//u32 cursize_z = C_FUNC_001656_FindMSB(vec->z.full);
+	//u32 maxsize = MAX(MAX(cursize_x, cursize_y), cursize_z);
+	//s32 shift = maxsize - size;
+	//if (shift > 0) {
+		vec->x.full >>= size;
+		vec->y.full >>= size;
+		vec->z.full >>= size;
+	//}
+}
+
+extern s32 PlanetDist;
+extern "C" u8 DATA_PlanetCollision;
+extern "C" u8 DATA_CollisionFlags;
+extern "C" u8 DATA_CollisionFlags2;
+extern "C" u8 DATA_LandingCrash;
+extern "C" u8 DATA_CrashMask;
+extern "C" _s64 DATA_Distance;
+extern "C" _s64 DATA_Altitude;
+extern "C" u8 DATA_CollisionObjIndex;
+extern "C" ModelInstance_t *DATA_ParentObjPtr;
+extern "C" void FUNC_001658_Vec64Truncate(Point64*, u32);
+
+extern "C" void FUNC_000578(ModelInstance_t *, ModelInstance_t *);
+extern "C" void FUNC_001503(s32*, u32);
+extern "C" void FUNC_001504(s32*, u32, u32);
+
+extern "C" int CheckCollision(Point64 *relpos, ModelInstance_t *ship, ModelInstance_t *planet)
+{
+	Point64 rpos, rpos2;
+	Point32 rpos3;
+	_s64 s8;
+	u32 eax;
+	u32 s3 = 0;
+
+	memcpy (&rpos, relpos, 6*4);		// save relpos
+	s8.full = (abs(relpos->x.full) + abs(relpos->y.full) + abs(relpos->z.full)) >> 1;
+	s8.full -= ship->interract_radius.full;
+	if (s8.hi >= 0) {
+		s8.full -= planet->interract_radius.full;
+		if (s8.hi >= 0) return 0;		// no interaction 
+	}
+
+	DATA_Altitude.full = DATA_Distance.full = (PlanetDist * 10000);
+
+	DATA_PlanetCollision = 0;
+
+	DATA_CollisionFlags = 2;
+	
+	if (planet->flags & 0x80)		// Complex object
+	{
+		//if (F576 (p2, p3, rpos) == 0) { // first check collision
+		if (PlanetDist < 10) {
+			DATA_PlanetCollision = 1;
+			if (DATA_PlanetCollision == -1) {		// out of planet radius?
+				FUNC_000578(ship, planet); // collision damage
+				//return DATA_CollisionFlags;
+			}					// passes through planet collision...
+		}
+		else return DATA_CollisionFlags;
+	}
+	else {						// simple object
+		//eax = F577 (&s3, p2, p3, [s-0x38], [s-0x34], ..., p1); // radius collision check
+		//if (eax == 0) {
+			if (planet->index != ship->parent_index) {		// not current parent
+				FUNC_000578(ship, planet);  // collision damage
+				//return DATA_CollisionFlags;
+			}
+			DATA_PlanetCollision = 2;		// starport thing?
+		//}
+		//else return DATA_CollisionFlags;
+	}
+
+	// more stuff. Planet collision only?
+
+	DATA_CollisionFlags |= 2;
+	u32 s4 = abs(ship->velocity.x)+abs(ship->velocity.y)+abs(ship->velocity.z);
+	memcpy (&rpos2, &rpos, 6*4);
+	if (DATA_PlanetCollision == 1) {		// surface hit
+		FUNC_001658_Vec64Truncate(&rpos2, 0x1c);
+		rpos3.x = rpos2.x.low;
+		rpos3.y = rpos2.y.low;
+		rpos3.z = rpos2.z.low;
+		FUNC_001503(&rpos3.x, 0x7fffffff); 		// set magnitude
+	} else {
+		rpos3.x = fix31(rpos2.x.full);				// fix31 normalise
+		rpos3.y = fix31(rpos2.y.full);
+		rpos3.z = fix31(rpos2.z.full);
+	}	
+
+	u32 esi = ship->relMatrix._21 * rpos3.x + ship->relMatrix._22 * rpos3.y + ship->relMatrix._23 * rpos3.z; // Vec32Dot
+	if (s4 <= 0x258 && ship->globalvars.landingState == 0xffff && esi >= 0x78000000/2) {
+		DATA_CollisionFlags |= 0x40;		// set landed
+		DATA_CollisionFlags &= 0x7f;		// clear collision
+		DATA_LandingCrash = 0;
+	}	
+	else DATA_LandingCrash = DATA_CrashMask;		// some sort of masking thing
+
+	Model_t *shipModel = GetModel (ship->model_num);
+	Model_t *planetModel = GetModel (planet->model_num);
+	if (DATA_PlanetCollision == 1) {
+		s64 s20 = ship->collision_radius.full - DATA_Altitude.full;
+		Point64 tdv;
+		tdv.x.full = rpos3.x * s20;
+		tdv.y.full = rpos3.y * s20;
+		tdv.z.full = rpos3.z * s20;
+
+        eax = tdv.z.full | -1;
+        if(tdv.x.full >= 0) {
+            eax = eax + 1;
+        }
+		tdv.x.hi = eax;
+        eax = eax | -1;
+        if(tdv.y.full >= 0) {
+            eax = eax + 1;
+        }
+		tdv.y.hi = eax;
+        eax = eax | -1;
+        if(tdv.z.full >= 0) {
+            eax = eax + 1;
+        }
+		tdv.z.hi = eax;
+
+		ship->rel_pos.x.full += tdv.x.full; // modify height by diff
+		ship->rel_pos.y.full += tdv.y.full;
+		ship->rel_pos.z.full += tdv.z.full;
+	} else {
+		eax = planetModel->interract_radius << 16;
+		u32 esi = planetModel->Scale + planetModel->Scale2;
+		u32 edx = esi - shipModel->Scale - shipModel->Scale2;
+		u32 s5 = shipModel->collision_radius << 16;
+		if (edx != 0) s5 >>= edx;
+		if ((eax += s5) < 0) { eax >>= 1; s3++; }
+		Point32 tv;
+		tv.x = rpos.x.low;
+		tv.y = rpos.y.low;
+		tv.z = rpos.z.low;
+		FUNC_001504(&tv.x, eax, s3);			// magnitude setter
+		eax = 0x20 - ((0x37 - esi) + 1);
+		ship->rel_pos.x.full = tv.x << eax;	// set height to radius
+		ship->rel_pos.y.full = tv.y << eax;
+		ship->rel_pos.z.full = tv.z << eax;
+	}
+
+	if (DATA_LandingCrash != 0) {		// collision, not landing
+		DATA_CollisionFlags |= 0x80;
+		if (ship->index == DATA_PlayerIndex)		// player object! Woo!
+		{
+			// bounce
+			ship->velocity.x = -ship->velocity.x >> 2;
+			ship->velocity.y = -ship->velocity.y >> 2;
+			ship->velocity.z = -ship->velocity.z >> 2;
+		}
+		else if (ship->model_num > 0xd && (ship->ship_type == 0xb || ship->ship_type == 0xe))
+		{
+			// bounce
+			ship->velocity.x = -ship->velocity.x >> 2;
+			ship->velocity.y = -ship->velocity.y >> 2;
+			ship->velocity.z = -ship->velocity.z >> 2;
+		}
+	}
+	else {
+		// reorientate
+	}
+	if (planet->interract_radius.full != planet->collision_radius.full) DATA_CollisionFlags |= 1;
+	if (DATA_CollisionObjIndex == 0) {
+		DATA_CollisionObjIndex = planet->index;
+		DATA_ParentObjPtr = planet;
+	}
+	return DATA_CollisionFlags;
 }
 
 extern "C" void C_PlaceStation (ModelInstance_t *starport, int lat, int lon, InstanseList_t* objectList)
@@ -118,11 +298,6 @@ unsigned int C_FUNC_001824_Random(unsigned int A8)
 
     edx = ((A8 >> 27) | (A8 << 5)) + A8;
     return A8 + ((edx >> 16) | (edx << 16));
-}
-
-
-int fix31 (__int64 in) {
-	return (int)(in >> 31);
 }
 
 // Multiple with normalize

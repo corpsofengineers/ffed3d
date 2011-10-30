@@ -10,6 +10,26 @@ typedef unsigned __int16 u16;
 typedef unsigned __int32 u32;
 typedef unsigned __int64 u64;
 
+struct _s64 {
+	union {
+		struct {
+			s32 low;
+			s32 hi;
+		};
+		s64 full;
+	};
+};
+
+struct _u64 {
+	union {
+		struct {
+			u32 low;	// primary collision radius
+			u32 hi;
+		};
+		u64 full;
+	};
+};
+
 struct ffeRGB {
 	u8 r, g, b;
 };
@@ -21,9 +41,9 @@ struct ffeMatrix3x3 {
 };
 
 struct Point64 {
-	s64 x;
-	s64 y;
-	s64 z;
+	_s64 x;
+	_s64 y;
+	_s64 z;
 };
 
 struct Point32 {
@@ -207,20 +227,8 @@ struct ModelInstance_t {
 	u32 fuel_tank;				// fuel tank - 0x20000000 = 1t
 	u8 field_122[2];			// 2 dup(?)
 	u8 name[20];				// 20 bytes
-	union {
-		struct {
-			s32 interract_radius_low;	// interaction radius
-			s32 interract_radius_hi;
-		};
-		s64 interract_radius;
-	};
-	union {
-		struct {
-			s32 collision_radius_low;	// primary collision radius
-			s32 collision_radius_hi;
-		};
-		s64 collision_radius;
-	};
+	_s64 interract_radius;
+	_s64 collision_radius;
 	u32 physics_timeout;		// physics timeout
 	u8 flags;					// flags
 	u8 FOR_timeout;				// FOR update timeout

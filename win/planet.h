@@ -171,6 +171,7 @@ extern "C" int FUNC_001839(int, int, int, int, int);
 extern "C" int FUNC_001467(int);
 extern "C" int FUNC_001521(int, int);
 extern "C" int FUNC_001656_FindMSB(int);
+unsigned int C_FUNC_001656_FindMSB(unsigned int);
 extern "C" void FUNC_001479(int *, int *);
 extern "C" int FUNC_001824(int);
 extern "C" int FUNC_001842(void);

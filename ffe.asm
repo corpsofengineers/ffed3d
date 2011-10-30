@@ -569,6 +569,7 @@ GLOBAL FUNC_000574
 GLOBAL FUNC_000575
 GLOBAL FUNC_000576
 GLOBAL FUNC_000577
+GLOBAL _FUNC_000578
 GLOBAL FUNC_000578
 GLOBAL FUNC_000579
 GLOBAL FUNC_000580
@@ -1128,6 +1129,7 @@ GLOBAL FUNC_001331_DPalSet
 GLOBAL FUNC_001332_Int64Abs
 GLOBAL FUNC_001333_Int64Add64
 GLOBAL FUNC_001334_Int64Add32
+GLOBAL _FUNC_001335_Int64Sub64
 GLOBAL FUNC_001335_Int64Sub64
 GLOBAL FUNC_001336_Int64Sub32
 GLOBAL FUNC_001337_Int64Mul64
@@ -1294,7 +1296,9 @@ GLOBAL FUNC_001499
 GLOBAL FUNC_001500
 GLOBAL FUNC_001501
 GLOBAL FUNC_001502
+GLOBAL _FUNC_001503
 GLOBAL FUNC_001503
+GLOBAL _FUNC_001504
 GLOBAL FUNC_001504
 GLOBAL FUNC_001505
 GLOBAL FUNC_001506
@@ -1449,6 +1453,7 @@ GLOBAL FUNC_001654
 GLOBAL FUNC_001655_setupkeyhandler
 GLOBAL FUNC_001656_FindMSB
 GLOBAL FUNC_001657_Vec64FindMSB
+GLOBAL _FUNC_001658_Vec64Truncate
 GLOBAL FUNC_001658_Vec64Truncate
 GLOBAL FUNC_001659
 GLOBAL FUNC_001660_Vec64Shift
@@ -2064,6 +2069,7 @@ EXTERN _CfgGetKeyVal
 EXTERN _BlitClipWrapper
 
 ; MODIFIED - added C functions
+EXTERN _CheckCollision
 EXTERN _DoShipDamage
 ;EXTERN _DebugBreak
 EXTERN _DoSpawnCargo
@@ -37106,7 +37112,8 @@ FUNC_000570:			; Pos = 27498
 		push ebx
 		lea eax,[ebp-0x20]
 		push eax
-		call FUNC_000575
+		;call FUNC_000575
+		call _CheckCollision
 		add esp,byte +0xc
 		mov [ebp-0x1],al
 
@@ -37224,7 +37231,8 @@ FUNC_000570:			; Pos = 27498
 		push ebx
 		lea eax,[ebp-0x20]
 		push eax
-		call FUNC_000575
+		;call FUNC_000575
+		call _CheckCollision
 		add esp,byte +0xc
 	JUMP_002398:			; Pos = 27662
 		dec edi
@@ -37441,7 +37449,8 @@ FUNC_000574:			; Pos = 27824
 		push eax
 		mov eax,[ebp+0xc]
 		push eax
-		call FUNC_000575
+		;call FUNC_000575
+		call _CheckCollision
 		add esp,byte +0xc
 		cmp dword [DATA_008704],byte +0x0
 		jnz JUMP_002402
@@ -38464,7 +38473,7 @@ FUNC_000577:			; Pos = 28244
 		ret
 
 
-
+_FUNC_000578:
 FUNC_000578:			; Pos = 283b0
 
 		push ebp
@@ -85625,7 +85634,7 @@ FUNC_001334_Int64Add32:			; Pos = 4eb67
 
 
 ; void F1335 (int64 *rval, int64 op1, int64 op2)
-
+_FUNC_001335_Int64Sub64:
 FUNC_001335_Int64Sub64:			; Pos = 4eb80
 
 		push ebp
@@ -91887,7 +91896,7 @@ FUNC_001502:			; Pos = 52e37
 		ret
 
 
-
+_FUNC_001503:
 FUNC_001503:			; Pos = 52ec2
 
 		push ebp
@@ -91918,7 +91927,7 @@ FUNC_001503:			; Pos = 52ec2
 		ret
 
 
-
+_FUNC_001504
 FUNC_001504:			; Pos = 52efe
 
 		push ebp
@@ -103018,7 +103027,7 @@ FUNC_001657_Vec64FindMSB:			; Pos = 59d38
 		ret
 
 
-
+_FUNC_001658_Vec64Truncate:
 FUNC_001658_Vec64Truncate:			; Pos = 59e08
 
 		push ebp

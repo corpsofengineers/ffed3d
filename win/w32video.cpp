@@ -1085,6 +1085,8 @@ int inline GetDist(float x, float y, float z)
 	return sqrt(x * x + y * y + z * z);
 }
 
+s32 PlanetDist = 10000000;
+
 void DrawChunk(float xoff, float yoff, float width, float div, float mindist, int onlyside, int m, int currModIndex)
 {
 	float type;
@@ -1140,6 +1142,10 @@ void DrawChunk(float xoff, float yoff, float width, float div, float mindist, in
 				D3DXVec3TransformCoord(&r,&r,&modelList[m].scaleMat);
 				D3DXVec3TransformCoord(&r,&r,&modelList[m].world);
 
+				float dist = GetDist(r.x, r.y, r.z);
+
+				PlanetDist = MIN(PlanetDist, dist);
+
 				bool out;
 				// check frustum
 				for (int f = 0; f < 6; f++ )
@@ -1153,8 +1159,6 @@ void DrawChunk(float xoff, float yoff, float width, float div, float mindist, in
 				}
 
 				if (out) continue;
-
-				float dist = GetDist(r.x, r.y, r.z);
 
 				if (div < 16384 && dist < mindist) {
 					DrawChunk(x_off, y_off, width * 0.5f, div * 2.0f, mindist * 0.5f, i, m, currModIndex);
@@ -1197,6 +1201,8 @@ void DrawGeosphere(int m, int currModIndex)
 
 	effectList[currModIndex]->Begin(&pass,0);
 
+	PlanetDist = 10000000;
+	
 	if (modelList[m].scale > 5)
 	{
 		DrawChunk(-1.0f, -1.0f, 1.0f, 1.0f, 40000.0f, -1, m, currModIndex);
