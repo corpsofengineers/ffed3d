@@ -474,18 +474,17 @@ extern "C" ModelInstance_t *AIShipSpawn(u8 object_type)
 
 extern "C" ModelInstance_t *WingmanShipSpawn (u8 leader,  u32 modelNum)
 {
-	ModelInstance_t* ship = CreateShip (&DATA_DummyInstance, 0xc, modelNum);
+	ModelInstance_t *leadShip = GetInstance (leader, DATA_ObjectArray);
+	ModelInstance_t* ship = CreateShip (leadShip, 0xc, modelNum);
 
 	if (ship == NULL)
 		return NULL;
 
 	ship->dest_index = leader;
-	ship->ai_mode = AI_FORMATION;
 	ship->target_index = 0; //надо будет покурить потом
+	ship->ai_mode = AI_FORMATION;
 
 	//выбираем место для создания объедка
-
-	ModelInstance_t *leadShip = GetInstance (leader, DATA_ObjectArray);
 
 	if (leadShip->ai_mode == AI_DOCKED_OR_LANDED)
 	{
@@ -493,7 +492,7 @@ extern "C" ModelInstance_t *WingmanShipSpawn (u8 leader,  u32 modelNum)
 	} else //спауним в положении Delta
 	{
 		ship->thrust_power++;
-		ship->object_type = OBJTYPE_MERCENARY;
+		ship->object_type = 0xc;
 	}
 
 	ship->globalvars.equip |= EQUIP_TRACKING_DEVICE;
