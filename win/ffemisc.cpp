@@ -560,6 +560,12 @@ float HostileSnapAccum = 0.0;
 
 #define MAX_HOSTILE_DELAY 2863311530	// approx. 16 hours in gametics
 
+extern u8 wingmans [10];
+extern int wingmansId [10];
+int wingmanInRange [10];
+extern int wingmansCount;
+int attack = 0;
+
 extern "C" void SystemTick()
 {
 	u32 hostileSub;
@@ -580,6 +586,65 @@ extern "C" void SystemTick()
 		DATA_HostileTimer -= hostileSub;
 		HostileSnapAccum -= hostileSub;
 	}
+
+	int i= 0;
+	for (int index = 114; index > 0; index--)
+	{
+		if (DATA_ObjectArray->instances[index].globalvars.unique_Id == wingmansId[i])
+		{
+			wingmans[i] = index;
+
+			if (DATA_ObjectArray->instances[wingmans[i]].dist_cam <= 14)
+			{
+				wingmanInRange[i] = 1;
+			} else
+			{
+				wingmanInRange[i] = 0;
+			}
+
+			i++;
+		}
+
+		if (i >= wingmansCount)
+			break;
+	}
+
+	if (attack == 0 && wingmansCount > 0)
+		for (int index = 114; index > 0; index--)
+		{
+			if (DATA_ObjectArray->instances[index].target_index == DATA_PlayerIndex && DATA_ObjectArray->instances[index].dist_cam <= 14)
+			{
+				attack = index;
+				break;
+			} else
+			{
+				attack = 0;
+			}
+		}
+
+if (wingmansCount > 0)
+	for (int wing = 0; wing < 10; wing++)
+	{
+		if (attack > 0&& wingmanInRange[wing] == 1)
+		{
+			DATA_ObjectArray->instances[wingmans[wing]].dest_index = attack;
+			DATA_ObjectArray->instances[wingmans[wing]].target_index = attack;
+			DATA_ObjectArray->instances[wingmans[wing]].ai_mode = AI_ATTACK_FORWARD;
+			FUNC_000048_BeginEvents(0x17, 0x0, DATA_ObjectArray->instances[wingmans[wing]].index);
+		}
+		
+		u8 target = DATA_ObjectArray->instances[wingmans[wing]].target_index;
+		
+			if (DATA_ObjectArray->instances[wingmans[wing]].target_index == 0 || DATA_ObjectArray->instances[wingmans[wing]].dist_cam > 14)
+		{
+			DATA_ObjectArray->instances[wingmans[wing]].dest_index = DATA_PlayerIndex;
+			DATA_ObjectArray->instances[wingmans[wing]].ai_mode = AI_FORMATION;
+			FUNC_000048_BeginEvents(0x17, 0x0, DATA_ObjectArray->instances[wingmans[wing]].index);
+			attack = 0;
+		}
+
+	}
+
 }
 
 extern "C" u32 GetNearbySystem(s8 bGetOpposing)
