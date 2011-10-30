@@ -563,7 +563,7 @@ float HostileSnapAccum = 0.0;
 bool IsWingman(u32 index)
 {
 	if ((DATA_ObjectArray->instances[index].globalvars.equip & EQUIP_TRACKING_DEVICE) && 
-		DATA_ObjectArray->instances[index].object_type == OBJTYPE_MERCENARY) return true;
+		DATA_ObjectArray->instances[index].object_type == 0xc) return true;
 	else return false;
 }
 
@@ -604,6 +604,7 @@ extern "C" void SystemTick()
 	}
 
 	u32 offset = 0;
+	u32 patrol_index = DATA_PlayerIndex;
 
 	for (int index = 1; index <= 96; index++)
 	{
@@ -616,15 +617,18 @@ extern "C" void SystemTick()
 
 			if (ship->dest_index == 0 || 
 				target->ai_mode > AI_MISSILE_EVASION || 
+				ship->ai_mode == AI_FORMATION || 
+				ship->ai_mode == AI_PATROL || 
 				ship->ai_mode == AI_BASIC || 
 				target->dist_cam > 14)
 			{
-				ship->dest_index = DATA_PlayerIndex;
-				ship->target_index = DATA_PlayerIndex;
-				ship->ai_mode = AI_FORMATION;
+				ship->dest_index = patrol_index;
+				patrol_index = index;
+				ship->target_index = 0;
+				ship->ai_mode = AI_PATROL;
 			}
 
-			if (DATA_ObjectArray->instances[index].ai_mode == AI_FORMATION)
+			if (DATA_ObjectArray->instances[index].ai_mode == AI_PATROL)
 			{
 				if (attack > 0) {
 					ship->dest_index = attack;
