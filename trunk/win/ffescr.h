@@ -57,12 +57,12 @@ public:
 
 	int callFunction (int argCount, int result);
 
+	void AddToLog (char* text);
 protected:
 	scriptSystem (void);
 	~scriptSystem (void);
 
 	void BuildScriptsTable (void);
-	void AddToLog (char* text);
 
 //VARIABLES
 public:

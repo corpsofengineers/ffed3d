@@ -463,6 +463,71 @@ extern "C" ModelInstance_t *AIShipSpawn(u8 object_type)
 	return CreateShip(&DATA_DummyInstance, object_type, modelNum);
 }
 
+//SpawnObjects
+
+//WindMans!
+
+u8 wingmans [10];
+int wingmansId [10];
+int wingmansCount = 0;
+
+extern "C" ModelInstance_t *WingmanShipSpawn (u8 leader,  u32 modelNum)
+{
+	if (wingmansCount >= 10)
+		return NULL;
+
+	ModelInstance_t* ship = CreateShip (&DATA_DummyInstance, 0xc, modelNum);
+
+	if (ship == NULL)
+		return NULL;
+
+	ship->dest_index = leader;
+	ship->ai_mode = AI_FORMATION;
+	ship->target_index = 0; //надо будет покурить потом
+
+	//выбираем место для создания объедка
+
+	ModelInstance_t *leadShip = GetInstance (leader, DATA_ObjectArray);
+
+	if (leadShip->ai_mode == AI_DOCKED_OR_LANDED)
+	{
+		//спауним в космопорте
+	} else //спауним в положении Delta
+	{
+		ship->thrust_power++;
+		ship->target_off_x = BoundRandom(2000) - 1000;
+		ship->target_off_y = BoundRandom(2000) - 1000;
+		ship->target_off_z = BoundRandom(2000) - 1000;
+		ship->object_type = OBJTYPE_MERCENARY;
+	}
+
+	wingmans[wingmansCount] = ship->index;
+	wingmansId[wingmansCount] = ship->globalvars.unique_Id;
+	wingmansCount++;
+
+	FUNC_000048_BeginEvents(0x17, 0x0, ship->index);
+	return ship;
+}
+
+extern "C" ModelInstance_t *SpawnEnemy (u32 modelNum, u8 target)
+{
+	ModelInstance_t* ship = CreateShip (&DATA_DummyInstance, 0xa, modelNum);
+
+	if (ship == NULL)
+		return NULL;
+
+	ship->dest_index = target;
+	FUNC_000702_GeneratePosition(ship, 0x315000);
+	ship->ai_mode = AI_PIRATE_PREPARE;
+	ship->target_index = target;
+	ship->thrust_power++;
+	ship->object_type = OBJTYPE_PIRATE;
+
+	FUNC_000048_BeginEvents(0x17, 0x0, ship->index);
+	return ship;
+}
+
+
 // do damage.  
 extern "C" u32 DoShipDamage(ModelInstance_t *ship, u32 damage, u32 src_index, u8 bContinuous)
 {
