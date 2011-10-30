@@ -162,13 +162,13 @@ void InitInstance(ModelInstance_t *new_instance, ModelInstance_t *old_instance, 
 
 		u32 scale = (model->Scale + model->Scale2 + 7);
 
-		new_instance->interract_radius = model->interract_radius;
-		FUNC_001341_Int64ArithShift(&new_instance->interract_radius, scale - 0xf);
-		new_instance->interract_radius_hi = model->interract_radius >> 0x1f;
+		new_instance->interract_radius.full = model->interract_radius;
+		FUNC_001341_Int64ArithShift(&new_instance->interract_radius.full, scale - 0xf);
+		new_instance->interract_radius.hi = model->interract_radius >> 0x1f;
 
-		new_instance->collision_radius = model->collision_radius;
-		FUNC_001341_Int64ArithShift(&new_instance->collision_radius, scale - 0xf);
-		new_instance->collision_radius_hi = model->collision_radius >> 0x1f;
+		new_instance->collision_radius.full = model->collision_radius;
+		FUNC_001341_Int64ArithShift(&new_instance->collision_radius.full, scale - 0xf);
+		new_instance->collision_radius.hi = model->collision_radius >> 0x1f;
 
 		new_instance->laser_flags = 0;
 		new_instance->uchar_25 = 0;
@@ -467,7 +467,6 @@ extern "C" ModelInstance_t *AIShipSpawn(u8 object_type)
 
 //WindMans!
 
-u8 wingmans [10];
 int wingmansId [10];
 int wingmansCount = 0;
 
@@ -501,7 +500,6 @@ extern "C" ModelInstance_t *WingmanShipSpawn (u8 leader,  u32 modelNum)
 		ship->object_type = OBJTYPE_MERCENARY;
 	}
 
-	wingmans[wingmansCount] = ship->index;
 	wingmansId[wingmansCount] = ship->globalvars.unique_Id;
 	wingmansCount++;
 
@@ -978,6 +976,8 @@ extern "C" void RegenerateShields(ModelInstance_t *ship)
 	ShipDef_t *ship_def;
 
 	ship_def = GetModel(ship->model_num)->Shipdef_ptr;
+
+	if (!ship_def) return;
 
 	shipIdx = ship->index;
 	shields = ship->globalvars.shields;

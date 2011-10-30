@@ -6108,9 +6108,9 @@ D3DXVECTOR4 GetStarLightColor()
 			break;
     }
 
-	playerLightPos.x=-(float)((double)(plptr->pos.x)/DIVIDER);
-	playerLightPos.y=-(float)((double)(plptr->pos.y)/DIVIDER);
-	playerLightPos.z=-(float)((double)(plptr->pos.z)/DIVIDER);
+	playerLightPos.x=-(float)((double)(plptr->pos.x.full)/DIVIDER);
+	playerLightPos.y=-(float)((double)(plptr->pos.y.full)/DIVIDER);
+	playerLightPos.z=-(float)((double)(plptr->pos.z.full)/DIVIDER);
 
 	D3DXVec3Normalize(&playerLightPos, &playerLightPos);
 	playerLightPos.x*=1000000;

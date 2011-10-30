@@ -1,4 +1,13 @@
 
+GLOBAL _DATA_ParentObjPtr
+GLOBAL _DATA_CollisionObjIndex
+GLOBAL _DATA_Distance
+GLOBAL _DATA_Altitude
+GLOBAL _DATA_CollisionFlags
+GLOBAL _DATA_CollisionFlags2
+GLOBAL _DATA_LandingCrash
+GLOBAL _DATA_CrashMask
+GLOBAL _DATA_PlanetCollision
 GLOBAL _DATA_ShipLaserCapacity
 GLOBAL _DATA_DriveCargoFuel
 GLOBAL _DATA_DriveCargoFuel2
@@ -28428,28 +28437,37 @@ DATA_008694:	; Number of Services hot areas
 	resb 4
 DATA_008695:	; Services hot area list
 	resb 372
+_DATA_CollisionFlags
 DATA_008696:
 	resb 1
+_DATA_CollisionFlags2
 DATA_008697:
 	resb 1
+_DATA_CollisionObjIndex
 DATA_008698:
 	resb 1
+_DATA_LandingCrash
 DATA_008699:
 	resb 1
+_DATA_CrashMask
 DATA_008700:
 	resb 1
 DATA_008701:
 	resb 3
+_DATA_ParentObjPtr
 DATA_008702:
 	resb 4
+_DATA_Distance
 DATA_008703:
 	resb 4
 DATA_008704:
 	resb 4
+_DATA_Altitude
 DATA_008705:
 	resb 4
 DATA_008706:
 	resb 4
+_DATA_PlanetCollision:
 DATA_008707:
 	resb 4
 DATA_008708:		; Upwards Vec32 for roll correction

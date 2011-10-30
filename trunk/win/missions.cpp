@@ -1108,15 +1108,15 @@ extern "C" void DoNukeDamage(ModelInstance_t *base)
 
 			if (expDist < 16 && obj->model_num >= 4 && obj->model_num <= 0x47)
 			{
-				temp = (base->rel_pos.x - obj->rel_pos.x) / KM_DIST;
+				temp = (base->rel_pos.x.full - obj->rel_pos.x.full) / KM_DIST;
 				temp *= temp;
 				dist = temp;
 
-				temp = (base->rel_pos.y - obj->rel_pos.y) / KM_DIST;
+				temp = (base->rel_pos.y.full - obj->rel_pos.y.full) / KM_DIST;
 				temp *= temp;
 				dist += temp;
 
-				temp = (base->rel_pos.z - obj->rel_pos.z) / KM_DIST;
+				temp = (base->rel_pos.z.full - obj->rel_pos.z.full) / KM_DIST;
 				temp *= temp;
 				dist += temp;
 
