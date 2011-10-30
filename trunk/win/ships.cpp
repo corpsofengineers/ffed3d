@@ -222,7 +222,7 @@ ModelInstance_t *CreateObject(ModelInstance_t *ship_instance, u8 state, u32 mode
 	}
 
 	if (index > 94) { // 20 reserved
-		for(index = 0; index <= 94; index++) {
+		for(index = 1; index <= 94; index++) {
 			if (!(DATA_ObjectArray->state_flags[index] & 0x20)) {
 				DATA_NumObjects--;
 				break;
