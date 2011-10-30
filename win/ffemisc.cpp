@@ -560,6 +560,7 @@ float HostileSnapAccum = 0.0;
 
 #define MAX_HOSTILE_DELAY 2863311530	// approx. 16 hours in gametics
 
+extern char *C_DrawText (char *pStr, int xpos, int ypos, int col, bool shadow, int ymin, int ymax, int height);
 bool IsWingman(u32 index)
 {
 	if ((DATA_ObjectArray->instances[index].globalvars.equip & EQUIP_TRACKING_DEVICE) && 
@@ -570,6 +571,7 @@ bool IsWingman(u32 index)
 extern "C" void SystemTick()
 {
 	u32 hostileSub;
+	char text[50];
 
 	if (DATA_PlayerState == 0x2a || DATA_PlayerState == 0x30)
 		return;
@@ -594,7 +596,9 @@ extern "C" void SystemTick()
 	{
 		if (IsWingman(index) == false && 
 			(DATA_ObjectArray->instances[index].dest_index == DATA_PlayerIndex || 
-			DATA_ObjectArray->instances[index].target_index == DATA_PlayerIndex) && 
+			DATA_ObjectArray->instances[index].target_index == DATA_PlayerIndex || 
+			IsWingman(DATA_ObjectArray->instances[index].dest_index) || 
+			IsWingman(DATA_ObjectArray->instances[index].target_index)) && 
 			DATA_ObjectArray->instances[index].ai_mode <= AI_MISSILE_EVASION && 
 			DATA_ObjectArray->instances[index].dist_cam <= 14)
 		{
@@ -605,6 +609,7 @@ extern "C" void SystemTick()
 
 	u32 offset = 0;
 	u32 patrol_index = DATA_PlayerIndex;
+	u32 textyoff = 20;
 
 	for (int index = 1; index <= 96; index++)
 	{
@@ -614,6 +619,16 @@ extern "C" void SystemTick()
 
 			ModelInstance_t* ship = &DATA_ObjectArray->instances[index];
 			ModelInstance_t* target = &DATA_ObjectArray->instances[ship->dest_index];
+
+			if (textyoff < 150) {
+				text[0]=0;
+				u32 hull = ship->mass_x4 / ((float)(GetModel(ship->model_num)->Shipdef_ptr->Mass*4)*0.01);
+				sprintf(text, "(%d%%) %s", hull, ship->name);
+				//memcpy(&text[7], ship->name, 20);
+				C_DrawText (text, 3, textyoff+1, 0, true, -1, -1, -1);
+				C_DrawText (text, 2, textyoff, 0x11, false, -1, -1, -1);
+				textyoff += 6;
+			}
 
 			if (ship->dest_index == 0 || 
 				target->ai_mode > AI_MISSILE_EVASION || 
