@@ -207,25 +207,30 @@ ModelInstance_t *CreateObject(ModelInstance_t *ship_instance, u8 state, u32 mode
 {
 	u8 index;
 
- 	for(index = 114; index > 0; index--) {
+ 	for(index = 0; index <= 94; index++) {
         if (DATA_ObjectArray->state_flags[index] == 0)
 			break;
     }
-	if (index < 20) { // 20 reserved
-		return NULL;
-		//for(index = 114; index > 0; index--) {
-		//	if (!(DATA_ObjectArray->state_flags[index] & 0x20)) {
-		//		if(index >= 20) {
-		//			DATA_NumObjects--;
-		//			break;
-		//		} else {
-		//			return NULL;
-		//		}
-		//	}
-		//}
+
+	if (index > 94) { // 20 reserved
+		for(index = 0; index <= 94; index++) {
+			if (DATA_ObjectArray->state_flags[index] & 0x41) { // smoke
+				DATA_NumObjects--;
+				break;
+			}
+		}
 	}
 
-	if (index > 0) {
+	if (index > 94) { // 20 reserved
+		for(index = 0; index <= 94; index++) {
+			if (!(DATA_ObjectArray->state_flags[index] & 0x20)) {
+				DATA_NumObjects--;
+				break;
+			}
+		}
+	}
+
+	if (index <= 94) {
         DATA_ObjectArray->state_flags[index] = state;
         if(!(state & 0x20)) {
             DATA_NumObjects++;
