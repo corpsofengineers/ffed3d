@@ -562,7 +562,8 @@ float HostileSnapAccum = 0.0;
 
 bool IsWingman(u32 index)
 {
-	if (DATA_ObjectArray->instances[index].globalvars.equip & EQUIP_TRACKING_DEVICE) return true;
+	if ((DATA_ObjectArray->instances[index].globalvars.equip & EQUIP_TRACKING_DEVICE) && 
+		DATA_ObjectArray->instances[index].object_type == OBJTYPE_MERCENARY) return true;
 	else return false;
 }
 
@@ -589,7 +590,7 @@ extern "C" void SystemTick()
 
 	u32 attack = 0;
 
-	for (int index = 114; index > 0; index--)
+	for (int index = 1; index <= 96; index++)
 	{
 		if (IsWingman(index) == false && 
 			(DATA_ObjectArray->instances[index].dest_index == DATA_PlayerIndex || 
@@ -602,29 +603,42 @@ extern "C" void SystemTick()
 		}
 	}
 
-	for (int index = 114; index > 0; index--)
+	u32 offset = 0;
+
+	for (int index = 1; index <= 96; index++)
 	{
 		if (IsWingman(index)) { 
 
-			u8 target = DATA_ObjectArray->instances[index].dest_index;
-		
-			if (DATA_ObjectArray->instances[index].dest_index == 0 || 
-				DATA_ObjectArray->instances[target].ai_mode > AI_MISSILE_EVASION || 
-				DATA_ObjectArray->instances[target].dest_index != DATA_PlayerIndex || 
-				DATA_ObjectArray->instances[target].dist_cam > 14)
+			offset += 300;
+
+			ModelInstance_t* ship = &DATA_ObjectArray->instances[index];
+			ModelInstance_t* target = &DATA_ObjectArray->instances[ship->dest_index];
+
+			if (ship->dest_index == 0 || 
+				target->ai_mode > AI_MISSILE_EVASION || 
+				ship->ai_mode == AI_BASIC || 
+				target->dist_cam > 14)
 			{
-				DATA_ObjectArray->instances[index].dest_index = DATA_PlayerIndex;
-				DATA_ObjectArray->instances[index].target_index = 0;
-				DATA_ObjectArray->instances[index].ai_mode = AI_FORMATION;
+				ship->dest_index = DATA_PlayerIndex;
+				ship->target_index = DATA_PlayerIndex;
+				ship->ai_mode = AI_FORMATION;
 			}
 
-			if (attack > 0 && DATA_ObjectArray->instances[index].ai_mode == AI_FORMATION)
+			if (DATA_ObjectArray->instances[index].ai_mode == AI_FORMATION)
 			{
-				DATA_ObjectArray->instances[index].dest_index = attack;
-				DATA_ObjectArray->instances[index].target_index = attack;
-				DATA_ObjectArray->instances[index].ai_mode = AI_ATTACK_FIRING;
+				if (attack > 0) {
+					ship->dest_index = attack;
+					ship->target_index = attack;
+					ship->ai_mode = AI_PIRATE_INTERCEPT;
+					ship->target_off_x = 0;
+					ship->target_off_y = 0;
+					ship->target_off_z = 0;
+				} else {
+					ship->target_off_x = offset;
+					ship->target_off_y = offset;
+					ship->target_off_z = offset;
+				}
 			}
-
 		}
 	}
 

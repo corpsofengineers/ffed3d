@@ -207,13 +207,13 @@ ModelInstance_t *CreateObject(ModelInstance_t *ship_instance, u8 state, u32 mode
 {
 	u8 index;
 
- 	for(index = 0; index <= 94; index++) {
+ 	for(index = 1; index <= 94; index++) {
         if (DATA_ObjectArray->state_flags[index] == 0)
 			break;
     }
 
 	if (index > 94) { // 20 reserved
-		for(index = 0; index <= 94; index++) {
+		for(index = 1; index <= 94; index++) {
 			if (DATA_ObjectArray->state_flags[index] & 0x41) { // smoke
 				DATA_NumObjects--;
 				break;
@@ -493,9 +493,6 @@ extern "C" ModelInstance_t *WingmanShipSpawn (u8 leader,  u32 modelNum)
 	} else //спауним в положении Delta
 	{
 		ship->thrust_power++;
-		ship->target_off_x = BoundRandom(2000) - 1000;
-		ship->target_off_y = BoundRandom(2000) - 1000;
-		ship->target_off_z = BoundRandom(2000) - 1000;
 		ship->object_type = OBJTYPE_MERCENARY;
 	}
 

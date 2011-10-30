@@ -71531,6 +71531,11 @@ FUNC_000931:			; Pos = 3d05c Laser Fire function?
 		push edi
 		mov esi,[ebp+0xc]
 		mov ebx,[ebp+0x8]
+
+		mov eax,[ebx+0x82]
+		cmp eax, 158		; smoke
+		jz JUMP_003909
+
 		mov al,[ebx+esi+0xd2]
 		test al,al
 		jz near JUMP_003909
