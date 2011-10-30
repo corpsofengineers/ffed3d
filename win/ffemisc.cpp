@@ -560,32 +560,10 @@ float HostileSnapAccum = 0.0;
 
 #define MAX_HOSTILE_DELAY 2863311530	// approx. 16 hours in gametics
 
-extern int wingmansId [10];
-extern int wingmansCount;
-int attack = 0;
-
-u32 GetWingmanByID(u32 id)
-{
-	for (int index = 114; index > 0; index--)
-	{
-		if (DATA_ObjectArray->instances[index].globalvars.unique_Id == wingmansId[id])
-			return index;
-	}
-	wingmansId[id] = 0;
-	wingmansCount--;
-	return -1;
-}
-
 bool IsWingman(u32 index)
 {
-	if (wingmansCount > 0) {
-		for (int wing = 0; wing < 10; wing++)
-		{
-			if (wingmansId[wing] == 0) continue;
-			if (GetWingmanByID(wing) == index) return true;
-		}
-	} 
-	return false;
+	if (DATA_ObjectArray->instances[index].globalvars.equip & EQUIP_TRACKING_DEVICE) return true;
+	else return false;
 }
 
 extern "C" void SystemTick()
@@ -609,52 +587,45 @@ extern "C" void SystemTick()
 		HostileSnapAccum -= hostileSub;
 	}
 
-	attack = 0;
+	u32 attack = 0;
 
-	if (wingmansCount > 0)
-		for (int index = 114; index > 0; index--)
-		{
-			if (IsWingman(index) == false && 
-				(DATA_ObjectArray->instances[index].dest_index == DATA_PlayerIndex || 
-				DATA_ObjectArray->instances[index].target_index == DATA_PlayerIndex) && 
-				DATA_ObjectArray->instances[index].ai_mode <= AI_MISSILE_EVASION && 
-				DATA_ObjectArray->instances[index].dist_cam <= 14)
-			{
-				attack = index;
-				break;
-			} else
-			{
-				attack = 0;
-			}
-		}
-
-if (wingmansCount > 0)
-	for (int wing = 0; wing < wingmansCount; wing++)
+	for (int index = 114; index > 0; index--)
 	{
-		if (wingmansId[wing] == 0) continue;
+		if (IsWingman(index) == false && 
+			(DATA_ObjectArray->instances[index].dest_index == DATA_PlayerIndex || 
+			DATA_ObjectArray->instances[index].target_index == DATA_PlayerIndex) && 
+			DATA_ObjectArray->instances[index].ai_mode <= AI_MISSILE_EVASION && 
+			DATA_ObjectArray->instances[index].dist_cam <= 14)
+		{
+			attack = index;
+			break;
+		}
+	}
 
-		u32 winindex = GetWingmanByID(wing);
+	for (int index = 114; index > 0; index--)
+	{
+		if (IsWingman(index)) { 
 
-		u8 target = DATA_ObjectArray->instances[winindex].dest_index;
+			u8 target = DATA_ObjectArray->instances[index].dest_index;
 		
-		if (DATA_ObjectArray->instances[winindex].dest_index == 0 || 
-			DATA_ObjectArray->instances[target].ai_mode > AI_MISSILE_EVASION || 
-			DATA_ObjectArray->instances[target].dist_cam > 14)
-		{
-			DATA_ObjectArray->instances[winindex].dest_index = DATA_PlayerIndex;
-			DATA_ObjectArray->instances[winindex].target_index = 0;
-			DATA_ObjectArray->instances[winindex].ai_mode = AI_FORMATION;
-			//FUNC_000048_BeginEvents(0x17, 0x0, DATA_ObjectArray->instances[wingmans[wing]].index);
-		}
+			if (DATA_ObjectArray->instances[index].dest_index == 0 || 
+				DATA_ObjectArray->instances[target].ai_mode > AI_MISSILE_EVASION || 
+				DATA_ObjectArray->instances[target].dest_index != DATA_PlayerIndex || 
+				DATA_ObjectArray->instances[target].dist_cam > 14)
+			{
+				DATA_ObjectArray->instances[index].dest_index = DATA_PlayerIndex;
+				DATA_ObjectArray->instances[index].target_index = 0;
+				DATA_ObjectArray->instances[index].ai_mode = AI_FORMATION;
+			}
 
-		if (attack > 0 && DATA_ObjectArray->instances[winindex].ai_mode == AI_FORMATION)
-		{
-			DATA_ObjectArray->instances[winindex].dest_index = attack;
-			DATA_ObjectArray->instances[winindex].target_index = attack;
-			DATA_ObjectArray->instances[winindex].ai_mode = AI_ATTACK_FIRING;
-			//FUNC_000048_BeginEvents(0x17, 0x0, DATA_ObjectArray->instances[wingmans[wing]].index);
-		}
+			if (attack > 0 && DATA_ObjectArray->instances[index].ai_mode == AI_FORMATION)
+			{
+				DATA_ObjectArray->instances[index].dest_index = attack;
+				DATA_ObjectArray->instances[index].target_index = attack;
+				DATA_ObjectArray->instances[index].ai_mode = AI_ATTACK_FIRING;
+			}
 
+		}
 	}
 
 }

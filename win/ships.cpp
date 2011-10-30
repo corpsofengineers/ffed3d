@@ -467,14 +467,8 @@ extern "C" ModelInstance_t *AIShipSpawn(u8 object_type)
 
 //WindMans!
 
-int wingmansId [10];
-int wingmansCount = 0;
-
 extern "C" ModelInstance_t *WingmanShipSpawn (u8 leader,  u32 modelNum)
 {
-	if (wingmansCount >= 10)
-		return NULL;
-
 	ModelInstance_t* ship = CreateShip (&DATA_DummyInstance, 0xc, modelNum);
 
 	if (ship == NULL)
@@ -500,8 +494,7 @@ extern "C" ModelInstance_t *WingmanShipSpawn (u8 leader,  u32 modelNum)
 		ship->object_type = OBJTYPE_MERCENARY;
 	}
 
-	wingmansId[wingmansCount] = ship->globalvars.unique_Id;
-	wingmansCount++;
+	ship->globalvars.equip |= EQUIP_TRACKING_DEVICE;
 
 	FUNC_000048_BeginEvents(0x17, 0x0, ship->index);
 	return ship;
