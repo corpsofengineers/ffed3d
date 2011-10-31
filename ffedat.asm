@@ -1,4 +1,6 @@
 
+GLOBAL _DATA_DestIndex
+GLOBAL _DATA_TargIndex
 GLOBAL _DATA_ParentObjPtr
 GLOBAL _DATA_CollisionObjIndex
 GLOBAL _DATA_Distance
@@ -28812,8 +28814,10 @@ DATA_008872:
 	resb 1
 DATA_008873:
 	resb 1
+_DATA_DestIndex
 DATA_008874:
 	resb 1
+_DATA_TargIndex
 DATA_008875:
 	resb 1
 DATA_008876:
