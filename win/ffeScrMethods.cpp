@@ -1,8 +1,8 @@
 #include "ffe3d.h"
 
 //decl
-extern "C" ModelInstance_t *WingmanShipSpawn (u8 leader,  u32 modelNum);
-extern "C" ModelInstance_t *SpawnEnemy (u32 modelNum, u8 target);
+extern ModelInstance_t *WingmanShipSpawn (u8 leader,  u32 modelNum);
+extern ModelInstance_t *SpawnEnemy (u32 modelNum, u8 target);
 
 int getPlayer (void);
 int getObject (void);

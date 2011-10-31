@@ -568,28 +568,65 @@ bool IsWingman(u32 index)
 	else return false;
 }
 
-extern "C" void SystemTick()
+extern WingmanList_t WingmanArray;
+
+void WingmanCommAuto (u32 wingId)
 {
-	u32 hostileSub;
+	u32 attack = 0;
+	u32 offset = 0;
+
+	for (int index = 1; index <= 96; index++)
+	{
+		if (IsWingman(index) == false && 
+			(DATA_ObjectArray->instances[index].dest_index == DATA_PlayerIndex || 
+			DATA_ObjectArray->instances[index].target_index == DATA_PlayerIndex || 
+			IsWingman(DATA_ObjectArray->instances[index].dest_index) || 
+			IsWingman(DATA_ObjectArray->instances[index].target_index)) && 
+			DATA_ObjectArray->instances[index].ai_mode <= AI_MISSILE_EVASION && 
+			DATA_ObjectArray->instances[index].dist_cam <= 14)
+		{
+			attack = index;
+			break;
+		}
+	}
+
+	u32 leader = DATA_PlayerIndex;
+	ModelInstance_t* ship = WingmanArray.instances[wingId].ship;
+	ModelInstance_t* target = &DATA_ObjectArray->instances[ship->dest_index];
+
+	if (ship->dest_index == 0 || 
+			target->ai_mode > AI_MISSILE_EVASION || 
+			ship->ai_mode == AI_FORMATION || 
+			ship->ai_mode == AI_PATROL || 
+			ship->ai_mode == AI_BASIC || 
+			target->dist_cam > 14)
+		{
+			ship->dest_index = leader;
+			//leader = index;
+			ship->target_index = 0;
+			ship->ai_mode = AI_PATROL;
+		}
+
+	if (attack > 0)
+	{
+		ship->dest_index = attack;
+		ship->target_index = attack;
+		ship->ai_mode = AI_PIRATE_INTERCEPT;
+		ship->target_off_x = 0;
+		ship->target_off_y = 0;
+		ship->target_off_z = 0;
+	} else
+	{
+		ship->target_off_x = offset;
+		ship->target_off_y = offset;
+		ship->target_off_z = offset;
+	}
+
+}
+
+/*void WingmanAiTick (void)
+{
 	char text[50];
-
-	if (DATA_PlayerState == 0x2a || DATA_PlayerState == 0x30)
-		return;
-
-	HostileSnapAccum += DATA_FrameTime*(65536.0/MAX_HOSTILE_DELAY);
-	hostileSub = (u32)HostileSnapAccum;
-
-	if (hostileSub > DATA_HostileTimer)
-	{
-		DATA_HostileTimer = 0;
-		HostileSnapAccum = 0.0;
-	}
-	else
-	{
-		DATA_HostileTimer -= hostileSub;
-		HostileSnapAccum -= hostileSub;
-	}
-
 	u32 attack = 0;
 
 	for (int index = 1; index <= 96; index++)
@@ -660,7 +697,57 @@ extern "C" void SystemTick()
 			}
 		}
 	}
+}*/
 
+extern "C" void SystemTick()
+{
+	u32 hostileSub;
+
+	if (DATA_PlayerState == 0x2a || DATA_PlayerState == 0x30)
+		return;
+
+	HostileSnapAccum += DATA_FrameTime*(65536.0/MAX_HOSTILE_DELAY);
+	hostileSub = (u32)HostileSnapAccum;
+
+	if (hostileSub > DATA_HostileTimer)
+	{
+		DATA_HostileTimer = 0;
+		HostileSnapAccum = 0.0;
+	}
+	else
+	{
+		DATA_HostileTimer -= hostileSub;
+		HostileSnapAccum -= hostileSub;
+	}
+
+	int i = 0;
+
+	if (WingmanArray.Count > 0)
+	{
+		for (int index = 0; index <= 96; index++)
+		{
+			if (IsWingman (index))
+			{
+				WingmanArray.instances[i].ship = &DATA_ObjectArray->instances[index];
+				i++;
+			}
+
+			if (i >= WingmanArray.Count)
+				break;
+		}
+
+		for (int index = 0; index < 9; index++)
+		{
+			switch (WingmanArray.instances[index].command)
+			{
+			case WINGCOM_AUTO:
+				{
+					WingmanCommAuto (index);
+					break;
+				}
+			}
+		}
+	}
 }
 
 extern "C" u32 GetNearbySystem(s8 bGetOpposing)

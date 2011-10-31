@@ -472,7 +472,9 @@ extern "C" ModelInstance_t *AIShipSpawn(u8 object_type)
 
 //WindMans!
 
-extern "C" ModelInstance_t *WingmanShipSpawn (u8 leader,  u32 modelNum)
+WingmanList_t WingmanArray;
+
+extern ModelInstance_t *WingmanShipSpawn (u8 leader,  u32 modelNum)
 {
 	ModelInstance_t *leadShip = GetInstance (leader, DATA_ObjectArray);
 	ModelInstance_t* ship = CreateShip (leadShip, 0xc, modelNum);
@@ -497,11 +499,15 @@ extern "C" ModelInstance_t *WingmanShipSpawn (u8 leader,  u32 modelNum)
 
 	ship->globalvars.equip |= EQUIP_TRACKING_DEVICE;
 
+	WingmanArray.Count++;
+	WingmanArray.instances[WingmanArray.Count-1].ship = ship;
+	WingmanArray.instances[WingmanArray.Count-1].command = WINGCOM_AUTO;
+
 	FUNC_000048_BeginEvents(0x17, 0x0, ship->index);
 	return ship;
 }
 
-extern "C" ModelInstance_t *SpawnEnemy (u32 modelNum, u8 target)
+extern ModelInstance_t *SpawnEnemy (u32 modelNum, u8 target)
 {
 	ModelInstance_t* ship = CreateShip (&DATA_DummyInstance, 0xa, modelNum);
 
