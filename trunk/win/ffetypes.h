@@ -238,6 +238,21 @@ struct ModelInstance_t {
 	u8 laser_flags;				// laser flags
 };
 
+//Windgmans Commands
+#define WINGCOM_AUTO 0x0       //AI mode
+#define WINGCOM_FOLLOW 0x1     //follow me
+#define WINGCOM_ATTACK 0x2     //Attack my target
+#define WINGCOM_HALT 0x3       //Halt
+#define WINGCOM_GO 0x4         //Go to the my target and wait
+#define WINGCOM_JUMP 0x5       //Jump with me
+#define WINGCOM_PATROL 0x6     //Partol the area
+#define WINGCOM_DOCK 0x7       //Dock with my target
+
+struct Wingman_t {				//wingmans struct
+	ModelInstance_t* ship;
+	u8 command;
+};
+
 struct DrawMdl_t {
 	Model_t* model3d;			// Pointer to actual 3D Model_t used
 	Point32 pos;				// actual center position
@@ -341,6 +356,12 @@ struct DrawMdl_t {
 struct InstanseList_t {
 	u8 state_flags[116];
 	ModelInstance_t instances[116];
+};
+
+struct WingmanList_t {
+	u8 Count;
+	u8 inStock;
+	Wingman_t instances[9];
 };
 
 //Equipment flags

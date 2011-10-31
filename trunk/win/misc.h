@@ -291,6 +291,7 @@ extern "C" u32 RandomB2S(u32 max, u32 *seed1, u32 *seed2);
 extern "C" u8 DATA_NameThingyByteTable[];
 extern "C" u32 DATA_GLobalEventCounter;
 extern "C" InstanseList_t* DATA_ObjectArray;
+//extern WingmanList_t WingmanArray;
 extern "C" Model_t **ffeModelList;
 extern "C" u32 (*DATA_RandomizerFunc)();	// randomizer
 extern "C" ModelInstance_t* DATA_PlayerObject;
