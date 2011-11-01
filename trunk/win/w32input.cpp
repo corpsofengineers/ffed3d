@@ -303,6 +303,7 @@ void printTyConsole (WPARAM key)
 }
 
 extern WingmanList_t WingmanArray;
+extern char *C_DrawText (char *pStr, int xpos, int ypos, int col, bool shadow, int ymin, int ymax, int height);
 
 void InputKeybReadStates (UCHAR *pKeys)
 {
@@ -367,14 +368,14 @@ void InputKeybReadStates (UCHAR *pKeys)
 extern "C" long InputKeybGetLastKey (void)
 {
 	//WINGMAN MENU
-	if (keybLastKey == pKeybConvTable[41] && !WingmanArray.showMenu)
+	if (keybLastKey == 41 && !WingmanArray.showMenu)
 	{
 		WingmanArray.showMenu++;
 		WingmanArray.menuState = 0;
 		WingmanArray.wingmanId = -1;
 	}
 	else
-		if (keybLastKey == pKeybConvTable[41] && WingmanArray.showMenu)
+		if (keybLastKey == 41 && WingmanArray.showMenu)
 		{
 			WingmanArray.showMenu--;
 			WingmanArray.menuState = 0;
@@ -490,6 +491,9 @@ extern "C" long InputKeybGetLastKey (void)
 			}
 		}
 	}
+	char text[50];
+	sprintf (text , "%i",keybLastKey);
+	C_DrawText (text, 2, 2, 0x11, false, -1, -1, -1);
 
 	return keybLastKey;
 }
@@ -546,7 +550,7 @@ void KeyBinds (CfgStruct *cfg)
 		bind = false;
 		notuse = false;
 	}
-	pKeybConvTable[41] = DIK_GRAVE;
+	//pKeybConvTable[41] = DIK_GRAVE;
 }
 
 void InputInit (void)
