@@ -10,9 +10,6 @@
 #include "Render/RenderSystem.h"
 #include "xmath.h"
 
-LPDIRECT3DTEXTURE9 heightmaps[100];
-float heightmapbuf[1024][1024];
-
 int fix31 (__int64 in) {
 	return (int)(in >> 31);
 }
@@ -38,6 +35,131 @@ void Vec64Truncate(Point64 *vec, u32 size)
 	//}
 }
 
+/*
+ * A function for creating a rotation matrix that rotates a vector called
+ * "from" into another vector called "to".
+ * Input : from[3], to[3] which both must be *normalized* non-zero vectors
+ * Output: mtx[3][3] -- a 3x3 matrix in column-major form
+ * Authors: Tomas Mueller, John Hughes
+ *          "Efficiently Building a Matrix to Rotate One Vector to Another"
+ *          Journal of Graphics Tools, 4(4):1-4, 1999
+ */
+
+void FromToRotation( const FLOAT from[3], const FLOAT to[3], FLOAT mtx[3][3])
+{
+
+#define EPSILON 0.000001
+
+#define CROSS(dest, v1, v2){                 \
+          dest[0] = v1[1] * v2[2] - v1[2] * v2[1]; \
+          dest[1] = v1[2] * v2[0] - v1[0] * v2[2]; \
+          dest[2] = v1[0] * v2[1] - v1[1] * v2[0];}
+
+#define DOT(v1, v2) (v1[0] * v2[0] + v1[1] * v2[1] + v1[2] * v2[2])
+
+#define SUB(dest, v1, v2){       \
+          dest[0] = v1[0] - v2[0]; \
+          dest[1] = v1[1] - v2[1]; \
+          dest[2] = v1[2] - v2[2];}
+
+  float c[3];
+  float e, h, f;
+
+  CROSS(c, from, to);
+  e = DOT(from, to);
+  f = (e < 0)? -e:e;
+  if (f > 1.0 - EPSILON)     /* "from" and "to"-vector almost parallel */
+  {
+    float u[3], v[3]; /* temporary storage vectors */
+    float x[3];       /* vector most nearly orthogonal to "from" */
+    float c1, c2, c3; /* coefficients for later use */
+    int i, j;
+
+    x[0] = (from[0] > 0.0)? from[0] : -from[0];
+    x[1] = (from[1] > 0.0)? from[1] : -from[1];
+    x[2] = (from[2] > 0.0)? from[2] : -from[2];
+
+    if (x[0] < x[1])
+    {
+      if (x[0] < x[2])
+      {
+        x[0] = 1.0; x[1] = x[2] = 0.0;
+      }
+      else
+      {
+        x[2] = 1.0; x[0] = x[1] = 0.0;
+      }
+    }
+    else
+    {
+      if (x[1] < x[2])
+      {
+        x[1] = 1.0; x[0] = x[2] = 0.0;
+      }
+      else
+      {
+        x[2] = 1.0; x[0] = x[1] = 0.0;
+      }
+    }
+
+    u[0] = x[0] - from[0]; u[1] = x[1] - from[1]; u[2] = x[2] - from[2];
+    v[0] = x[0] - to[0];   v[1] = x[1] - to[1];   v[2] = x[2] - to[2];
+
+    c1 = 2.0 / DOT(u, u);
+    c2 = 2.0 / DOT(v, v);
+    c3 = c1 * c2  * DOT(u, v);
+
+    for (i = 0; i < 3; i++) {
+      for (j = 0; j < 3; j++) {
+        mtx[i][j] =  - c1 * u[i] * u[j]
+        - c2 * v[i] * v[j]
+        + c3 * v[i] * u[j];
+      }
+      mtx[i][i] += 1.0;
+    }
+  }
+  else  /* the most common case, unless "from"="to", or "from"=-"to" */
+  {
+#if 1
+    /* unoptimized version - a good compiler will optimize this. */
+    /* h = (1.0 - e)/DOT(v, v); old code */
+    h = 1.0/(1.0 + e);      /* optimization by Gottfried Chen */
+    mtx[0][0] = e + h * c[0] * c[0];
+    mtx[0][1] = h * c[0] * c[1] - c[2];
+    mtx[0][2] = h * c[0] * c[2] + c[1];
+
+    mtx[1][0] = h * c[0] * c[1] + c[2];
+    mtx[1][1] = e + h * c[1] * c[1];
+    mtx[1][2] = h * c[1] * c[2] - c[0];
+
+    mtx[2][0] = h * c[0] * c[2] - c[1];
+    mtx[2][1] = h * c[1] * c[2] + c[0];
+    mtx[2][2] = e + h * c[2] * c[2];
+#else
+    /* ...otherwise use this hand optimized version (9 mults less) */
+    float hvx, hvz, hvxy, hvxz, hvyz;
+    /* h = (1.0 - e)/DOT(c, c); old code */
+    h = 1.0/(1.0 + e);      /* optimization by Gottfried Chen */
+    hvx = h * c[0];
+    hvz = h * c[2];
+    hvxy = hvx * c[1];
+    hvxz = hvx * c[2];
+    hvyz = hvz * c[1];
+    mtx[0][0] = e + hvx * c[0];
+    mtx[0][1] = hvxy - c[2];
+    mtx[0][2] = hvxz + c[1];
+
+    mtx[1][0] = hvxy + c[2];
+    mtx[1][1] = e + h * c[1] * c[1];
+    mtx[1][2] = hvyz - c[0];
+
+    mtx[2][0] = hvxz - c[1];
+    mtx[2][1] = hvyz + c[0];
+    mtx[2][2] = e + hvz * c[2];
+#endif
+  }
+}
+
 extern s32 PlanetDist;
 extern "C" u8 DATA_PlanetCollision;
 extern "C" u8 DATA_CollisionFlags;
@@ -46,157 +168,20 @@ extern "C" u8 DATA_LandingCrash;
 extern "C" u8 DATA_CrashMask;
 extern "C" _s64 DATA_Distance;
 extern "C" _s64 DATA_Altitude;
-extern "C" u8 DATA_CollisionObjIndex;
-extern "C" ModelInstance_t *DATA_ParentObjPtr;
-extern "C" void FUNC_001658_Vec64Truncate(Point64*, u32);
 
-extern "C" void FUNC_000578(ModelInstance_t *, ModelInstance_t *);
-extern "C" void FUNC_001503(s32*, u32);
-extern "C" void FUNC_001504(s32*, u32, u32);
-
-extern "C" int CheckCollision(Point64 *relpos, ModelInstance_t *ship, ModelInstance_t *planet)
+extern "C" int CheckCollision(ModelInstance_t *ship, ModelInstance_t *planet, Point64 *relpos)
 {
-	Point64 rpos, rpos2;
-	Point32 rpos3;
-	_s64 s8;
-	u32 eax;
-	u32 s3 = 0;
-
-	memcpy (&rpos, relpos, 6*4);		// save relpos
-	s8.full = (abs(relpos->x.full) + abs(relpos->y.full) + abs(relpos->z.full)) >> 1;
-	s8.full -= ship->interract_radius.full;
-	if (s8.hi >= 0) {
-		s8.full -= planet->interract_radius.full;
-		if (s8.hi >= 0) return 0;		// no interaction 
-	}
-
 	DATA_Altitude.full = DATA_Distance.full = (PlanetDist * 10000);
 
-	DATA_PlanetCollision = 0;
-
 	DATA_CollisionFlags = 2;
-	
-	if (planet->flags & 0x80)		// Complex object
-	{
-		//if (F576 (p2, p3, rpos) == 0) { // first check collision
-		if (PlanetDist < 10) {
-			DATA_PlanetCollision = 1;
-			if (DATA_PlanetCollision == -1) {		// out of planet radius?
-				FUNC_000578(ship, planet); // collision damage
-				//return DATA_CollisionFlags;
-			}					// passes through planet collision...
-		}
-		else return DATA_CollisionFlags;
-	}
-	else {						// simple object
-		//eax = F577 (&s3, p2, p3, [s-0x38], [s-0x34], ..., p1); // radius collision check
-		//if (eax == 0) {
-			if (planet->index != ship->parent_index) {		// not current parent
-				FUNC_000578(ship, planet);  // collision damage
-				//return DATA_CollisionFlags;
-			}
-			DATA_PlanetCollision = 2;		// starport thing?
-		//}
-		//else return DATA_CollisionFlags;
-	}
 
-	// more stuff. Planet collision only?
-
-	DATA_CollisionFlags |= 2;
-	u32 s4 = abs(ship->velocity.x)+abs(ship->velocity.y)+abs(ship->velocity.z);
-	memcpy (&rpos2, &rpos, 6*4);
-	if (DATA_PlanetCollision == 1) {		// surface hit
-		FUNC_001658_Vec64Truncate(&rpos2, 0x1c);
-		rpos3.x = rpos2.x.low;
-		rpos3.y = rpos2.y.low;
-		rpos3.z = rpos2.z.low;
-		FUNC_001503(&rpos3.x, 0x7fffffff); 		// set magnitude
+	if (DATA_Altitude.full <= ship->collision_radius.full*2) {
+		DATA_PlanetCollision = 1;
+		return 0;
 	} else {
-		rpos3.x = fix31(rpos2.x.full);				// fix31 normalise
-		rpos3.y = fix31(rpos2.y.full);
-		rpos3.z = fix31(rpos2.z.full);
-	}	
-
-	u32 esi = ship->relMatrix._21 * rpos3.x + ship->relMatrix._22 * rpos3.y + ship->relMatrix._23 * rpos3.z; // Vec32Dot
-	if (s4 <= 0x258 && ship->globalvars.landingState == 0xffff && esi >= 0x78000000/2) {
-		DATA_CollisionFlags |= 0x40;		// set landed
-		DATA_CollisionFlags &= 0x7f;		// clear collision
-		DATA_LandingCrash = 0;
-	}	
-	else DATA_LandingCrash = DATA_CrashMask;		// some sort of masking thing
-
-	Model_t *shipModel = GetModel (ship->model_num);
-	Model_t *planetModel = GetModel (planet->model_num);
-	if (DATA_PlanetCollision == 1) {
-		s64 s20 = ship->collision_radius.full - DATA_Altitude.full;
-		Point64 tdv;
-		tdv.x.full = rpos3.x * s20;
-		tdv.y.full = rpos3.y * s20;
-		tdv.z.full = rpos3.z * s20;
-
-        eax = tdv.z.full | -1;
-        if(tdv.x.full >= 0) {
-            eax = eax + 1;
-        }
-		tdv.x.hi = eax;
-        eax = eax | -1;
-        if(tdv.y.full >= 0) {
-            eax = eax + 1;
-        }
-		tdv.y.hi = eax;
-        eax = eax | -1;
-        if(tdv.z.full >= 0) {
-            eax = eax + 1;
-        }
-		tdv.z.hi = eax;
-
-		ship->rel_pos.x.full += tdv.x.full; // modify height by diff
-		ship->rel_pos.y.full += tdv.y.full;
-		ship->rel_pos.z.full += tdv.z.full;
-	} else {
-		eax = planetModel->interract_radius << 16;
-		u32 esi = planetModel->Scale + planetModel->Scale2;
-		u32 edx = esi - shipModel->Scale - shipModel->Scale2;
-		u32 s5 = shipModel->collision_radius << 16;
-		if (edx != 0) s5 >>= edx;
-		if ((eax += s5) < 0) { eax >>= 1; s3++; }
-		Point32 tv;
-		tv.x = rpos.x.low;
-		tv.y = rpos.y.low;
-		tv.z = rpos.z.low;
-		FUNC_001504(&tv.x, eax, s3);			// magnitude setter
-		eax = 0x20 - ((0x37 - esi) + 1);
-		ship->rel_pos.x.full = tv.x << eax;	// set height to radius
-		ship->rel_pos.y.full = tv.y << eax;
-		ship->rel_pos.z.full = tv.z << eax;
+		DATA_PlanetCollision = 0;
+		return -1;
 	}
-
-	if (DATA_LandingCrash != 0) {		// collision, not landing
-		DATA_CollisionFlags |= 0x80;
-		if (ship->index == DATA_PlayerIndex)		// player object! Woo!
-		{
-			// bounce
-			ship->velocity.x = -ship->velocity.x >> 2;
-			ship->velocity.y = -ship->velocity.y >> 2;
-			ship->velocity.z = -ship->velocity.z >> 2;
-		}
-		else if (ship->model_num > 0xd && (ship->ship_type == 0xb || ship->ship_type == 0xe))
-		{
-			// bounce
-			ship->velocity.x = -ship->velocity.x >> 2;
-			ship->velocity.y = -ship->velocity.y >> 2;
-			ship->velocity.z = -ship->velocity.z >> 2;
-		}
-	}
-	else {
-		// reorientate
-	}
-	if (planet->interract_radius.full != planet->collision_radius.full) DATA_CollisionFlags |= 1;
-	if (DATA_CollisionObjIndex == 0) {
-		DATA_CollisionObjIndex = planet->index;
-		DATA_ParentObjPtr = planet;
-	}
-	return DATA_CollisionFlags;
 }
 
 extern "C" void C_PlaceStation (ModelInstance_t *starport, int lat, int lon, InstanseList_t* objectList)
@@ -795,15 +780,15 @@ void SphereMap2(ffeVertex* v1, ffeVertex* v2, ffeVertex* v3, CUSTOMVERTEX* cv1, 
 
 	cv1->tu = /*MAX(MIN(*/(float)(0.5*(1.0 - atan2(p1.x, p1.z) * M_1_PI))/*, 1.0f), 0.0f)*/;
 	cv1->tv = /*MAX(MIN(*/(float)(acos(p1.y) * M_1_PI)/*, 1.0f), 0.0f)*/;
-	heightmapbuf[(int)(cv1->tv * 1024)][(int)(cv1->tu * 1024)] = (float)v1->x_2/DIVIDER;
+	//heightmapbuf[(int)(cv1->tv * 1024)][(int)(cv1->tu * 1024)] = (float)v1->x_2/DIVIDER;
 
 	cv2->tu = /*MAX(MIN(*/(float)(0.5*(1.0 - atan2(p2.x, p2.z) * M_1_PI))/*, 1.0f), 0.0f)*/;
 	cv2->tv = /*MAX(MIN(*/(float)(acos(p2.y) * M_1_PI)/*, 1.0f), 0.0f)*/;
-	heightmapbuf[(int)(cv2->tv * 1024)][(int)(cv2->tu * 1024)] = (float)v2->x_2/DIVIDER;
+	//heightmapbuf[(int)(cv2->tv * 1024)][(int)(cv2->tu * 1024)] = (float)v2->x_2/DIVIDER;
 
 	cv3->tu = /*MAX(MIN(*/(float)(0.5*(1.0 - atan2(p3.x, p3.z) * M_1_PI))/*, 1.0f), 0.0f)*/;
 	cv3->tv = /*MAX(MIN(*/(float)(acos(p3.y) * M_1_PI)/*, 1.0f), 0.0f)*/;
-	heightmapbuf[(int)(cv3->tv * 1024)][(int)(cv3->tu * 1024)] = (float)v3->x_2/DIVIDER;
+	//heightmapbuf[(int)(cv3->tv * 1024)][(int)(cv3->tu * 1024)] = (float)v3->x_2/DIVIDER;
 }
 
 inline int classify_point2D(ffeVertex *p0, ffeVertex *p1, ffeVertex *p2) {

@@ -1,3 +1,4 @@
+
 BITS 32
 
 EXTERN _testhook
@@ -1127,6 +1128,7 @@ GLOBAL FUNC_001329
 GLOBAL FUNC_001330_DPalBuild
 GLOBAL FUNC_001331_DPalSet
 GLOBAL FUNC_001332_Int64Abs
+GLOBAL _FUNC_001333_Int64Add64
 GLOBAL FUNC_001333_Int64Add64
 GLOBAL FUNC_001334_Int64Add32
 GLOBAL _FUNC_001335_Int64Sub64
@@ -37112,8 +37114,7 @@ FUNC_000570:			; Pos = 27498
 		push ebx
 		lea eax,[ebp-0x20]
 		push eax
-		;call FUNC_000575
-		call _CheckCollision
+		call FUNC_000575
 		add esp,byte +0xc
 		mov [ebp-0x1],al
 
@@ -37231,8 +37232,7 @@ FUNC_000570:			; Pos = 27498
 		push ebx
 		lea eax,[ebp-0x20]
 		push eax
-		;call FUNC_000575
-		call _CheckCollision
+		call FUNC_000575
 		add esp,byte +0xc
 	JUMP_002398:			; Pos = 27662
 		dec edi
@@ -37449,8 +37449,7 @@ FUNC_000574:			; Pos = 27824
 		push eax
 		mov eax,[ebp+0xc]
 		push eax
-		;call FUNC_000575
-		call _CheckCollision
+		call FUNC_000575
 		add esp,byte +0xc
 		cmp dword [DATA_008704],byte +0x0
 		jnz JUMP_002402
@@ -37469,7 +37468,7 @@ FUNC_000574:			; Pos = 27824
 		ret
 
 
-
+;collision
 FUNC_000575:			; Pos = 27898
 
 		push ebp
@@ -37543,7 +37542,8 @@ FUNC_000575:			; Pos = 27898
 		push eax
 		push edi
 		push ebx
-		call FUNC_000576
+		;call FUNC_000576
+		call _CheckCollision
 		add esp,byte +0xc
 		test eax,eax
 		jnz JUMP_002405
@@ -85601,7 +85601,7 @@ FUNC_001332_Int64Abs:			; Pos = 4eb18
 
 
 ; void F1333 (int *rval, int64 op1, int64 op2)
-
+_FUNC_001333_Int64Add64:
 FUNC_001333_Int64Add64:			; Pos = 4eb4e
 
 		push ebp

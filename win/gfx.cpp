@@ -5500,8 +5500,7 @@ extern "C" int C_Break(DrawMdl_t *drawModel, unsigned short *cmd)
 		subObject=true;		
 	}
 
-	modelList[modelNum].instanceIndex = inst->index;
-	modelList[modelNum].uid = inst->globalvars.unique_Id;
+	modelList[modelNum].instance = drawModel->modelInstance;
 	
 	// Локальный цвет модели
 	localColor[0]=drawModel->localColor.r * 12 + 63;

@@ -318,8 +318,8 @@ VS_OUTPUT V_Test(
 	float4 uv;
 	uv.x = atan2(vertex.x, vertex.z) / (2. * M_PI) + 0.5;
 	uv.y = asin(vertex.y) / M_PI + 0.5;
-	uv.z = 1.0f;
-	uv.w = 1.0f;
+	uv.z = 0.0f;
+	uv.w = 0.0f;
 
 	float height = tex2Dlod(heightSampler, uv).r;
 
@@ -327,14 +327,25 @@ VS_OUTPUT V_Test(
 
 	float3 normal = normalize(vertex.xyz);
 
-	vertex *= 1.0+(1.0 / 32 * height);
+	vertex *= 1.0 + height;
+	//vertex *= 1.0 +(1.0 / 32 * height);
 
 	vertex = mul(float4(vertex.xyz, 1.0), worldmat);
 
 	Out.tex_vu = uv.xy;
 
+	float d = 1.0/256;  
+	float3 grad;  
+	grad.x = tex2Dlod(heightSampler, uv + float4( d, 0, 0, 0)) -  
+			 tex2Dlod(heightSampler, uv + float4(-d, 0, 0, 0));  
+	grad.y = tex2Dlod(heightSampler, uv + float4( 0, d, 0, 0)) -  
+			 tex2Dlod(heightSampler, uv + float4( 0,-d, 0, 0));  
+	grad.z = tex2Dlod(heightSampler, uv + float4( 0, 0, d, 0)) -  
+			 tex2Dlod(heightSampler, uv + float4( 0, 0,-d, 0));  
+	float3 norm = normalize(normal + -normalize(grad)*0.33);
+
     Out.position = mul(vertex, viewprojmat);
-    Out.normal = normalize(mul(normal, (float3x3)rotmat)); 
+    Out.normal = normalize(mul(norm, (float3x3)rotmat)); 
     Out.color = float4(height,height,height,0.0);
 	
 	Out.lightDir = normalize(light);//normalize(mul(-normalize(light), -(float3x3)rotmat));
@@ -352,29 +363,33 @@ float4 P_Test(
   ) : COLOR0
 {
 
-	float4 tex = tex2D(s_tex, tex_vu);
+	float r = tex2D(heightSampler, tex_vu).r * 32;
+	float4 tex;
 
-	float offset_x = 1.0/5400;
-	float offset_y = 1.0/2700;
-	
-	float3 d;
-	d.x = tex2D( heightSampler, tex_vu + float2( offset_x, 0 ) ) .r- tex2D( heightSampler, tex_vu + float2( -offset_x, 0 ) ).r; 
-	d.y = tex2D( heightSampler, tex_vu + float2( 0, offset_y ) ) .r- tex2D( heightSampler, tex_vu + float2( 0, -offset_y ) ).r;
-	d.z = 0.0;
+	if (r < 0.02) {
+		tex = float4(0.0+r*5, 0.0+r*5, 0.15+r*5, 1.0);
+	} else if (r < 0.05) {
+		tex = float4(0.75-r*7, 0.75-r*7, 0, 1.0);
+	} else if (r < 0.3) {
+		tex = float4(0.15, 0.15+r*2, 0.15, 1.0);
+	} else {
+		tex = float4(r, r, r, 1.0);
+	}
+	tex = saturate(tex * 1.5);
 
-	//d = mul(d, -(float3x3)rotmat); 
+	//tex = tex2D(s_tex, tex_vu);
 
-	float3 norm = normalize( float3( normal.x  + 3.0 * d.x, normal.y + 3.0 * d.y, normal.z) ); 
-
-	float nrmd_light = dot(norm, normalize(lightDir));
+	float nrmd_light = dot(normal, normalize(lightDir));
 	float4 diffuse = tex * nrmd_light;
 
-//	float3 R = normalize(reflect(-lightDir, norm));
-//	float VdotR = saturate(dot(R, normalize(eye)));
-//	VdotR /= 32.0 - VdotR * 32.0 + VdotR;
-//	float4 specular = (lightcol * VdotR) * 0.25;
+	if (r < 0.02 || r > 0.4) {
+		float3 R = normalize(reflect(-lightDir, normal));
+		float VdotR = saturate(dot(R, normalize(eye)));
+		VdotR /= 32.0 - VdotR * 32.0 + VdotR;
+		float4 specular = (lightcol * VdotR) * 0.25;
 
-//	diffuse += specular;
+		diffuse += specular;
+	}
 
 	return diffuse;
 }
