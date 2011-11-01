@@ -214,7 +214,7 @@ ModelInstance_t *CreateObject(ModelInstance_t *ship_instance, u8 state, u32 mode
 
 	if (index > 94) { // 20 reserved
 		for(index = 1; index <= 94; index++) {
-			if (DATA_ObjectArray->state_flags[index] & 0x41) { // smoke
+			if (DATA_ObjectArray->instances[index].model_num == 158) { // smoke
 				DATA_NumObjects--;
 				break;
 			}

@@ -736,7 +736,7 @@ extern "C" void SystemTick()
 				break;
 		}
 
-		for (int index = 0; index < 9; index++)
+		for (int index = 0; index < WingmanArray.Count; index++)
 		{
 			switch (WingmanArray.instances[index].command)
 			{

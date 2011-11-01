@@ -93,8 +93,7 @@ struct FFELIGHT {
 
 struct MODEL {
 	int index;
-	int instanceIndex;
-	int uid;
+	ModelInstance_t* instance;
 	bool subObject;
 	D3DXMATRIX world, scaleMat, rotMat;
 	char doMatrix;

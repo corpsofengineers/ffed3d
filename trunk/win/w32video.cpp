@@ -707,8 +707,6 @@ LPDIRECT3DTEXTURE9 panelIcons[4];
 LPDIRECT3DTEXTURE9 permTexture;
 LPDIRECT3DTEXTURE9 permTexture2d;
 
-extern LPDIRECT3DTEXTURE9 heightmaps[100];
-
 int panelnum=0;
 
 ID3DXEffect* effectList[500];
@@ -800,13 +798,15 @@ void GeneratePermTexture2d()
 	}
 }
 
+LPDIRECT3DTEXTURE9 heightmap[40];
+
 extern bool exportb[500];
 
 void loadTextures() {
 	char buf[1000];
 
-	for(int i = 0; i < 100; i++) {
-		heightmaps[i] = NULL;
+	for(int i = 0; i < 40; i++) {
+		heightmap[i] = NULL;
 	}
 
 	GeneratePermTexture();
@@ -1001,7 +1001,7 @@ void loadModels()
 	
 }
 
-#define chunk_size 64
+#define chunk_size 48
 
 IDirect3DVertexDeclaration9* chunk_declaration = NULL;
 ID3DXMesh* chunk;
@@ -1085,7 +1085,12 @@ int inline GetDist(float x, float y, float z)
 	return sqrt(x * x + y * y + z * z);
 }
 
+#define pSize 1024
+
 s32 PlanetDist = 10000000;
+int index;
+u32 heightmapUIDS[40];
+float heightmapbuf[40][pSize*pSize];
 
 void DrawChunk(float xoff, float yoff, float width, float div, float mindist, int onlyside, int m, int currModIndex)
 {
@@ -1139,10 +1144,18 @@ void DrawChunk(float xoff, float yoff, float width, float div, float mindist, in
 				r.y = v.y * sqrt(1.0f - v.z * v.z * 0.5f - v.x * v.x * 0.5f + v.z * v.z * v.x * v.x / 3.0f);
 				r.z = v.z * sqrt(1.0f - v.x * v.x * 0.5f - v.y * v.y * 0.5f + v.x * v.x * v.y * v.y / 3.0f);
 
+				u32 u, v;
+				u = (atan2(r.x, r.z) / (2. * M_PI) + 0.5) * pSize;
+				v = (asin( r.y) / M_PI + 0.5) * pSize;
+
+				float height = 1.0 + heightmapbuf[index][v*pSize+u];
+
 				D3DXVec3TransformCoord(&r,&r,&modelList[m].scaleMat);
+				D3DXVECTOR3 d = r * height;
+				D3DXVec3TransformCoord(&d,&d,&modelList[m].world);
 				D3DXVec3TransformCoord(&r,&r,&modelList[m].world);
 
-				float dist = GetDist(r.x, r.y, r.z);
+				float dist = GetDist(d.x, d.y, d.z);
 
 				PlanetDist = MIN(PlanetDist, dist);
 
@@ -1186,15 +1199,163 @@ void DrawChunk(float xoff, float yoff, float width, float div, float mindist, in
 	}
 }
 
+int GetHeightmapIndexByUID(u32 UID)
+{
+	for(int i = 0; i < 40; i++) {
+		if (heightmapUIDS[i] == UID)
+			return i;
+	}
+	return -1;
+}
+
+float Noise(int x, int y, int seed = 0)
+{
+    int n = x + y * 57 + seed;
+    n = (n<<13) ^ n;
+    return ( 1.0 - ( (n * (n * n * 15731 + 789221) + 1376312589) & 0x7fffffff) / 1073741824.0);    
+}
+
+#define saturate(x) MIN(MAX(x, 0), 1.0)
+
+float val(int x, int y, int index)
+{
+	if (x < 0 || x > pSize || y < 0 || y > pSize) return 0;
+	else return heightmapbuf[index][y*pSize+x];
+}
+
+#define gRoughness 32
+#define gBigSize (pSize+pSize)
+
+float Displace(int x, int y, float SmallSize, int uid)  
+{  
+  
+    float Max = SmallSize/ gBigSize * (gRoughness * (Noise(x, y, x+y*SmallSize*uid) * 0.5f + 1.0f));  
+    return (Noise(x, y, (uid * (int)SmallSize + x) % (int)(uid - SmallSize + y)) * 0.5f) * Max; 
+}
+
+void DivideGrid(float *points, int x, int y, int width, int height, float c1, float c2, float c3, float c4, int uid)  
+{  
+    float Edge1, Edge2, Edge3, Edge4, Middle;  
+  
+    int newWidth = width / 2;  
+    int newHeight = height / 2;  
+  
+    if (width > 1 || height > 1)  
+    {  
+        Middle = ((c1 + c2 + c3 + c4) / 4);
+		Edge1 = ((c1 + c2) / 2);    //Calculate the edges by averaging the two corners of each edge.  
+		Edge2 = ((c2 + c3) / 2);  
+		Edge3 = ((c3 + c4) / 2);  
+		Edge4 = ((c4 + c1) / 2);
+		Middle += Displace(x, y, newWidth + newHeight, uid);  //Randomly displace the midpoint!
+        //Make sure that the midpoint doesn't accidentally "randomly displaced" past the boundaries!  
+        Middle= saturate(Middle);  
+        Edge1 = saturate(Edge1);  
+        Edge2 = saturate(Edge2);  
+        Edge3 = saturate(Edge3);  
+        Edge4 = saturate(Edge4);  
+        //Do the operation over again for each of the four new grids.
+		DivideGrid(points, x, y, newWidth, newHeight, c1, Edge1, Middle, Edge4, uid);  
+		DivideGrid(points, x + newWidth, y, width - newWidth, newHeight, Edge1, c2, Edge2, Middle, uid);  
+		DivideGrid(points, x + newWidth, y + newHeight, width - newWidth, height - newHeight, Middle, Edge2, c3, Edge3, uid);  
+		DivideGrid(points, x, y + newHeight, newWidth, height - newHeight, Edge4, Middle, Edge3, c4, uid); 
+    }  
+    else    //This is the "base case," where each grid piece is less than the size of a pixel.  
+    {  
+        //The four corners of the grid piece will be averaged and drawn as a single pixel.  
+        float c = saturate((c1 + c2 + c3 + c4) / 4); 
+		c *= c;
+		c *= c;
+
+		if (c > 0.55) {
+			c *= c*1.2;
+		}
+		c /= 32;
+
+		if (c < 0.0005) c = 0;
+
+        points[y*pSize+x] = c;  
+        if (width == 2)  
+        {  
+            points[y*pSize+(x+1)] = c;  
+        }  
+        if (height == 2)  
+        {  
+            points[(y+1)*pSize+x] = c;  
+        }  
+        if ((width == 2) && (height == 2))  
+        {  
+            points[(y+1)*pSize+(x+1)] = c;  
+        }  
+    }  
+}
+
 void DrawGeosphere(int m, int currModIndex)
 {
 	u32 pass;
 
 	renderSystem->GetDevice()->SetVertexDeclaration(chunk_declaration);
 
-	//effectList[currModIndex]->SetTexture("heightmap",heightmaps[modelList[m].instanceIndex]);
-	effectList[currModIndex]->SetTexture("heightmap",textures[800]);
-	effectList[currModIndex]->SetTexture("tex",textures[713]);
+	index = GetHeightmapIndexByUID(modelList[m].instance->globalvars.unique_Id);
+
+	if (index == -1) 
+	{
+		u32 heightmapIndex = 0;
+		for(int i = 114; i > 0; i--) 
+		{
+			if (DATA_ObjectArray->instances[i].ship_type != 1) // orbital
+				break;
+
+			if (Planet(DATA_ObjectArray->instances[i].model_num) == false)
+				continue;
+
+			int uid = heightmapUIDS[heightmapIndex] = DATA_ObjectArray->instances[i].globalvars.unique_Id;
+
+			if (heightmap[heightmapIndex] == NULL)
+			{
+				if ( FAILED(D3DXCreateTexture(renderSystem->GetDevice(), pSize, pSize, 1, 0, D3DFMT_R32F, D3DPOOL_MANAGED, &heightmap[heightmapIndex])) ) {
+					return;
+				}
+			}
+
+			float c1, c2, c3, c4;  
+  
+			c1 = 0;//Noise(0,0,uid);  
+			c2 = 0;//Noise(pSize,0,uid);  
+			c3 = 0;//Noise(0,pSize,uid);  
+			c4 = 0;//Noise(pSize,pSize,uid);  
+
+			DivideGrid(heightmapbuf[heightmapIndex], 0, 0, pSize, pSize, c1, c2, c3, c4, uid); 
+
+			D3DLOCKED_RECT sLockedRect; 
+			if ( FAILED(heightmap[heightmapIndex]->LockRect(0, &sLockedRect, 0, 0))) {
+				//heightmap[index]->Release();
+				//heightmap[index] = NULL;
+				return;
+			}
+
+			u8 *ptr = (u8*)sLockedRect.pBits;
+
+			float* imageData = (float*)sLockedRect.pBits;
+			for(int h = 0; h < pSize; h++) {
+				for(int w = 0; w < pSize; w++) {
+					imageData[h * sLockedRect.Pitch / 4 + w] = heightmapbuf[heightmapIndex][h*pSize+w];
+				}
+			}
+
+			heightmap[heightmapIndex]->UnlockRect(0);
+
+			heightmapIndex++;
+		}
+		index = GetHeightmapIndexByUID(modelList[m].instance->globalvars.unique_Id);
+	}
+
+	if (effectList[currModIndex] == NULL)
+		return;
+	
+	effectList[currModIndex]->SetTexture("heightmap",heightmap[index]);
+	//effectList[currModIndex]->SetTexture("heightmap",textures[800]);
+	//effectList[currModIndex]->SetTexture("tex",textures[713]);
 	effectList[currModIndex]->SetMatrix("worldmat",&modelList[m].world);
 	effectList[currModIndex]->SetMatrix("scalemat",&modelList[m].scaleMat);
 	effectList[currModIndex]->SetMatrix("rotmat",&modelList[m].rotMat);
@@ -1203,6 +1364,8 @@ void DrawGeosphere(int m, int currModIndex)
 
 	PlanetDist = 10000000;
 	
+	//PlanetDist = GetDist(modelList[m].world._41, modelList[m].world._42, modelList[m].world._43) - GetDist(modelList[m].scaleMat._21, modelList[m].scaleMat._22, modelList[m].scaleMat._23);
+
 	if (modelList[m].scale > 5)
 	{
 		DrawChunk(-1.0f, -1.0f, 1.0f, 1.0f, 40000.0f, -1, m, currModIndex);
@@ -2597,9 +2760,9 @@ void Render()
 			modelList[m].backsprite==true) {
 			continue;
 		}
+		currModIndex=modelList[m].index;
 		if (modelList[m].doMatrix==1) {
 			currMod=m;
-			currModIndex=modelList[m].index;
 			D3DXMatrixInverse(&WorldInverse,NULL, &modelList[m].world);
 
 			if (DATA_PlayerObject && DATA_PlayerObject->uchar_57 == 0 && (Planet(currModIndex)==true || Rings(currModIndex)==true)) {
