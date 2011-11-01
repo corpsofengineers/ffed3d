@@ -302,6 +302,8 @@ void printTyConsole (WPARAM key)
 	}
 }
 
+extern WingmanList_t WingmanArray;
+
 void InputKeybReadStates (UCHAR *pKeys)
 {
 	int i, rval;
@@ -330,6 +332,32 @@ void InputKeybReadStates (UCHAR *pKeys)
 	{
 		//printTyConsole (pCur);
 		return;
+	}
+
+	if (pCur[DIK_LCONTROL] == 0x80 && pCur[DIK_0] == 0x80 && pKeybTimes[41] < TimerGetTimeStamp())
+	{
+		WingmanArray.instances[0].command = WINGCOM_AUTO;
+		WingmanArray.instances[1].command = WINGCOM_AUTO;
+	}
+
+	if (pCur[DIK_LCONTROL] == 0x80 && pCur[DIK_1] == 0x80 && pKeybTimes[41] < TimerGetTimeStamp())
+	{
+		WingmanArray.instances[0].command = WINGCOM_HALT;
+		pCur[DIK_1] = 0x0;
+	}
+
+	if (pCur[DIK_LCONTROL] == 0x80 && pCur[DIK_2] == 0x80 && pKeybTimes[41] < TimerGetTimeStamp())
+	{
+		WingmanArray.instances[0].command = WINGCOM_GOTO;
+		WingmanArray.instances[0].targetId = DATA_ObjectArray->instances[DATA_DestIndex].globalvars.unique_Id;
+		pCur[DIK_2] = 0x0;
+	}
+
+	if (pCur[DIK_LCONTROL] == 0x80 && pCur[DIK_3] == 0x80 && pKeybTimes[41] < TimerGetTimeStamp())
+	{
+		WingmanArray.instances[0].command = WINGCOM_ATTACK;
+		WingmanArray.instances[0].targetId = DATA_ObjectArray->instances[DATA_TargIndex].globalvars.unique_Id;
+		pCur[DIK_3] = 0x0;
 	}
 
 	for (i=0; i<256; i++)

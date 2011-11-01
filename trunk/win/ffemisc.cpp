@@ -1,6 +1,8 @@
 
 #include "ffe3d.h"
 
+extern WingmanList_t WingmanArray;
+
 extern "C" void BlitClipWrapper (void *pData, int xpos,
 		int ypos, int width, int height, int jump,
 		void (*BlitFunc)(void *, int, int, int, int, int))
@@ -493,8 +495,23 @@ extern "C" void FillSystemData()
 }
 
 // called on hyperjump for new system
+extern ModelInstance_t *CreateShip(ModelInstance_t *copyfrom, u8 object_type, int modelnum);
+
 extern "C" void CreateSystemData(u32 systemID)
 {
+	//store wingmans into stock
+
+	if (WingmanArray.Count > 0)
+	{
+		for (int i = 0; i < WingmanArray.Count; i++)
+		{
+			memcpy (&WingmanArray.instances[i].stock, WingmanArray.instances[i].ship, sizeof ModelInstance_t);
+			WingmanArray.instances[i].ship = NULL;
+		}
+	}
+
+	WingmanArray.inStock = WingmanArray.Count;
+
 	u8 i, *stockFlagsPtr;
 	u32 d1, d2, techLevel, pirates, policeLevel, traders, d7, government;
 	u32 population, danger, c4;
@@ -532,6 +549,14 @@ extern "C" void CreateSystemData(u32 systemID)
 
 	if (DATA_CurrentAllegiance == ALLY_FEDERAL || DATA_CurrentAllegiance == ALLY_IMPERIAL)
 		CreateMilitaryData();
+
+	//Wingman`s jumping in
+	for (int i = 0; i < WingmanArray.inStock; i++)
+	{
+		u8 id = CreateShip (&WingmanArray.instances[i].stock, 0xc, WingmanArray.instances[i].stock.model_num)->index;
+		memcpy (&DATA_ObjectArray->instances[id], &WingmanArray.instances[i].stock, sizeof ModelInstance_t);
+	}
+	WingmanArray.Count = WingmanArray.inStock;
 }
 
 // called on every new day
@@ -568,9 +593,7 @@ bool IsWingman(u32 index)
 	else return false;
 }
 
-extern WingmanList_t WingmanArray;
-
-void WingmanCommAuto (u32 wingId)
+void WingmanComAuto (u32 wingId)
 {
 	u32 attack = 0;
 	u32 offset = 0;
@@ -611,7 +634,7 @@ void WingmanCommAuto (u32 wingId)
 	{
 		ship->dest_index = attack;
 		ship->target_index = attack;
-		ship->ai_mode = AI_PIRATE_INTERCEPT;
+		ship->ai_mode = AI_ATTACK_FIRING;
 		ship->target_off_x = 0;
 		ship->target_off_y = 0;
 		ship->target_off_z = 0;
@@ -624,80 +647,53 @@ void WingmanCommAuto (u32 wingId)
 
 }
 
-/*void WingmanAiTick (void)
+void WingmanComHalt (u32 wingId)
 {
-	char text[50];
-	u32 attack = 0;
+	WingmanArray.instances[wingId].ship->dest_index = 0;
+	WingmanArray.instances[wingId].ship->ai_mode = AI_CARGO_STATIC;
+}
 
-	for (int index = 1; index <= 96; index++)
+void WingmanComGoTo (u32 wingId)
+{
+	u32 wingGoTo = 0;
+
+	for (int index = 1; index <= 114; index++)
 	{
-		if (IsWingman(index) == false && 
-			(DATA_ObjectArray->instances[index].dest_index == DATA_PlayerIndex || 
-			DATA_ObjectArray->instances[index].target_index == DATA_PlayerIndex || 
-			IsWingman(DATA_ObjectArray->instances[index].dest_index) || 
-			IsWingman(DATA_ObjectArray->instances[index].target_index)) && 
-			DATA_ObjectArray->instances[index].ai_mode <= AI_MISSILE_EVASION && 
-			DATA_ObjectArray->instances[index].dist_cam <= 14)
+		if (DATA_ObjectArray->instances[index].globalvars.unique_Id == WingmanArray.instances[wingId].targetId)
 		{
-			attack = index;
+			wingGoTo = index;
 			break;
 		}
 	}
 
-	u32 offset = 0;
-	u32 patrol_index = DATA_PlayerIndex;
-	u32 textyoff = 20;
+	WingmanArray.instances[wingId].ship->dest_index = wingGoTo;
+	WingmanArray.instances[wingId].ship->target_index = 0;
+	WingmanArray.instances[wingId].ship->ai_mode = AI_PATROL;
+}
 
-	for (int index = 1; index <= 96; index++)
+void WingmanComAttack (u32 wingId)
+{
+	u32 wingAttack = 0;
+
+	for (int index = 1; index <= 114; index++)
 	{
-		if (IsWingman(index)) { 
-
-			offset += 300;
-
-			ModelInstance_t* ship = &DATA_ObjectArray->instances[index];
-			ModelInstance_t* target = &DATA_ObjectArray->instances[ship->dest_index];
-
-			if (textyoff < 150) {
-				text[0]=0;
-				u32 hull = ship->mass_x4 / ((float)(GetModel(ship->model_num)->Shipdef_ptr->Mass*4)*0.01);
-				sprintf(text, "(%d%%) %s", hull, ship->name);
-				//memcpy(&text[7], ship->name, 20);
-				C_DrawText (text, 3, textyoff+1, 0, true, -1, -1, -1);
-				C_DrawText (text, 2, textyoff, 0x11, false, -1, -1, -1);
-				textyoff += 6;
-			}
-
-			if (ship->dest_index == 0 || 
-				target->ai_mode > AI_MISSILE_EVASION || 
-				ship->ai_mode == AI_FORMATION || 
-				ship->ai_mode == AI_PATROL || 
-				ship->ai_mode == AI_BASIC || 
-				target->dist_cam > 14)
-			{
-				ship->dest_index = patrol_index;
-				patrol_index = index;
-				ship->target_index = 0;
-				ship->ai_mode = AI_PATROL;
-			}
-
-			if (DATA_ObjectArray->instances[index].ai_mode == AI_PATROL)
-			{
-				if (attack > 0) {
-					ship->dest_index = attack;
-					ship->target_index = attack;
-					ship->ai_mode = AI_PIRATE_INTERCEPT;
-					ship->target_off_x = 0;
-					ship->target_off_y = 0;
-					ship->target_off_z = 0;
-				} else {
-					ship->target_off_x = offset;
-					ship->target_off_y = offset;
-					ship->target_off_z = offset;
-				}
-			}
+		if (DATA_ObjectArray->instances[index].globalvars.unique_Id == WingmanArray.instances[wingId].targetId)
+		{
+			wingAttack = index;
+			break;
 		}
 	}
-}*/
+
+	if (wingAttack > 0)
+	{
+		WingmanArray.instances[wingId].ship->dest_index = wingAttack;
+		WingmanArray.instances[wingId].ship->target_index = wingAttack;
+		WingmanArray.instances[wingId].ship->ai_mode = AI_ATTACK_FIRING;
+	} else
+	{
+		WingmanArray.instances[wingId].command = WINGCOM_AUTO;
+	}
+}
 
 extern "C" void SystemTick()
 {
@@ -721,6 +717,10 @@ extern "C" void SystemTick()
 	}
 
 	int i = 0;
+	char text[256];
+	u32 textyoff = 20;
+
+	WingmanArray.inStock = 0;
 
 	if (WingmanArray.Count > 0)
 	{
@@ -729,12 +729,28 @@ extern "C" void SystemTick()
 			if (IsWingman (index))
 			{
 				WingmanArray.instances[i].ship = &DATA_ObjectArray->instances[index];
+				ModelInstance_t* ship = &DATA_ObjectArray->instances[index];
 				i++;
+				WingmanArray.inStock++;
+
+				if (textyoff < 150)
+				{
+					text[0]=0;
+					u32 hull = ship->mass_x4 / ((float)(GetModel(ship->model_num)->Shipdef_ptr->Mass*4)*0.01);
+					sprintf(text, "(%d%%) %s DEBUG: dest: %i, target: %i", hull, ship->name, ship->dest_index, ship->target_index);
+					//memcpy(&text[7], ship->name, 20);
+					C_DrawText (text, 3, textyoff+1, 0, true, -1, -1, -1);
+					C_DrawText (text, 2, textyoff, 0x11, false, -1, -1, -1);
+					textyoff += 6;
+				}
 			}
 
 			if (i >= WingmanArray.Count)
 				break;
 		}
+
+		if (WingmanArray.inStock != WingmanArray.Count)
+			WingmanArray.Count = WingmanArray.inStock;
 
 		for (int index = 0; index < WingmanArray.Count; index++)
 		{
@@ -742,12 +758,44 @@ extern "C" void SystemTick()
 			{
 			case WINGCOM_AUTO:
 				{
-					WingmanCommAuto (index);
-					break;
+					WingmanComAuto (index);
+					continue;
+				}
+			case WINGCOM_HALT:
+				{
+					WingmanComHalt (index);
+					continue;
+				}
+			case WINGCOM_GOTO:
+				{
+					WingmanComGoTo (index);
+					continue;
+				}
+			case WINGCOM_ATTACK:
+				{
+					WingmanComAttack (index);
+					continue;
 				}
 			}
 		}
 	}
+	
+	sprintf (text, "Wigmans := %i", WingmanArray.Count);
+	C_DrawText (text, 3, textyoff+1, 0, true, -1, -1, -1);
+	C_DrawText (text, 2, textyoff, 0x11, false, -1, -1, -1);
+	textyoff += 6;
+	sprintf (text, "dest_index := %i", DATA_DestIndex);
+	C_DrawText (text, 3, textyoff+1, 0, true, -1, -1, -1);
+	C_DrawText (text, 2, textyoff, 0x11, false, -1, -1, -1);
+	textyoff += 6;
+	sprintf (text, "target_index := %i", DATA_TargIndex);
+	C_DrawText (text, 3, textyoff+1, 0, true, -1, -1, -1);
+	C_DrawText (text, 2, textyoff, 0x11, false, -1, -1, -1);
+	textyoff += 6;
+	sprintf (text, "target_system := %i", DATA_PlayerObject->dest_system);
+	C_DrawText (text, 3, textyoff+1, 0, true, -1, -1, -1);
+	C_DrawText (text, 2, textyoff, 0x11, false, -1, -1, -1);
+	textyoff += 6;
 }
 
 extern "C" u32 GetNearbySystem(s8 bGetOpposing)
