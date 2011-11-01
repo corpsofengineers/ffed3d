@@ -357,6 +357,9 @@ struct InstanseList_t {
 };
 
 struct WingmanList_t {
+	int showMenu;
+	int menuState;
+	int wingmanId;
 	u8 Count;
 	int inStock;
 	Wingman_t instances[9];

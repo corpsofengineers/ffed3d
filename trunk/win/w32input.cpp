@@ -148,7 +148,7 @@ char *Commands[256] = {
 	"NULL", "NULL", "env_ecm", "map_orbscheme", "pl_target", "NULL", "pl_gear", "NULL",
 	"NULL", "NULL", "pl_rolll", "pl_rollr", "pl_accel", "NULL", "pl_pitchd", "NULL",
 	"env_mdeploy", "NULL", "NULL", "pl_hjump", "NULL", "NULL", "int_shownames", "NULL",
-	"NULL", "NULL", "NULL", "NULL", "pl_pitchu", "env_evac", "env_decoy", "NULL",
+	"NULL", "com_wing", "NULL", "NULL", "pl_pitchu", "env_evac", "env_decoy", "NULL",
 	"env_bomb", "pl_ltarget", "env_missile", "pl_yawl", "pl_yawr", "env_hanalis", "pl_inhibition", "UNKNOWN",
 	"NULL", "pl_fire", "NULL", "cam_switch", "pl_info", "pl_map", "pl_comm", "pl_bmode",
 	"cam_ahead", "cam_back", "cam_turret", "cam_orbit", "cam_missile", "NULL", "NULL", "pl_strafel",
@@ -326,38 +326,13 @@ void InputKeybReadStates (UCHAR *pKeys)
 			console = 0;
 		}
 		pKeybTimes[41] = TimerGetTimeStamp() + repeatdelay;
+		return;
 	}
 
 	if (console)
 	{
 		//printTyConsole (pCur);
 		return;
-	}
-
-	if (pCur[DIK_LCONTROL] == 0x80 && pCur[DIK_0] == 0x80 && pKeybTimes[41] < TimerGetTimeStamp())
-	{
-		WingmanArray.instances[0].command = WINGCOM_AUTO;
-		WingmanArray.instances[1].command = WINGCOM_AUTO;
-	}
-
-	if (pCur[DIK_LCONTROL] == 0x80 && pCur[DIK_1] == 0x80 && pKeybTimes[41] < TimerGetTimeStamp())
-	{
-		WingmanArray.instances[0].command = WINGCOM_HALT;
-		pCur[DIK_1] = 0x0;
-	}
-
-	if (pCur[DIK_LCONTROL] == 0x80 && pCur[DIK_2] == 0x80 && pKeybTimes[41] < TimerGetTimeStamp())
-	{
-		WingmanArray.instances[0].command = WINGCOM_GOTO;
-		WingmanArray.instances[0].targetId = DATA_ObjectArray->instances[DATA_DestIndex].globalvars.unique_Id;
-		pCur[DIK_2] = 0x0;
-	}
-
-	if (pCur[DIK_LCONTROL] == 0x80 && pCur[DIK_3] == 0x80 && pKeybTimes[41] < TimerGetTimeStamp())
-	{
-		WingmanArray.instances[0].command = WINGCOM_ATTACK;
-		WingmanArray.instances[0].targetId = DATA_ObjectArray->instances[DATA_TargIndex].globalvars.unique_Id;
-		pCur[DIK_3] = 0x0;
 	}
 
 	for (i=0; i<256; i++)
@@ -391,6 +366,131 @@ void InputKeybReadStates (UCHAR *pKeys)
 
 extern "C" long InputKeybGetLastKey (void)
 {
+	//WINGMAN MENU
+	if (keybLastKey == pKeybConvTable[41] && !WingmanArray.showMenu)
+	{
+		WingmanArray.showMenu++;
+		WingmanArray.menuState = 0;
+		WingmanArray.wingmanId = -1;
+	}
+	else
+		if (keybLastKey == pKeybConvTable[41] && WingmanArray.showMenu)
+		{
+			WingmanArray.showMenu--;
+			WingmanArray.menuState = 0;
+		}
+
+	if (WingmanArray.showMenu)
+	{
+		switch (WingmanArray.menuState)
+		{
+		case 0: //main screen
+			{
+				if (keybLastKey == 2) {WingmanArray.menuState = 1; WingmanArray.wingmanId = -1;}
+				if (keybLastKey == 3) WingmanArray.menuState = 2;
+				if (keybLastKey == 4) WingmanArray.menuState = 3;
+				if (keybLastKey == 5) WingmanArray.menuState = 4;
+				if (keybLastKey == 6) WingmanArray.menuState = 5;
+				//keybLastKey = 255
+				break;
+			}
+		case 1: //select wingman
+			{
+				if (keybLastKey == 2) WingmanArray.wingmanId = 0;
+				if (keybLastKey == 3) WingmanArray.wingmanId = 1;
+				if (keybLastKey == 4) WingmanArray.wingmanId = 2;
+				if (keybLastKey == 5) WingmanArray.wingmanId = 3;
+				if (keybLastKey == 6) WingmanArray.wingmanId = 4;
+				if (keybLastKey == 7) WingmanArray.wingmanId = 5;
+				if (keybLastKey == 8) WingmanArray.wingmanId = 6;
+				if (keybLastKey == 9) WingmanArray.wingmanId = 7;
+				if (keybLastKey == 10) WingmanArray.wingmanId = 8;
+
+				if (WingmanArray.wingmanId > -1)
+				{
+					if (WingmanArray.wingmanId >= WingmanArray.Count)
+						WingmanArray.wingmanId = -1;
+					WingmanArray.menuState = 0;
+				}
+
+				break;
+			}
+		case 2: //goto
+			{
+				if (WingmanArray.wingmanId > -1)
+				{
+					WingmanArray.instances[WingmanArray.wingmanId].command = WINGCOM_GOTO;
+					WingmanArray.instances[WingmanArray.wingmanId].targetId = DATA_ObjectArray->instances[DATA_DestIndex].globalvars.unique_Id;
+				} else
+				{
+					for (int i = 0; i < WingmanArray.Count; i++)
+					{
+						WingmanArray.instances[i].command = WINGCOM_GOTO;
+						WingmanArray.instances[i].targetId = DATA_ObjectArray->instances[DATA_DestIndex].globalvars.unique_Id;
+					}
+				}
+				
+				WingmanArray.showMenu--;
+				WingmanArray.menuState = 0;
+				break;
+			}
+		case 3: //hold position
+			{
+				if (WingmanArray.wingmanId > -1)
+				{
+					WingmanArray.instances[WingmanArray.wingmanId].command = WINGCOM_HALT;
+				} else
+				{
+					for (int i = 0; i < WingmanArray.Count; i++)
+					{
+						WingmanArray.instances[i].command = WINGCOM_HALT;
+					}
+				}
+
+				WingmanArray.showMenu--;
+				WingmanArray.menuState = 0;
+				break;
+			}
+		case 4: //attack
+			{
+				if (WingmanArray.wingmanId > -1)
+				{
+					WingmanArray.instances[WingmanArray.wingmanId].command = WINGCOM_ATTACK;
+					WingmanArray.instances[WingmanArray.wingmanId].targetId = DATA_ObjectArray->instances[DATA_TargIndex].globalvars.unique_Id;
+
+				} else
+				{
+					for (int i = 0; i < WingmanArray.Count; i++)
+					{
+						WingmanArray.instances[i].command = WINGCOM_ATTACK;
+						WingmanArray.instances[i].targetId = DATA_ObjectArray->instances[DATA_TargIndex].globalvars.unique_Id;
+					}
+				}
+
+				WingmanArray.showMenu--;
+				WingmanArray.menuState = 0;
+				break;
+			}
+		case 5: //auto
+			{
+				if (WingmanArray.wingmanId > -1)
+				{
+					WingmanArray.instances[WingmanArray.wingmanId].command = WINGCOM_AUTO;
+				} else
+				{
+					for (int i = 0; i < WingmanArray.Count; i++)
+					{
+						WingmanArray.instances[i].command = WINGCOM_AUTO;
+					}
+				}
+
+				WingmanArray.showMenu--;
+				WingmanArray.menuState = 0;
+				break;
+			}
+		}
+	}
+
 	return keybLastKey;
 }
 

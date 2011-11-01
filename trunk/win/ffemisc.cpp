@@ -733,11 +733,11 @@ extern "C" void SystemTick()
 				i++;
 				WingmanArray.inStock++;
 
-				if (textyoff < 150)
+				if (textyoff < 150 && !WingmanArray.showMenu)
 				{
 					text[0]=0;
 					u32 hull = ship->mass_x4 / ((float)(GetModel(ship->model_num)->Shipdef_ptr->Mass*4)*0.01);
-					sprintf(text, "(%d%%) %s DEBUG: dest: %i, target: %i", hull, ship->name, ship->dest_index, ship->target_index);
+					sprintf(text, "(%d%%) %s", hull, ship->name);
 					//memcpy(&text[7], ship->name, 20);
 					C_DrawText (text, 3, textyoff+1, 0, true, -1, -1, -1);
 					C_DrawText (text, 2, textyoff, 0x11, false, -1, -1, -1);
@@ -778,24 +778,58 @@ extern "C" void SystemTick()
 				}
 			}
 		}
+
+		char* textout = new char[256];
+		if (WingmanArray.showMenu) //print wing commander menu
+		{
+			switch (WingmanArray.menuState)
+			{
+			case 0:
+				{
+					if (WingmanArray.wingmanId > -1)
+					{
+					sprintf (textout, "%s", WingmanArray.instances[WingmanArray.wingmanId].ship->name);
+					C_DrawText (textout, 3, textyoff+1, 0, true, -1, -1, -1);
+					C_DrawText (textout, 2, textyoff, 0x10, false, -1, -1, -1);
+					textyoff += 6;
+					}
+
+					textout = "1. Select Wingman"; //state 1
+					C_DrawText (textout, 3, textyoff+1, 0, true, -1, -1, -1);
+					C_DrawText (textout, 2, textyoff, 0x11, false, -1, -1, -1);
+					textyoff += 6;
+					textout = "2. Go To My Target"; //state 2
+					C_DrawText (textout, 3, textyoff+1, 0, true, -1, -1, -1);
+					C_DrawText (textout, 2, textyoff, 0x11, false, -1, -1, -1);
+					textyoff += 6;
+					textout = "3. Hold Position"; //state 3
+					C_DrawText (textout, 3, textyoff+1, 0, true, -1, -1, -1);
+					C_DrawText (textout, 2, textyoff, 0x11, false, -1, -1, -1);
+					textyoff += 6;
+					textout = "4. Attack My Target"; //state 4
+					C_DrawText (textout, 3, textyoff+1, 0, true, -1, -1, -1);
+					C_DrawText (textout, 2, textyoff, 0x11, false, -1, -1, -1);
+					textyoff += 6;
+					textout = "5. Protect My Ship"; //state 5
+					C_DrawText (textout, 3, textyoff+1, 0, true, -1, -1, -1);
+					C_DrawText (textout, 2, textyoff, 0x11, false, -1, -1, -1);
+					textyoff += 6;
+					break;
+				}
+			case 1: //select wingman
+				{
+					for (int i=0; i < WingmanArray.Count; i++)
+					{
+						sprintf(textout, "%i. %s", i+1, WingmanArray.instances[i].ship->name);
+						C_DrawText (textout, 3, textyoff+1, 0, true, -1, -1, -1);
+						C_DrawText (textout, 2, textyoff, 0x11, false, -1, -1, -1);
+						textyoff += 6;
+					}
+					break;
+				}
+			}
+		}
 	}
-	
-	sprintf (text, "Wigmans := %i", WingmanArray.Count);
-	C_DrawText (text, 3, textyoff+1, 0, true, -1, -1, -1);
-	C_DrawText (text, 2, textyoff, 0x11, false, -1, -1, -1);
-	textyoff += 6;
-	sprintf (text, "dest_index := %i", DATA_DestIndex);
-	C_DrawText (text, 3, textyoff+1, 0, true, -1, -1, -1);
-	C_DrawText (text, 2, textyoff, 0x11, false, -1, -1, -1);
-	textyoff += 6;
-	sprintf (text, "target_index := %i", DATA_TargIndex);
-	C_DrawText (text, 3, textyoff+1, 0, true, -1, -1, -1);
-	C_DrawText (text, 2, textyoff, 0x11, false, -1, -1, -1);
-	textyoff += 6;
-	sprintf (text, "target_system := %i", DATA_PlayerObject->dest_system);
-	C_DrawText (text, 3, textyoff+1, 0, true, -1, -1, -1);
-	C_DrawText (text, 2, textyoff, 0x11, false, -1, -1, -1);
-	textyoff += 6;
 }
 
 extern "C" u32 GetNearbySystem(s8 bGetOpposing)
