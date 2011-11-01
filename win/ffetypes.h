@@ -238,19 +238,17 @@ struct ModelInstance_t {
 	u8 laser_flags;				// laser flags
 };
 
-//Windgmans Commands
+//Wingmans Commands
 #define WINGCOM_AUTO 0x0       //AI mode
-#define WINGCOM_FOLLOW 0x1     //follow me
-#define WINGCOM_ATTACK 0x2     //Attack my target
-#define WINGCOM_HALT 0x3       //Halt
-#define WINGCOM_GO 0x4         //Go to the my target and wait
-#define WINGCOM_JUMP 0x5       //Jump with me
-#define WINGCOM_PATROL 0x6     //Partol the area
-#define WINGCOM_DOCK 0x7       //Dock with my target
+#define WINGCOM_HALT 0x1       //WAIT!!!!!
+#define WINGCOM_GOTO 0x2       //fly to my target and WAIT!
+#define WINGCOM_ATTACK 0x3     //Attack my target!
 
 struct Wingman_t {				//wingmans struct
 	ModelInstance_t* ship;
+	ModelInstance_t stock;
 	u8 command;
+	int targetId;
 };
 
 struct DrawMdl_t {
@@ -360,7 +358,7 @@ struct InstanseList_t {
 
 struct WingmanList_t {
 	u8 Count;
-	u8 inStock;
+	int inStock;
 	Wingman_t instances[9];
 };
 
