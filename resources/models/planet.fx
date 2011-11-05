@@ -8,35 +8,35 @@ float3 light;		// light source
 float4 lightcol;	// light color
 
 texture tex;		// current texture
-texture wave1;		// 722
-texture wave2;		// 723
-texture permTexture;
+
+texture permGrad;
 texture permTexture2d;
 
-texture heightmap;
+texture chunkheight;
 
-float x_off, y_off, div, type;
+float x_off, y_off, div, type, width;
+int uid;
 
 float time;
 
-sampler heightSampler = sampler_state 
+sampler s_chunkheight = sampler_state 
 {
-    texture = <heightmap>;
-    AddressU  = WRAP;        
-    AddressV  = WRAP;
-    MIPFILTER = LINEAR;
+    texture = <chunkheight>;
+    AddressU  = CLAMP;        
+    AddressV  = CLAMP;
+    MIPFILTER = NONE;
     MINFILTER = LINEAR;
     MAGFILTER = LINEAR;
 };
 
-sampler permSampler = sampler_state 
+sampler s_grad = sampler_state 
 {
-    texture = <permTexture>;
+    texture = <permGrad>;
     AddressU  = WRAP;        
-    AddressV  = CLAMP;
-    MIPFILTER = POINT;
+    AddressV  = WRAP;
+    MIPFILTER = NONE;
     MINFILTER = POINT;
-    MAGFILTER = NONE;
+    MAGFILTER = POINT;
 };
 
 sampler permSampler2d = sampler_state 
@@ -44,7 +44,7 @@ sampler permSampler2d = sampler_state
     texture = <permTexture2d>;
     AddressU  = WRAP;        
     AddressV  = WRAP;
-    MIPFILTER = LINEAR;
+    MIPFILTER = NONE;
     MINFILTER = POINT;
     MAGFILTER = POINT;
 };
@@ -52,26 +52,6 @@ sampler permSampler2d = sampler_state
 sampler s_tex = sampler_state 
 {
     texture = <tex>;
-    AddressU  = WRAP;        
-    AddressV  = WRAP;
-    MIPFILTER = LINEAR;
-    MINFILTER = LINEAR;
-    MAGFILTER = LINEAR;
-};
-
-sampler s_bump = sampler_state 
-{
-    texture = <wave1>;
-    AddressU  = WRAP;        
-    AddressV  = WRAP;
-    MIPFILTER = LINEAR;
-    MINFILTER = LINEAR;
-    MAGFILTER = LINEAR;
-};
-
-sampler s_waves = sampler_state 
-{
-    texture = <wave2>;
     AddressU  = WRAP;        
     AddressV  = WRAP;
     MIPFILTER = LINEAR;
@@ -165,8 +145,8 @@ float4 P_Water(
 
 	float4 tx_base = tex2D(s_tex, tex_vu2);
   
-	float3 tx_norm = 2.0f * tex2D(s_bump, tex_vu2) - 1.0f;
-	float3 tx_norm2 = 2.0f * tex2D(s_waves, tex_vu3) - 1.0f;  
+	float3 tx_norm = float3(0,1,0);//2.0f * tex2D(s_bump, tex_vu2) - 1.0f;
+	float3 tx_norm2 = float3(0,1,0);//2.0f * tex2D(s_waves, tex_vu3) - 1.0f;  
 	tx_norm = normalize(tx_norm+tx_norm2);
   
 	float nrmd_light = dot(tx_norm, lightDir);
@@ -264,8 +244,174 @@ float4 P_Atmo(
 	return diffuse;
 }
 
+float3 fade(float3 t)
+{
+        return t * t * t * (t * (t * 6 - 15) + 10); // new curve
+		//return t * t * (3 - 2 * t);
+}
+
+float4 perm2d(float2 p)
+{
+        return tex2Dlod(permSampler2d, float4(p, 0.0, 0.0));
+}
+
+float4 perm3d(float3 p)
+{
+        return tex2Dlod(permSampler2d, float4(p.xy, 0.0, 0.0)) + p.z + frac(uid*0.000001);
+}
+
+float gradperm(float x, float3 p)
+{
+        return dot(tex1Dlod(s_grad, float4(x, 0.0, 0.0, 0.0)).xyz, p);
+}
+
+// Improved 3d noise basis function
+float inoise(float3 p)
+{
+        float3 P = fmod(floor(p), 256.0);       // FIND UNIT CUBE THAT CONTAINS POINT
+        p -= floor(p);                      // FIND RELATIVE X,Y,Z OF POINT IN CUBE.
+        float3 f = fade(p);                     // COMPUTE FADE CURVES FOR EACH OF X,Y,Z.
+
+        P = P / 256.0;
+
+    // HASH COORDINATES OF THE 8 CUBE CORNERS
+        float4 AA = perm3d(P);
+
+        // AND ADD BLENDED RESULTS FROM 8 CORNERS OF CUBE
+        return lerp( lerp( lerp( gradperm(AA.x, p ),
+                                gradperm(AA.z, p + float3(-1, 0, 0) ), f.x),
+                        lerp( gradperm(AA.y, p + float3(0, -1, 0) ),
+                                gradperm(AA.w, p + float3(-1, -1, 0) ), f.x), f.y),
+
+                        lerp( lerp( gradperm(AA.x+(1.0 / 256.0), p + float3(0, 0, -1) ),
+                                gradperm(AA.z+(1.0 / 256.0), p + float3(-1, 0, -1) ), f.x),
+                        lerp( gradperm(AA.y+(1.0 / 256.0), p + float3(0, -1, -1) ),
+                                gradperm(AA.w+(1.0 / 256.0), p + float3(-1, -1, -1) ), f.x), f.y), f.z);
+}
+
+//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// FRACTAL FUNCTIONS
+//+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+// fractal sum
+float fBm(float3 p, int octaves, float lacunarity = 2.0, float gain = 0.5)
+{
+        float freq = 1.0f, amp  = 0.5f;
+        float sum  = 0.0;
+        for(int i=0; i < octaves; i++) {
+                sum += inoise(p*freq)*amp;
+                freq *= lacunarity;
+                amp *= gain;
+        }
+        return sum;
+}
+
+float turbulence(float3 p, int octaves, float lacunarity = 2.0, float gain = 0.5)
+{
+		float freq = 1.0, amp = 1.0;
+        float sum = 0.0; 
+        for(int i=0; i < octaves; i++) {
+                sum += abs(inoise(p*freq))*amp;
+                freq *= lacunarity;
+                amp *= gain;
+        }
+        return sum;
+}
+
+// Ridged multifractal
+// See "Texturing & Modeling, A Procedural Approach", Chapter 12
+float ridge(float h, float offset)
+{
+    h = abs(h);
+    h = offset - h;
+    h = h * h;
+    return h;
+}
+
+float ridgedmf(float3 p, int octaves, float lacunarity, float gain = 0.05, float offset = 1.0)
+{
+        float sum = 0;
+        float freq = 1.0;
+        float amp = 0.5;
+        float prev = 1.0;
+        for(int i=0; i < octaves; i++)
+        {
+                float n = ridge(inoise(p*freq), offset);
+                sum += n*amp*prev;
+                prev = n;
+                freq *= lacunarity;
+                amp *= gain;
+        }
+        return sum;
+}
+
+float getHeight(float3 v)
+{
+	float height = fBm(v, 6, 2.7, 0.5);
+	float montes = ridgedmf(v, 6, 2.7, 1.0, 1.0);
+    height += montes * height;
+	height = saturate(height);
+    return height;
+}
+
+float3 GetSide(float side, float3 p)
+{
+    if (side == 0.0)
+        return float3( p.x, p.y, p.z);
+    else if (side == 1.0)
+        return float3( p.x, p.z, p.y );
+    else if (side == 2.0)
+        return float3( p.x,-p.z, p.y);
+    else if (side == 3.0)
+        return float3( p.z, p.y, p.x);
+    else if (side == 4.0)
+        return float3(-p.z, p.y, p.x);
+    else if (side == 5.0)
+        return float3( p.x, p.y,-p.z);
+    else
+        return float3(0.0, 0.0, 0.0);
+}
+
 #define M_PI  3.14159265358979323846
 #define M_1_PI 0.318309886183790671538
+
+VS_OUTPUT V_Height(
+    float3 pos		: POSITION
+    )
+{
+    VS_OUTPUT Out = (VS_OUTPUT)0;
+
+	float3 v, p;
+
+	// divide
+	p.x = pos.x / div;
+	p.y = pos.y / div;
+	p.z = pos.z;
+
+	// offsets
+	p.x = p.x + x_off;
+	p.y = p.y + y_off;
+
+	v = GetSide(type, p);
+
+	float4 vertex;
+	vertex.x = v.x * sqrt(1.0 - v.y * v.y * 0.5 - v.z * v.z * 0.5 + v.y * v.y * v.z * v.z / 3.0);
+	vertex.y = v.y * sqrt(1.0 - v.z * v.z * 0.5 - v.x * v.x * 0.5 + v.z * v.z * v.x * v.x / 3.0);
+	vertex.z = v.z * sqrt(1.0 - v.x * v.x * 0.5 - v.y * v.y * 0.5 + v.x * v.x * v.y * v.y / 3.0);
+
+	float height = getHeight(vertex.xyz);
+
+    Out.position = float4((pos.x * 2.0 - 1.0), (pos.y * 2.0 - 1.0), 0.0, 1.0);
+    Out.color = float4(height,height,height,0.0);
+	
+    return Out;
+}
+
+float4 P_Height(
+    float4 color	: COLOR0
+  ) : COLOR0
+{
+	return color;
+}
 
 VS_OUTPUT V_Test(
     float3 pos		: POSITION,
@@ -285,30 +431,7 @@ VS_OUTPUT V_Test(
 	p.x = p.x + x_off;
 	p.y = p.y + y_off;
 
-	v.x = p.x;
-	v.y = p.y;
-	v.z = p.z;
-
-	// sides
-	if (type == 1) {
-		v.y = p.z;
-		v.z = p.y;		
-	}
-	if (type == 2) {
-		v.y = -p.z;
-		v.z = p.y;		
-	}
-	if (type == 3) {
-		v.x = p.z;
-		v.z = p.x;		
-	}
-	if (type == 4) {
-		v.x = -p.z;
-		v.z = p.x;		
-	}
-	if (type == 5) {
-		v.z = -p.z;		
-	}
+	v = GetSide(type, p);
 
 	float4 vertex;
 	vertex.x = v.x * sqrt(1.0 - v.y * v.y * 0.5 - v.z * v.z * 0.5 + v.y * v.y * v.z * v.z / 3.0);
@@ -316,33 +439,34 @@ VS_OUTPUT V_Test(
 	vertex.z = v.z * sqrt(1.0 - v.x * v.x * 0.5 - v.y * v.y * 0.5 + v.x * v.x * v.y * v.y / 3.0);
 
 	float4 uv;
-	uv.x = atan2(vertex.x, vertex.z) / (2. * M_PI) + 0.5;
+	uv.x = atan2(vertex.x, vertex.z) / (2.0 * M_PI) + 0.5;
 	uv.y = asin(vertex.y) / M_PI + 0.5;
 	uv.z = 0.0f;
 	uv.w = 0.0f;
 
-	float height = tex2Dlod(heightSampler, uv).r;
+	float4 buv = float4(pos.x,1.0-pos.y,0.0,1.0);
+
+	//float height = tex2Dlod(s_chunkheight, buv).r;
+	float height = getHeight(vertex.xyz);
+
+	vertex *= 1.0 + height/64;
 
 	vertex.xyz = mul(vertex, (float3x3)scalemat);
 
 	float3 normal = normalize(vertex.xyz);
 
-	vertex *= 1.0 + height;
-	//vertex *= 1.0 +(1.0 / 32 * height);
+	float d = 1.0/32;
+
+	float x_depth = tex2Dlod( s_chunkheight, buv + float4( d, 0, 0, 1 ) ).r - 
+					tex2Dlod( s_chunkheight, buv + float4(-d, 0, 0, 1 ) ).r; 
+	float y_depth = tex2Dlod( s_chunkheight, buv + float4( 0, d, 0, 1 ) ).r - 
+					tex2Dlod( s_chunkheight, buv + float4( 0,-d, 0, 1 ) ).r; 
+	float3 norm = normalize( float3( normal.x + 3.0*x_depth, normal.y + 3.0*y_depth, normal.z ) );
 
 	vertex = mul(float4(vertex.xyz, 1.0), worldmat);
+	vertex.xyz += 0.5;
 
 	Out.tex_vu = uv.xy;
-
-	float d = 1.0/256;  
-	float3 grad;  
-	grad.x = tex2Dlod(heightSampler, uv + float4( d, 0, 0, 0)) -  
-			 tex2Dlod(heightSampler, uv + float4(-d, 0, 0, 0));  
-	grad.y = tex2Dlod(heightSampler, uv + float4( 0, d, 0, 0)) -  
-			 tex2Dlod(heightSampler, uv + float4( 0,-d, 0, 0));  
-	grad.z = tex2Dlod(heightSampler, uv + float4( 0, 0, d, 0)) -  
-			 tex2Dlod(heightSampler, uv + float4( 0, 0,-d, 0));  
-	float3 norm = normalize(normal + -normalize(grad)*0.33);
 
     Out.position = mul(vertex, viewprojmat);
     Out.normal = normalize(mul(norm, (float3x3)rotmat)); 
@@ -359,37 +483,37 @@ float4 P_Test(
    float3 normal	: TEXCOORD1,
     float3 lightDir : TEXCOORD2,
     float3 eye	: TEXCOORD3,
+	float4 position : TEXCOORD4,
     float4 color	: COLOR0
   ) : COLOR0
 {
 
-	float r = tex2D(heightSampler, tex_vu).r * 32;
 	float4 tex;
+	//float r = tex2D(heightSampler, tex_vu).r;
 
-	if (r < 0.02) {
-		tex = float4(0.0+r*5, 0.0+r*5, 0.15+r*5, 1.0);
-	} else if (r < 0.05) {
-		tex = float4(0.75-r*7, 0.75-r*7, 0, 1.0);
-	} else if (r < 0.3) {
-		tex = float4(0.15, 0.15+r*2, 0.15, 1.0);
-	} else {
-		tex = float4(r, r, r, 1.0);
-	}
-	tex = saturate(tex * 1.5);
+	tex = float4(1.0,1.0,1.0,1.0);
 
-	//tex = tex2D(s_tex, tex_vu);
-
+	
 	float nrmd_light = dot(normal, normalize(lightDir));
-	float4 diffuse = tex * nrmd_light;
 
-	if (r < 0.02 || r > 0.4) {
-		float3 R = normalize(reflect(-lightDir, normal));
-		float VdotR = saturate(dot(R, normalize(eye)));
-		VdotR /= 32.0 - VdotR * 32.0 + VdotR;
-		float4 specular = (lightcol * VdotR) * 0.25;
 
-		diffuse += specular;
-	}
+	float4 diffuse;
+
+	if (color.r == 0.0)
+		diffuse = float4(0.1, 0.1, 0.3, 1.0) * nrmd_light;
+	else
+		diffuse = saturate((color + 0.5) * tex * nrmd_light);
+
+	//float4 diffuse = color * nrmd_light;
+
+	//if (r < 0.02 || r > 0.4) {
+		//float3 R = normalize(reflect(-lightDir, normal));
+		//float VdotR = saturate(dot(R, normalize(eye)));
+		//VdotR /= 32.0 - VdotR * 32.0 + VdotR;
+		//float4 specular = (lightcol * VdotR) * 0.25;
+
+		//diffuse += specular;
+	//}
 
 	return diffuse;
 }
@@ -418,7 +542,12 @@ technique Main
     } 
     pass P4
     {
+        VertexShader = compile vs_3_0 V_Height();
+        PixelShader  = compile ps_3_0 P_Height();
+    }
+    pass P5
+    {
         VertexShader = compile vs_3_0 V_Test();
         PixelShader  = compile ps_3_0 P_Test();
-    } 
+    }  
 }

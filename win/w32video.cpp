@@ -73,6 +73,7 @@ LPD3DXFONT m_pFont, m_tFont;
 D3DXMATRIX matProj;
 D3DXMATRIX matView;
 D3DXMATRIX matViewProj;
+D3DXMATRIX matViewProjOrto;
 
 D3DVIEWPORT9 viewport;
 D3DXPLANE m_frustum[6];
@@ -105,7 +106,7 @@ bool InitD3D(HWND hWnd);
 void Render();
 void setupLight();
 void CreateLocalFont();
-void ViewPort();
+void ViewPort(bool enable);
 void loadTextures();
 void loadDirectXModel();
 void checkExport();
@@ -704,8 +705,10 @@ LPDIRECT3DTEXTURE9 aviTex;
 LPDIRECT3DTEXTURE9 panelTex, battlepanel, navigatepanel, voidbutton;
 LPDIRECT3DTEXTURE9 loadingTex, modelTex, texTex, effectTex;
 LPDIRECT3DTEXTURE9 panelIcons[4];
-LPDIRECT3DTEXTURE9 permTexture;
+LPDIRECT3DTEXTURE9 permGrad;
 LPDIRECT3DTEXTURE9 permTexture2d;
+LPDIRECT3DTEXTURE9 chunkheight[2];
+int chunkheightnum = 0;
 
 int panelnum=0;
 
@@ -736,80 +739,89 @@ int perm2d(int i)
 	return perm[i % 256]; 
 } 
 
-void GeneratePermTexture() 
-{ 
-	HRESULT res;
-	res = D3DXCreateTexture(renderSystem->GetDevice(), 256, 1, 1, 0, D3DFMT_L8, D3DPOOL_MANAGED, &permTexture);
-	assert(res == D3D_OK);
-
-	byte data[256];
-
-	 for (int x = 0; x < 256; x++) 
-			data[x] = (byte)(perm[x]);
-
-	D3DLOCKED_RECT sLockedRect;
-	res = permTexture->LockRect(0, &sLockedRect, 0, 0);
-	assert(res == D3D_OK);
-
-	memcpy(sLockedRect.pBits, data, 256);
-
-	permTexture->UnlockRect(0);
-}
-
 void GeneratePermTexture2d() 
 { 
 	HRESULT res;
-	res = D3DXCreateTexture(renderSystem->GetDevice(), 256, 256, 8, 0, D3DFMT_A8R8G8B8, D3DPOOL_MANAGED, &permTexture2d);
+	res = D3DXCreateTexture(renderSystem->GetDevice(), 256, 256, 0, 0, D3DFMT_A32B32G32R32F, D3DPOOL_MANAGED, &permTexture2d);
 	assert(res == D3D_OK);
-
-	unsigned int data[256*256];
 
 	D3DLOCKED_RECT sLockedRect; 
 
-	for (int l = 0; l < 8; l++)
-	{
-		res = permTexture2d->LockRect(l, &sLockedRect, 0, 0);
-		if (res != D3D_OK) break;
+	res = permTexture2d->LockRect(0, &sLockedRect, 0, 0);
 
-		int w = 0;
-		int h = 0;
-		for (int x = 0; x < 256; x+= 1 << l) 
+	float* imageData = (float*)sLockedRect.pBits;
+
+	for (int y = 0; y < 256; y++) 
+	{ 
+		for (int x = 0; x < 256; x++) 
 		{ 
-			w = 0;
-			for (int y = 0; y < 256; y+= 1 << l) 
-			{ 
-				int A = perm2d(x) + y; 
-				int AA = perm2d(A); 
-				int AB = perm2d(A + 1); 
-				int B = perm2d(x + 1) + y; 
-				int BA = perm2d(B); 
-				int BB = perm2d(B + 1); 
-				data[w + (h * (256 >> l))] = D3DCOLOR_ARGB((byte)(AA)>>(l>>1), 
-														   (byte)(AB)>>(l>>1), 
-														   (byte)(BA)>>(l>>1), 
-														   (byte)(BB)>>(l>>1));
-				w++;
-			}
-			h++;
-		} 
+			int A = perm2d(x) + y; 
+			int AA = perm2d(A); 
+			int AB = perm2d(A + 1); 
+			int B = perm2d(x + 1) + y; 
+			int BA = perm2d(B); 
+			int BB = perm2d(B + 1); 
 
-		memcpy(sLockedRect.pBits, data, (256 >> l) * (256 >> l) * 4);
-		permTexture2d->UnlockRect(l);
-	}
+			imageData[y * sLockedRect.Pitch/4 + x*4 + 0] = (float)AA / 255.0f;
+			imageData[y * sLockedRect.Pitch/4 + x*4 + 1] = (float)AB / 255.0f;
+			imageData[y * sLockedRect.Pitch/4 + x*4 + 2] = (float)BA / 255.0f;
+			imageData[y * sLockedRect.Pitch/4 + x*4 + 3] = (float)BB / 255.0f;
+		}
+	} 
+
+	permTexture2d->UnlockRect(0);
 }
 
-LPDIRECT3DTEXTURE9 heightmap[40];
+void GenerateGradTexture() 
+{ 
+	HRESULT res;
+	res = D3DXCreateTexture(renderSystem->GetDevice(), 256, 1, 0, 0, D3DFMT_A32B32G32R32F, D3DPOOL_MANAGED, &permGrad);
+	assert(res == D3D_OK);
+
+    float Gradients3D[16][3] =  
+    {
+		1,1,0,    -1,1,0,    1,-1,0,    -1,-1,0,
+
+		1,0,1,    -1,0,1,    1,0,-1,    -1,0,-1,
+
+		0,1,1,    0,-1,1,    0,1,-1,    0,-1,-1,
+
+		1,1,0,    0,-1,1,    -1,1,0,    0,-1,-1,
+
+	};
+
+	D3DLOCKED_RECT sLockedRect; 
+
+	res = permGrad->LockRect(0, &sLockedRect, 0, 0);
+
+	float* imageData = (float*)sLockedRect.pBits;
+
+	for (int x = 0; x < 256; x++) 
+	{ 
+		imageData[x*4 + 0] = Gradients3D[perm[x] % 16][0];
+		imageData[x*4 + 1] = Gradients3D[perm[x] % 16][1];
+		imageData[x*4 + 2] = Gradients3D[perm[x] % 16][2];
+		imageData[x*4 + 3] = 1.0f;
+	} 
+
+	permGrad->UnlockRect(0);
+}
+
+//LPDIRECT3DTEXTURE9 heightmap[40];
 
 extern bool exportb[500];
 
 void loadTextures() {
 	char buf[1000];
 
-	for(int i = 0; i < 40; i++) {
-		heightmap[i] = NULL;
-	}
+	//for(int i = 0; i < 40; i++) {
+	//	heightmap[i] = NULL;
+	//}
 
-	GeneratePermTexture();
+	chunkheight[0] = NULL;
+	chunkheight[1] = NULL;
+
+	GenerateGradTexture();
 	GeneratePermTexture2d();
 
 	sprintf_s(buf,"textures/panelicons/panel.png");
@@ -1001,7 +1013,21 @@ void loadModels()
 	
 }
 
-#define chunk_size 48
+void doOrtoRT(int w, int h) 
+{
+    D3DXMATRIX matOrtho; 
+    D3DXMATRIX matIdentity;
+    
+    D3DXMatrixOrthoLH(&matOrtho, (float)w, (float)h, 0.0f, 1.0f);
+    D3DXMatrixIdentity(&matIdentity);
+
+    renderSystem->GetDevice()->SetTransform(D3DTS_PROJECTION, &matOrtho);
+    renderSystem->GetDevice()->SetTransform(D3DTS_WORLD, &matIdentity);
+    renderSystem->GetDevice()->SetTransform(D3DTS_VIEW, &matIdentity);
+	D3DXMatrixMultiply(&matViewProjOrto, &matIdentity, &matOrtho);
+}
+
+#define chunk_size 32
 
 IDirect3DVertexDeclaration9* chunk_declaration = NULL;
 ID3DXMesh* chunk;
@@ -1085,12 +1111,32 @@ int inline GetDist(float x, float y, float z)
 	return sqrt(x * x + y * y + z * z);
 }
 
-#define pSize 1024
+D3DXVECTOR3 GetSide(int side, D3DXVECTOR3 p)
+{
+    if (side == 0)
+        return D3DXVECTOR3( p.x,  p.y,  p.z);
+    else if (side == 1)
+        return D3DXVECTOR3( p.x,  p.z,  p.y);
+    else if (side == 2)
+        return D3DXVECTOR3( p.x, -p.z,  p.y);
+    else if (side == 3)
+        return D3DXVECTOR3( p.z,  p.y,  p.x);
+    else if (side == 4)
+        return D3DXVECTOR3(-p.z,  p.y,  p.x);
+    else if (side == 5)
+        return D3DXVECTOR3( p.x,  p.y, -p.z);
+    else
+        return D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+}
+
+#define pSize 512
 
 s32 PlanetDist = 10000000;
 int index;
 u32 heightmapUIDS[40];
 float heightmapbuf[40][pSize*pSize];
+
+#define DOT(v1, v2) (v1[0] * v2[0] + v1[1] * v2[1] + v1[2] * v2[2])
 
 void DrawChunk(float xoff, float yoff, float width, float div, float mindist, int onlyside, int m, int currModIndex)
 {
@@ -1114,48 +1160,37 @@ void DrawChunk(float xoff, float yoff, float width, float div, float mindist, in
 					continue;
 				}
 
-				v = pos;
-
-				switch(i) 
-				{
-					case 1:
-						v.y = pos.z;
-						v.z = pos.y;
-						break;
-					case 2:
-						v.y = -pos.z;
-						v.z = pos.y;
-						break;
-					case 3:
-						v.x = pos.z;
-						v.z = pos.x;
-						break;
-					case 4:
-						v.x = -pos.z;
-						v.z = pos.x;
-						break;
-					case 5:
-						v.z = -pos.z;
-						break;
-					default: break;
-				}
+				v = GetSide(i, pos);
 
 				r.x = v.x * sqrt(1.0f - v.y * v.y * 0.5f - v.z * v.z * 0.5f + v.y * v.y * v.z * v.z / 3.0f);
 				r.y = v.y * sqrt(1.0f - v.z * v.z * 0.5f - v.x * v.x * 0.5f + v.z * v.z * v.x * v.x / 3.0f);
 				r.z = v.z * sqrt(1.0f - v.x * v.x * 0.5f - v.y * v.y * 0.5f + v.x * v.x * v.y * v.y / 3.0f);
 
-				u32 u, v;
-				u = (atan2(r.x, r.z) / (2. * M_PI) + 0.5) * pSize;
-				v = (asin( r.y) / M_PI + 0.5) * pSize;
+				//u32 u, v;
+				//u = (atan2(r.x, r.z) / (2. * M_PI) + 0.5) * pSize;
+				//v = (asin( r.y) / M_PI + 0.5) * pSize;
 
-				float height = 1.0 + heightmapbuf[index][v*pSize+u];
+				//float height = 1.0 + heightmapbuf[index][v*pSize+u];
 
 				D3DXVec3TransformCoord(&r,&r,&modelList[m].scaleMat);
-				D3DXVECTOR3 d = r * height;
-				D3DXVec3TransformCoord(&d,&d,&modelList[m].world);
+				//D3DXVECTOR3 d = r;// * height;
+				//D3DXVec3TransformCoord(&d,&d,&modelList[m].world);
 				D3DXVec3TransformCoord(&r,&r,&modelList[m].world);
 
-				float dist = GetDist(d.x, d.y, d.z);
+				// skip back out
+				if (r.z < -width * modelList[m].scaleMat._11) 
+					continue;
+
+				// skip back faced 
+				{
+					D3DXVECTOR3 nap = D3DXVECTOR3(r.x - modelList[m].world._41, r.y - modelList[m].world._42, r.z - modelList[m].world._43);
+					D3DXVECTOR3 forw = D3DXVECTOR3(0.0, 0.0, 1.0);
+					D3DXVec3Normalize( &nap, &nap );
+					if (D3DXVec3Dot(&nap, &forw) > 0.75f) 
+						continue;
+				}
+
+				float dist = GetDist(r.x, r.y, r.z);
 
 				PlanetDist = MIN(PlanetDist, dist);
 
@@ -1175,12 +1210,7 @@ void DrawChunk(float xoff, float yoff, float width, float div, float mindist, in
 
 				if (div < 16384 && dist < mindist) {
 					DrawChunk(x_off, y_off, width * 0.5f, div * 2.0f, mindist * 0.5f, i, m, currModIndex);
-				} else {
-
-					if (i & 1)
-						renderSystem->SetRenderState(D3DRS_CULLMODE, CULL_CCW);
-					else
-						renderSystem->SetRenderState(D3DRS_CULLMODE, CULL_CW);
+				} else {			
 
 					type = i;
 
@@ -1188,9 +1218,57 @@ void DrawChunk(float xoff, float yoff, float width, float div, float mindist, in
 					effectList[currModIndex]->SetValue("y_off",&y_off, D3DX_DEFAULT);
 					effectList[currModIndex]->SetValue("div",&div, D3DX_DEFAULT);
 					effectList[currModIndex]->SetValue("type",&type, D3DX_DEFAULT);
+					effectList[currModIndex]->SetValue("width",&width, D3DX_DEFAULT);
+
+					renderSystem->SetRenderState(D3DRS_ZENABLE, false);
+					renderSystem->SetRenderState(D3DRS_ZWRITEENABLE, false);
+
+					LPDIRECT3DSURFACE9 texSurface, oldSurface, zSurfaceOld;
+
+					renderSystem->GetDevice()->GetDepthStencilSurface(&zSurfaceOld);
+					renderSystem->GetDevice()->GetRenderTarget(0, &oldSurface);
+					chunkheight[chunkheightnum]->GetSurfaceLevel(0,&texSurface);
+					renderSystem->GetDevice()->SetRenderTarget(0, texSurface);
+					//if (zSurface == NULL)
+					//	renderSystem->GetDevice()->CreateDepthStencilSurface(512, 512, D3DFMT_D16, D3DMULTISAMPLE_NONE, 0, false, &zSurface, NULL);
+					renderSystem->GetDevice()->SetDepthStencilSurface(0);
+
+/*					viewport.X = 0;
+					viewport.Y = 0;
+					viewport.Width = 512;
+					viewport.Height = 512; 
+
+					viewport.MinZ = 0; 
+					viewport.MaxZ = 1;*/ 
+
+					//renderSystem->GetDevice()->SetViewport( &viewport ); 
+
+					renderSystem->SetRenderState(D3DRS_CULLMODE, CULL_NONE);
+
 					effectList[currModIndex]->BeginPass(4);
 					chunk->DrawSubset(0);
 					effectList[currModIndex]->EndPass();
+
+					renderSystem->GetDevice()->SetRenderTarget(0, oldSurface);
+					renderSystem->GetDevice()->SetDepthStencilSurface(zSurfaceOld);
+
+					effectList[currModIndex]->SetTexture("chunkheight",chunkheight[chunkheightnum]);
+					chunkheightnum ^=1;
+
+					renderSystem->SetRenderState(D3DRS_ZENABLE, true);
+					renderSystem->SetRenderState(D3DRS_ZWRITEENABLE, true);
+
+					ViewPort(true);
+
+					if (i & 1)
+						renderSystem->SetRenderState(D3DRS_CULLMODE, CULL_CCW);
+					else
+						renderSystem->SetRenderState(D3DRS_CULLMODE, CULL_CW);
+
+					effectList[currModIndex]->BeginPass(5);
+					chunk->DrawSubset(0);
+					effectList[currModIndex]->EndPass();
+
 				}
 			}
 			x_off += width;
@@ -1223,7 +1301,75 @@ float val(int x, int y, int index)
 	else return heightmapbuf[index][y*pSize+x];
 }
 
-#define gRoughness 32
+#define octaves 3
+#define lacunarity 1.7f
+#define gain 1.16f
+#define offset 1.12
+static float hScale=0.5f;
+static float vScale=1.5f;
+
+float interpolate(float a, float b, float x)
+{
+    // linear
+//        return  a*(1-x) + b*x;
+
+    // cosine
+    float ft=x*3.1415927f;
+    float f=(float)((1-cos(ft))*0.5f);
+    return  a*(1-f)+b*f;
+
+}
+
+float interpolatedNoise(float x, float y, u32 uid)
+{
+    int integer_X=(int)x;
+    float fractional_X = x-integer_X;
+
+    int integer_Y=(int)y;
+    float fractional_Y=y-integer_Y;
+
+    float v1 = Noise(integer_X,integer_Y, uid);
+    float v2 = Noise(integer_X+1,integer_Y, uid);
+    float v3 = Noise(integer_X,integer_Y+1, uid);
+    float v4 = Noise(integer_X+1,integer_Y+1, uid);
+
+    float i1=interpolate(v1,v2,fractional_X);
+    float i2=interpolate(v3,v4,fractional_X);
+
+    return interpolate(i1,i2,fractional_Y);
+}
+
+float ridge(float h, float off)
+{
+        h = abs(h);
+        h = off - h;
+        h = h * h;
+        return h;
+}
+
+float ridgedMF(float x, float z, u32 uid)
+{
+    float sum = 0;
+    float amplitude = 0.5f;
+    float frequency = 1.0f;
+    float prev = 1.0f;
+
+    x*=hScale;
+    z*=hScale;
+
+    for (int i = 0; i < octaves; i++)
+    {
+        float n = ridge(Noise((float)(x*frequency),(float)(z*frequency), uid), offset);
+        sum += n * amplitude * prev;
+        prev = n;
+        frequency *= lacunarity;
+        amplitude *= gain;
+    }
+
+    return (float)sum*vScale;
+}
+
+float gRoughness = 32;
 #define gBigSize (pSize+pSize)
 
 float Displace(int x, int y, float SmallSize, int uid)  
@@ -1263,16 +1409,22 @@ void DivideGrid(float *points, int x, int y, int width, int height, float c1, fl
     else    //This is the "base case," where each grid piece is less than the size of a pixel.  
     {  
         //The four corners of the grid piece will be averaged and drawn as a single pixel.  
-        float c = saturate((c1 + c2 + c3 + c4) / 4); 
+        float c = saturate((c1 + c2 + c3 + c4) / 4);
 		c *= c;
 		c *= c;
-
-		if (c > 0.55) {
-			c *= c*1.2;
+		if (c > 0.4)
+			c *= c*2;
+		if (c > 0.75) {
+			c *= c*1.01;
 		}
-		c /= 32;
 
 		if (c < 0.0005) c = 0;
+
+		if (c > 0) {
+			c += Noise(uid*c,uid)*(c*0.075f);
+			c += Displace(x, y, newWidth + newHeight, uid);
+		}
+		c /= 128;
 
         points[y*pSize+x] = c;  
         if (width == 2)  
@@ -1290,90 +1442,185 @@ void DivideGrid(float *points, int x, int y, int width, int height, float c1, fl
     }  
 }
 
+static float H=14.0;
+float exponent_array[octaves+1];
+static int first = TRUE;
+
+double fBm(float x, float y)
+{
+	float value, remainder;
+	int i;
+	value = 0.0;
+	/* inner loop of fractal construction */
+	for (i=0; i<octaves; i++) {
+		value += Noise(x, y) * pow( lacunarity, -H*i );
+		x *= lacunarity;
+		y *= lacunarity;
+	}
+	remainder = octaves - (int)octaves;
+	if ( remainder ) /* add in “octaves” remainder */
+	/* ‘i’ and spatial freq. are preset in loop above */
+	value += remainder * Noise(x, y) * pow( lacunarity, -H*i );
+	return value;
+}
+
+float RidgedMultifractal(float x, float y)
+{
+	float result, frequency, signal, weight;
+	int i;
+
+	/* precompute and store spectral weights */
+	if ( first ) {
+		/* seize required memory for exponent_array */
+		frequency = 1.0;
+		for (i=0; i<=octaves; i++) {
+			/* compute weight for each frequency */
+			exponent_array[i] = pow( frequency, -H );
+			frequency *= lacunarity;
+		}
+		first = FALSE;
+	}
+	/* get first octave */
+	signal = Noise(x, y);
+	/* get absolute value of signal (this creates the ridges) */
+	if ( signal < 0.0 ) signal = -signal;
+	/* invert and translate (note that “offset” should be  = 1.0) */
+	signal = offset - signal;
+	/* square the signal, to increase “sharpness” of ridges */
+	signal *= signal;
+	/* assign initial values */
+	result = signal;
+	weight = 1.0;
+	for( i=1; i<octaves; i++ ) {
+		/* increase the frequency */
+		x *= lacunarity;
+		y *= lacunarity;
+		/* weight successive contributions by previous signal */
+		weight = signal * gain;
+		if ( weight > 1.0 ) weight = 1.0;
+		if ( weight < 0.0 ) weight = 0.0;
+		signal = Noise(x, y);
+		if ( signal < 0.0 ) signal = -signal;
+		signal = offset - signal;
+		signal *= signal;
+		/* weight the contribution */
+		signal *= weight;
+		result += signal *exponent_array[i];
+		}
+	return( result );
+} /* RidgedMultifractal() */
+
 void DrawGeosphere(int m, int currModIndex)
 {
 	u32 pass;
 
 	renderSystem->GetDevice()->SetVertexDeclaration(chunk_declaration);
 
-	index = GetHeightmapIndexByUID(modelList[m].instance->globalvars.unique_Id);
-
-	if (index == -1) 
-	{
-		u32 heightmapIndex = 0;
-		for(int i = 114; i > 0; i--) 
-		{
-			if (DATA_ObjectArray->instances[i].ship_type != 1) // orbital
-				break;
-
-			if (Planet(DATA_ObjectArray->instances[i].model_num) == false)
-				continue;
-
-			int uid = heightmapUIDS[heightmapIndex] = DATA_ObjectArray->instances[i].globalvars.unique_Id;
-
-			if (heightmap[heightmapIndex] == NULL)
-			{
-				if ( FAILED(D3DXCreateTexture(renderSystem->GetDevice(), pSize, pSize, 1, 0, D3DFMT_R32F, D3DPOOL_MANAGED, &heightmap[heightmapIndex])) ) {
-					return;
-				}
-			}
-
-			float c1, c2, c3, c4;  
-  
-			c1 = 0;//Noise(0,0,uid);  
-			c2 = 0;//Noise(pSize,0,uid);  
-			c3 = 0;//Noise(0,pSize,uid);  
-			c4 = 0;//Noise(pSize,pSize,uid);  
-
-			DivideGrid(heightmapbuf[heightmapIndex], 0, 0, pSize, pSize, c1, c2, c3, c4, uid); 
-
-			D3DLOCKED_RECT sLockedRect; 
-			if ( FAILED(heightmap[heightmapIndex]->LockRect(0, &sLockedRect, 0, 0))) {
-				//heightmap[index]->Release();
-				//heightmap[index] = NULL;
-				return;
-			}
-
-			u8 *ptr = (u8*)sLockedRect.pBits;
-
-			float* imageData = (float*)sLockedRect.pBits;
-			for(int h = 0; h < pSize; h++) {
-				for(int w = 0; w < pSize; w++) {
-					imageData[h * sLockedRect.Pitch / 4 + w] = heightmapbuf[heightmapIndex][h*pSize+w];
-				}
-			}
-
-			heightmap[heightmapIndex]->UnlockRect(0);
-
-			heightmapIndex++;
+	if (chunkheight[0] == NULL) {
+		if ( FAILED(D3DXCreateTexture(renderSystem->GetDevice(), 32, 32, 0, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &chunkheight[0])) ) {
+			return;
 		}
-		index = GetHeightmapIndexByUID(modelList[m].instance->globalvars.unique_Id);
 	}
+	if (chunkheight[1] == NULL) {
+		if ( FAILED(D3DXCreateTexture(renderSystem->GetDevice(), 32, 32, 0, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &chunkheight[1])) ) {
+			return;
+		}
+	}
+
+	//index = GetHeightmapIndexByUID(modelList[m].instance->globalvars.unique_Id);
+
+	//if (index == -1) 
+	//{
+	//	u32 heightmapIndex = 0;
+	//	for(int i = 114; i > 0; i--) 
+	//	{
+	//		if (DATA_ObjectArray->instances[i].ship_type != 1) // orbital
+	//			break;
+
+	//		if (Planet(DATA_ObjectArray->instances[i].model_num) == false)
+	//			continue;
+
+	//		if (DATA_ObjectArray->instances[i].globalvars.unique_Id == 0x0abc1234) // Earth
+	//			continue;
+
+	//		int uid = heightmapUIDS[heightmapIndex] = DATA_ObjectArray->instances[i].globalvars.unique_Id;
+
+	//		if (heightmap[heightmapIndex] == NULL)
+	//		{
+	//			if ( FAILED(D3DXCreateTexture(renderSystem->GetDevice(), pSize, pSize, 1, 0, D3DFMT_R32F, D3DPOOL_MANAGED, &heightmap[heightmapIndex])) ) {
+	//				return;
+	//			}
+	//		}
+
+	//		float c1, c2, c3, c4;  
+ // 
+	//		c1 = 0;//Noise(0,0,uid);  
+	//		c2 = 0;//Noise(pSize,0,uid);  
+	//		c3 = 0;//Noise(0,pSize,uid);  
+	//		c4 = 0;//Noise(pSize,pSize,uid);  
+
+	//		Model_t *planetModel = GetModel(modelList[m].instance->model_num); 
+	//		gRoughness = planetModel->Scale + planetModel->Scale2;
+	//		DivideGrid(heightmapbuf[heightmapIndex], 0, 0, pSize, pSize, c1, c2, c3, c4, uid); 
+
+	//		D3DLOCKED_RECT sLockedRect; 
+	//		if ( FAILED(heightmap[heightmapIndex]->LockRect(0, &sLockedRect, 0, 0))) {
+	//			//heightmap[index]->Release();
+	//			//heightmap[index] = NULL;
+	//			return;
+	//		}
+
+	//		u8 *ptr = (u8*)sLockedRect.pBits;
+
+	//		float* imageData = (float*)sLockedRect.pBits;
+	//		for(int h = 0; h < pSize; h++) {
+	//			for(int w = 0; w < pSize; w++) {
+	//				imageData[h * sLockedRect.Pitch / 4 + w] = heightmapbuf[heightmapIndex][h*pSize+w];
+	//			}
+	//		}
+
+	//		heightmap[heightmapIndex]->UnlockRect(0);
+
+	//		heightmapIndex++;
+	//	}
+	//	index = GetHeightmapIndexByUID(modelList[m].instance->globalvars.unique_Id);
+	//}
 
 	if (effectList[currModIndex] == NULL)
 		return;
 	
-	effectList[currModIndex]->SetTexture("heightmap",heightmap[index]);
-	//effectList[currModIndex]->SetTexture("heightmap",textures[800]);
-	//effectList[currModIndex]->SetTexture("tex",textures[713]);
+	if (modelList[m].instance->globalvars.unique_Id == 0x0abc1234) { // Earth
+		//effectList[currModIndex]->SetTexture("heightmap",textures[800]);
+		//effectList[currModIndex]->SetTexture("tex",textures[713]);
+		//effectList[currModIndex]->SetValue("predef",new float(1.0f), D3DX_DEFAULT);
+	} else {
+		//effectList[currModIndex]->SetTexture("heightmap",heightmap[index]);
+		//effectList[currModIndex]->SetValue("predef",new float(0.0f), D3DX_DEFAULT);
+	}
+	
 	effectList[currModIndex]->SetMatrix("worldmat",&modelList[m].world);
 	effectList[currModIndex]->SetMatrix("scalemat",&modelList[m].scaleMat);
 	effectList[currModIndex]->SetMatrix("rotmat",&modelList[m].rotMat);
+	effectList[currModIndex]->SetValue("uid",&modelList[m].instance->globalvars.unique_Id, D3DX_DEFAULT);
 
-	effectList[currModIndex]->Begin(&pass,0);
+	
 
 	PlanetDist = 10000000;
 	
 	//PlanetDist = GetDist(modelList[m].world._41, modelList[m].world._42, modelList[m].world._43) - GetDist(modelList[m].scaleMat._21, modelList[m].scaleMat._22, modelList[m].scaleMat._23);
 
-	if (modelList[m].scale > 5)
-	{
-		DrawChunk(-1.0f, -1.0f, 1.0f, 1.0f, 40000.0f, -1, m, currModIndex);
-	} else {
-		DrawChunk(-1.0f, -1.0f, 1.0f, 1.0f, 80000.0f, -1, m, currModIndex);
-	}
+	//for(int s=0;s<=5;s++) {
+		effectList[currModIndex]->Begin(&pass,0);
+		if (modelList[m].scale > 5)
+		{
+			DrawChunk(-1.0f, -1.0f, 1.0f, 1.0f, 40000.0f, -1, m, currModIndex);
+		} else {
+			DrawChunk(-1.0f, -1.0f, 1.0f, 1.0f, 80000.0f, -1, m, currModIndex);
+		}
+		effectList[currModIndex]->End();
+	//}
 	
-	effectList[currModIndex]->End();
+	
 }
 
 LPDIRECT3DVERTEXBUFFER9 vb;
@@ -1492,7 +1739,8 @@ bool InitD3D(HWND hWnd)
     return true;
 }
 
-void ViewPort(bool enable) {
+void ViewPort(bool enable) 
+{
 
 	if (aspectfix) {
 		viewport.X = 0;
@@ -1931,19 +2179,6 @@ void doOrto() {
     renderSystem->GetDevice()->SetTransform(D3DTS_WORLD, &matIdentity);
     renderSystem->GetDevice()->SetTransform(D3DTS_VIEW, &matIdentity);
 }
-
-void doOrtoRT(int w, int h) {
-    D3DXMATRIX matOrtho; 
-    D3DXMATRIX matIdentity;
-    
-    D3DXMatrixOrthoLH(&matOrtho, (float)w, (float)h, 0.0f, 1.0f);
-    D3DXMatrixIdentity(&matIdentity);
-
-    renderSystem->GetDevice()->SetTransform(D3DTS_PROJECTION, &matOrtho);
-    renderSystem->GetDevice()->SetTransform(D3DTS_WORLD, &matIdentity);
-    renderSystem->GetDevice()->SetTransform(D3DTS_VIEW, &matIdentity);
-}
-
 
 struct TRANSPBUF {
 	int modelNum;
@@ -2799,7 +3034,7 @@ void Render()
 				effectList[currModIndex]->SetMatrix("viewprojmat",&matViewProj);
 				effectList[currModIndex]->SetMatrix("worldInverse",&WorldInverse);
 
-				effectList[currModIndex]->SetTexture("permTexture",permTexture);
+				effectList[currModIndex]->SetTexture("permGrad",permGrad);
 				effectList[currModIndex]->SetTexture("permTexture2d",permTexture2d);
 			}
 
