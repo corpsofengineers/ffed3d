@@ -246,8 +246,8 @@ float4 P_Atmo(
 
 float3 fade(float3 t)
 {
-        return t * t * t * (t * (t * 6 - 15) + 10); // new curve
-		//return t * t * (3 - 2 * t);
+        //return t * t * t * (t * (t * 6 - 15) + 10); // new curve
+		return t * t * (3 - 2 * t);
 }
 
 float4 perm2d(float2 p)
@@ -255,9 +255,9 @@ float4 perm2d(float2 p)
         return tex2Dlod(permSampler2d, float4(p, 0.0, 0.0));
 }
 
-float4 perm3d(float3 p)
+float4 perm3d(float3 p, float seed = 0)
 {
-        return tex2Dlod(permSampler2d, float4(p.xy, 0.0, 0.0)) + p.z + frac(uid*0.000001);
+        return tex2Dlod(permSampler2d, float4(p.xy, 0.0, 0.0)) + p.z + seed;
 }
 
 float gradperm(float x, float3 p)
@@ -265,17 +265,19 @@ float gradperm(float x, float3 p)
         return dot(tex1Dlod(s_grad, float4(x, 0.0, 0.0, 0.0)).xyz, p);
 }
 
+const float dim = 1.0 / 256.0;
+
 // Improved 3d noise basis function
-float inoise(float3 p)
+float inoise(float3 p, float seed = 0)
 {
         float3 P = fmod(floor(p), 256.0);       // FIND UNIT CUBE THAT CONTAINS POINT
         p -= floor(p);                      // FIND RELATIVE X,Y,Z OF POINT IN CUBE.
         float3 f = fade(p);                     // COMPUTE FADE CURVES FOR EACH OF X,Y,Z.
 
-        P = P / 256.0;
+        P = P * dim;
 
     // HASH COORDINATES OF THE 8 CUBE CORNERS
-        float4 AA = perm3d(P);
+        float4 AA = perm3d(P, seed);
 
         // AND ADD BLENDED RESULTS FROM 8 CORNERS OF CUBE
         return lerp( lerp( lerp( gradperm(AA.x, p ),
@@ -283,34 +285,34 @@ float inoise(float3 p)
                         lerp( gradperm(AA.y, p + float3(0, -1, 0) ),
                                 gradperm(AA.w, p + float3(-1, -1, 0) ), f.x), f.y),
 
-                        lerp( lerp( gradperm(AA.x+(1.0 / 256.0), p + float3(0, 0, -1) ),
-                                gradperm(AA.z+(1.0 / 256.0), p + float3(-1, 0, -1) ), f.x),
-                        lerp( gradperm(AA.y+(1.0 / 256.0), p + float3(0, -1, -1) ),
-                                gradperm(AA.w+(1.0 / 256.0), p + float3(-1, -1, -1) ), f.x), f.y), f.z);
+                        lerp( lerp( gradperm(AA.x + dim, p + float3(0, 0, -1) ),
+                                gradperm(AA.z + dim, p + float3(-1, 0, -1) ), f.x),
+                        lerp( gradperm(AA.y + dim, p + float3(0, -1, -1) ),
+                                gradperm(AA.w + dim, p + float3(-1, -1, -1) ), f.x), f.y), f.z);
 }
 
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // FRACTAL FUNCTIONS
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 // fractal sum
-float fBm(float3 p, int octaves, float lacunarity = 2.0, float gain = 0.5)
+float fBm(float3 p, int octaves, float lacunarity = 2.0, float gain = 0.5, float seed = 0)
 {
         float freq = 1.0f, amp  = 0.5f;
         float sum  = 0.0;
         for(int i=0; i < octaves; i++) {
-                sum += inoise(p*freq)*amp;
+                sum += inoise(p*freq, seed)*amp;
                 freq *= lacunarity;
                 amp *= gain;
         }
         return sum;
 }
 
-float turbulence(float3 p, int octaves, float lacunarity = 2.0, float gain = 0.5)
+float turbulence(float3 p, int octaves, float lacunarity = 2.0, float gain = 0.5, float seed = 0)
 {
 		float freq = 1.0, amp = 1.0;
         float sum = 0.0; 
         for(int i=0; i < octaves; i++) {
-                sum += abs(inoise(p*freq))*amp;
+                sum += abs(inoise(p*freq, seed))*amp;
                 freq *= lacunarity;
                 amp *= gain;
         }
@@ -327,7 +329,7 @@ float ridge(float h, float offset)
     return h;
 }
 
-float ridgedmf(float3 p, int octaves, float lacunarity, float gain = 0.05, float offset = 1.0)
+float ridgedmf(float3 p, int octaves, float lacunarity, float gain = 0.05, float offset = 1.0, float seed = 0)
 {
         float sum = 0;
         float freq = 1.0;
@@ -335,7 +337,7 @@ float ridgedmf(float3 p, int octaves, float lacunarity, float gain = 0.05, float
         float prev = 1.0;
         for(int i=0; i < octaves; i++)
         {
-                float n = ridge(inoise(p*freq), offset);
+                float n = ridge(inoise(p*freq, seed), offset);
                 sum += n*amp*prev;
                 prev = n;
                 freq *= lacunarity;
@@ -346,8 +348,9 @@ float ridgedmf(float3 p, int octaves, float lacunarity, float gain = 0.05, float
 
 float getHeight(float3 v)
 {
-	float height = fBm(v, 6, 2.7, 0.5);
-	float montes = ridgedmf(v, 6, 2.7, 1.0, 1.0);
+	float seed = frac(uid*0.000001);
+	float height = fBm(v, 6, 2.7, 0.5, seed);
+	float montes = ridgedmf(v, 6, 2.7, 1.0, 1.0, seed);
     height += montes * height;
 	height = saturate(height);
     return height;
