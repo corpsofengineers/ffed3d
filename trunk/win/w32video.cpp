@@ -906,7 +906,7 @@ void loadEffects() {
 	char* data=NULL;
 
 	sprintf_s(buf,"models/planet.fx");
-	if ( FAILED(D3DXCreateEffectFromFileA(renderSystem->GetDevice(), (LPCSTR)buf, 0, 0, 0, 0, &effectPlanet, &err))) {
+	if ( FAILED(D3DXCreateEffectFromFileA(renderSystem->GetDevice(), (LPCSTR)buf, 0, 0, D3DXSHADER_OPTIMIZATION_LEVEL3, 0, &effectPlanet, &err))) {
 		effectPlanet=NULL;
 		if (err) {
 			char *tempString = (char*)err->GetBufferPointer();
@@ -1603,23 +1603,13 @@ void DrawGeosphere(int m, int currModIndex)
 	effectList[currModIndex]->SetMatrix("rotmat",&modelList[m].rotMat);
 	effectList[currModIndex]->SetValue("uid",&modelList[m].instance->globalvars.unique_Id, D3DX_DEFAULT);
 
-	
-
 	PlanetDist = 10000000;
 	
 	//PlanetDist = GetDist(modelList[m].world._41, modelList[m].world._42, modelList[m].world._43) - GetDist(modelList[m].scaleMat._21, modelList[m].scaleMat._22, modelList[m].scaleMat._23);
 
-	//for(int s=0;s<=5;s++) {
-		effectList[currModIndex]->Begin(&pass,0);
-		if (modelList[m].scale > 5)
-		{
-			DrawChunk(-1.0f, -1.0f, 1.0f, 1.0f, 40000.0f, -1, m, currModIndex);
-		} else {
-			DrawChunk(-1.0f, -1.0f, 1.0f, 1.0f, 80000.0f, -1, m, currModIndex);
-		}
-		effectList[currModIndex]->End();
-	//}
-	
+	effectList[currModIndex]->Begin(&pass,0);
+	DrawChunk(-1.0f, -1.0f, 1.0f, 1.0f, modelList[m].dist * 1.5, -1, m, currModIndex);
+	effectList[currModIndex]->End();
 	
 }
 
