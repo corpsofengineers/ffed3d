@@ -6094,18 +6094,19 @@ D3DXVECTOR4 GetStarLightColor()
 {
 	D3DXVECTOR4	lpos, color;
 	u32 model;
-	ModelInstance_t *plptr=*DATA_008861;
+	ModelInstance_t *plptr = DATA_PlayerObject;
 
 	color = D3DXVECTOR4(1.0,1.0,1.0,1.0);
 
-	if (plptr == NULL)
+	if (DATA_PlayerObject == NULL)
 		return color; 	// player obj not exist
 
- 	for(int i = 114; i > 0; i--) {
-		model = instanceList->instances[i].index;
-		if (model >= 138 && model <= 148) // this is star?
-			break;
-    }
+ 	//for(int i = 114; i > 0; i--) {
+		//model = instanceList->instances[i].index;
+		//if (model >= 138 && model <= 148) // this is star?
+		//	break;
+  //  }
+	model = instanceList->instances[114].index;
 
 	playerLightPos.x=-(float)((double)(plptr->pos.x.full)/DIVIDER);
 	playerLightPos.y=-(float)((double)(plptr->pos.y.full)/DIVIDER);
@@ -6131,7 +6132,7 @@ D3DXVECTOR4 GetStarLightColor()
 	playerLightPos.y = lpos.y;
 	playerLightPos.z = lpos.z;
 
-	if (model >= 138 && model <= 148 && DATA_NumObjects > 0) { // have star model
+	if (model >= 138 && model <= 148) { // have star model
 		// Нам бы цвет света звезды задать
 		color.x = 1.0f / 255.0f * (starColors[model-138][0] * 17);
 		color.y = 1.0f / 255.0f * (starColors[model-138][1] * 17);

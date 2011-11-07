@@ -906,7 +906,7 @@ void loadEffects() {
 	char* data=NULL;
 
 	sprintf_s(buf,"models/planet.fx");
-	if ( FAILED(D3DXCreateEffectFromFileA(renderSystem->GetDevice(), (LPCSTR)buf, 0, 0, D3DXSHADER_OPTIMIZATION_LEVEL3, 0, &effectPlanet, &err))) {
+	if ( FAILED(D3DXCreateEffectFromFileA(renderSystem->GetDevice(), (LPCSTR)buf, 0, 0, 0/*D3DXSHADER_OPTIMIZATION_LEVEL3*/, 0, &effectPlanet, &err))) {
 		effectPlanet=NULL;
 		if (err) {
 			char *tempString = (char*)err->GetBufferPointer();
@@ -1027,22 +1027,20 @@ void doOrtoRT(int w, int h)
 	D3DXMatrixMultiply(&matViewProjOrto, &matIdentity, &matOrtho);
 }
 
-#define chunk_size 32
+#define chunk_size 29
 
 IDirect3DVertexDeclaration9* chunk_declaration = NULL;
-ID3DXMesh* chunk;
+ID3DXMesh *chunk, *chunk2;
 
-void GenerateChunks() 
+ID3DXMesh* GenerateChunk(ID3DXMesh* chunk, u32 size, u32 addition) 
 {
 
 	float width;
-	u32 size;
 
 	u32 w, h;
 	float x, y, z;
 
-	size = chunk_size;
-	width = 1.0f / size;
+	size += addition;
 
 	HRESULT res = D3DXCreateMeshFVF(size * size * 2, (size + 1) * (size + 1), 
 								D3DXMESH_MANAGED | D3DXMESH_32BIT | D3DXMESH_WRITEONLY, D3DFVF_XYZ, 
@@ -1059,11 +1057,13 @@ void GenerateChunks()
 	D3DXVECTOR3 *pVertex=NULL;
 	chunk->LockVertexBuffer( 0, (void**)&pVertex );
 
-	y = 0.0f;
+	width = 2.0f / (size - addition);
+
+	y = -1.0f - (width * (addition / 2));
 	z = -1.0f;
 	for(h = 0; h <= size; h++, y += width) 
 	{
-		x = 0.0f;
+		x = -1.0f - (width * (addition / 2));
 		for(w = 0; w <= size; w++, x += width) 
 		{
 			pVertex->x = x;
@@ -1104,6 +1104,7 @@ void GenerateChunks()
 	}
 	chunk->UnlockIndexBuffer();
 
+	return chunk;
 }
 
 int inline GetDist(float x, float y, float z)
@@ -1138,377 +1139,111 @@ float heightmapbuf[40][pSize*pSize];
 
 #define DOT(v1, v2) (v1[0] * v2[0] + v1[1] * v2[1] + v1[2] * v2[2])
 
-void DrawChunk(float xoff, float yoff, float width, float div, float mindist, int onlyside, int m, int currModIndex)
+void DrawChunk(float xoff, float yoff, float width, float div, float mindist, int side, int m, int currModIndex)
 {
 	float type;
-	float x_off, y_off;
 	D3DXVECTOR3 pos, v, r;
 
-	y_off = yoff;
-	for (int h = 0; h < 2; h++)
+	pos.x = -1.0f + xoff + (width*0.5f);
+	pos.y = -1.0f + yoff + (width*0.5f);
+	pos.z = -1.0f;
+
+	v = GetSide(side, pos);
+
+	r.x = v.x * sqrt(1.0f - v.y * v.y * 0.5f - v.z * v.z * 0.5f + v.y * v.y * v.z * v.z / 3.0f);
+	r.y = v.y * sqrt(1.0f - v.z * v.z * 0.5f - v.x * v.x * 0.5f + v.z * v.z * v.x * v.x / 3.0f);
+	r.z = v.z * sqrt(1.0f - v.x * v.x * 0.5f - v.y * v.y * 0.5f + v.x * v.x * v.y * v.y / 3.0f);
+
+	//u32 u, v;
+	//u = (atan2(r.x, r.z) / (2. * M_PI) + 0.5) * pSize;
+	//v = (asin( r.y) / M_PI + 0.5) * pSize;
+
+	//float height = 1.0 + heightmapbuf[index][v*pSize+u];
+
+	D3DXVec3TransformCoord(&r,&r,&modelList[m].scaleMat);
+	//D3DXVECTOR3 d = r;// * height;
+	//D3DXVec3TransformCoord(&d,&d,&modelList[m].world);
+	D3DXVec3TransformCoord(&r,&r,&modelList[m].world);
+
+	// skip back out
+	//if (r.z < -width * modelList[m].scaleMat._11) 
+	//	return;
+
+	// skip back faced 
 	{
-		x_off = xoff;
-		for (int w = 0; w < 2; w++)
-		{	
-			pos.x = x_off + (width*0.5f);
-			pos.y = y_off + (width*0.5f);
-			pos.z = -1.0f;
+		D3DXVECTOR3 nap = D3DXVECTOR3(r.x - modelList[m].world._41, r.y - modelList[m].world._42, r.z - modelList[m].world._43);
+		D3DXVECTOR3 forw = D3DXVECTOR3(0.0, 0.0, 1.0);
+		D3DXVec3Normalize( &nap, &nap );
+		if (D3DXVec3Dot(&nap, &forw) > 0.75f) 
+			return;
+	}
 
-			for (int i = 0; i < 6; i++)
-			{
-				if (onlyside != -1 && i != onlyside) {
-					continue;
-				}
+	float dist = GetDist(r.x, r.y, r.z);
 
-				v = GetSide(i, pos);
+	PlanetDist = MIN(PlanetDist, dist);
 
-				r.x = v.x * sqrt(1.0f - v.y * v.y * 0.5f - v.z * v.z * 0.5f + v.y * v.y * v.z * v.z / 3.0f);
-				r.y = v.y * sqrt(1.0f - v.z * v.z * 0.5f - v.x * v.x * 0.5f + v.z * v.z * v.x * v.x / 3.0f);
-				r.z = v.z * sqrt(1.0f - v.x * v.x * 0.5f - v.y * v.y * 0.5f + v.x * v.x * v.y * v.y / 3.0f);
-
-				//u32 u, v;
-				//u = (atan2(r.x, r.z) / (2. * M_PI) + 0.5) * pSize;
-				//v = (asin( r.y) / M_PI + 0.5) * pSize;
-
-				//float height = 1.0 + heightmapbuf[index][v*pSize+u];
-
-				D3DXVec3TransformCoord(&r,&r,&modelList[m].scaleMat);
-				//D3DXVECTOR3 d = r;// * height;
-				//D3DXVec3TransformCoord(&d,&d,&modelList[m].world);
-				D3DXVec3TransformCoord(&r,&r,&modelList[m].world);
-
-				// skip back out
-				if (r.z < -width * modelList[m].scaleMat._11) 
-					continue;
-
-				// skip back faced 
-				{
-					D3DXVECTOR3 nap = D3DXVECTOR3(r.x - modelList[m].world._41, r.y - modelList[m].world._42, r.z - modelList[m].world._43);
-					D3DXVECTOR3 forw = D3DXVECTOR3(0.0, 0.0, 1.0);
-					D3DXVec3Normalize( &nap, &nap );
-					if (D3DXVec3Dot(&nap, &forw) > 0.75f) 
-						continue;
-				}
-
-				float dist = GetDist(r.x, r.y, r.z);
-
-				PlanetDist = MIN(PlanetDist, dist);
-
-				bool out;
-				// check frustum
-				for (int f = 0; f < 6; f++ )
-				{
-					out = false;
-					if ( D3DXPlaneDotCoord( &m_frustum[i], &r) < -width * modelList[m].scaleMat._11 * 1.5f)
-					{
-						out = true;
-						break;
-					}
-				}
-
-				if (out) continue;
-
-				if (div < 16384 && dist < mindist) {
-					DrawChunk(x_off, y_off, width * 0.5f, div * 2.0f, mindist * 0.5f, i, m, currModIndex);
-				} else {			
-
-					type = i;
-
-					effectList[currModIndex]->SetValue("x_off",&x_off, D3DX_DEFAULT);
-					effectList[currModIndex]->SetValue("y_off",&y_off, D3DX_DEFAULT);
-					effectList[currModIndex]->SetValue("div",&div, D3DX_DEFAULT);
-					effectList[currModIndex]->SetValue("type",&type, D3DX_DEFAULT);
-					effectList[currModIndex]->SetValue("width",&width, D3DX_DEFAULT);
-
-					renderSystem->SetRenderState(D3DRS_ZENABLE, false);
-					renderSystem->SetRenderState(D3DRS_ZWRITEENABLE, false);
-
-					LPDIRECT3DSURFACE9 texSurface, oldSurface, zSurfaceOld;
-
-					renderSystem->GetDevice()->GetDepthStencilSurface(&zSurfaceOld);
-					renderSystem->GetDevice()->GetRenderTarget(0, &oldSurface);
-					chunkheight[chunkheightnum]->GetSurfaceLevel(0,&texSurface);
-					renderSystem->GetDevice()->SetRenderTarget(0, texSurface);
-					//if (zSurface == NULL)
-					//	renderSystem->GetDevice()->CreateDepthStencilSurface(512, 512, D3DFMT_D16, D3DMULTISAMPLE_NONE, 0, false, &zSurface, NULL);
-					renderSystem->GetDevice()->SetDepthStencilSurface(0);
-
-/*					viewport.X = 0;
-					viewport.Y = 0;
-					viewport.Width = 512;
-					viewport.Height = 512; 
-
-					viewport.MinZ = 0; 
-					viewport.MaxZ = 1;*/ 
-
-					//renderSystem->GetDevice()->SetViewport( &viewport ); 
-
-					renderSystem->SetRenderState(D3DRS_CULLMODE, CULL_NONE);
-
-					effectList[currModIndex]->BeginPass(4);
-					chunk->DrawSubset(0);
-					effectList[currModIndex]->EndPass();
-
-					renderSystem->GetDevice()->SetRenderTarget(0, oldSurface);
-					renderSystem->GetDevice()->SetDepthStencilSurface(zSurfaceOld);
-
-					effectList[currModIndex]->SetTexture("chunkheight",chunkheight[chunkheightnum]);
-					chunkheightnum ^=1;
-
-					renderSystem->SetRenderState(D3DRS_ZENABLE, true);
-					renderSystem->SetRenderState(D3DRS_ZWRITEENABLE, true);
-
-					ViewPort(true);
-
-					if (i & 1)
-						renderSystem->SetRenderState(D3DRS_CULLMODE, CULL_CCW);
-					else
-						renderSystem->SetRenderState(D3DRS_CULLMODE, CULL_CW);
-
-					effectList[currModIndex]->BeginPass(5);
-					chunk->DrawSubset(0);
-					effectList[currModIndex]->EndPass();
-
-				}
-			}
-			x_off += width;
+	// check frustum
+	for (int f = 0; f < 6; f++ )
+	{
+		if ( D3DXPlaneDotCoord( &m_frustum[f], &r) < -width * modelList[m].scaleMat._22 * 2.0f)
+		{
+			return;
 		}
-		y_off += width;
+	}
+
+	if (div < 16384 && dist < mindist) {
+		float newwidth = width * 0.5f;
+		DrawChunk(xoff				, yoff				, newwidth, div * 2.0f, mindist * 0.5f, side, m, currModIndex);
+		DrawChunk(xoff + newwidth	, yoff				, newwidth, div * 2.0f, mindist * 0.5f, side, m, currModIndex);
+		DrawChunk(xoff				, yoff + newwidth	, newwidth, div * 2.0f, mindist * 0.5f, side, m, currModIndex);
+		DrawChunk(xoff + newwidth	, yoff + newwidth	, newwidth, div * 2.0f, mindist * 0.5f, side, m, currModIndex);
+	} else {			
+
+		effectList[currModIndex]->SetValue("x_off",&xoff, D3DX_DEFAULT);
+		effectList[currModIndex]->SetValue("y_off",&yoff, D3DX_DEFAULT);
+		effectList[currModIndex]->SetValue("div"  ,&div,  D3DX_DEFAULT);
+		effectList[currModIndex]->SetValue("side" ,&side, D3DX_DEFAULT);
+		effectList[currModIndex]->SetValue("width",&width,D3DX_DEFAULT);
+
+		renderSystem->SetRenderState(D3DRS_ZENABLE, false);
+		renderSystem->SetRenderState(D3DRS_ZWRITEENABLE, false);
+
+		LPDIRECT3DSURFACE9 texSurface, oldSurface, zSurfaceOld;
+
+		renderSystem->GetDevice()->GetDepthStencilSurface(&zSurfaceOld);
+		renderSystem->GetDevice()->GetRenderTarget(0, &oldSurface);
+		chunkheight[chunkheightnum]->GetSurfaceLevel(0,&texSurface);
+		renderSystem->GetDevice()->SetRenderTarget(0, texSurface);
+		renderSystem->GetDevice()->SetDepthStencilSurface(0);
+
+		renderSystem->SetRenderState(D3DRS_CULLMODE, CULL_NONE);
+
+		effectList[currModIndex]->BeginPass(4);
+		chunk2->DrawSubset(0);
+		effectList[currModIndex]->EndPass();
+
+		renderSystem->GetDevice()->SetRenderTarget(0, oldSurface);
+		renderSystem->GetDevice()->SetDepthStencilSurface(zSurfaceOld);
+
+		effectList[currModIndex]->SetTexture("chunkheight",chunkheight[chunkheightnum]);
+		chunkheightnum ^=1;
+
+		renderSystem->SetRenderState(D3DRS_ZENABLE, true);
+		renderSystem->SetRenderState(D3DRS_ZWRITEENABLE, true);
+
+		ViewPort(true);
+
+		if (side & 1)
+			renderSystem->SetRenderState(D3DRS_CULLMODE, CULL_CCW);
+		else
+			renderSystem->SetRenderState(D3DRS_CULLMODE, CULL_CW);
+
+		effectList[currModIndex]->BeginPass(5);
+		chunk->DrawSubset(0);
+		effectList[currModIndex]->EndPass();
+
 	}
 }
-
-int GetHeightmapIndexByUID(u32 UID)
-{
-	for(int i = 0; i < 40; i++) {
-		if (heightmapUIDS[i] == UID)
-			return i;
-	}
-	return -1;
-}
-
-float Noise(int x, int y, int seed = 0)
-{
-    int n = x + y * 57 + seed;
-    n = (n<<13) ^ n;
-    return ( 1.0 - ( (n * (n * n * 15731 + 789221) + 1376312589) & 0x7fffffff) / 1073741824.0);    
-}
-
-#define saturate(x) MIN(MAX(x, 0), 1.0)
-
-float val(int x, int y, int index)
-{
-	if (x < 0 || x > pSize || y < 0 || y > pSize) return 0;
-	else return heightmapbuf[index][y*pSize+x];
-}
-
-#define octaves 3
-#define lacunarity 1.7f
-#define gain 1.16f
-#define offset 1.12
-static float hScale=0.5f;
-static float vScale=1.5f;
-
-float interpolate(float a, float b, float x)
-{
-    // linear
-//        return  a*(1-x) + b*x;
-
-    // cosine
-    float ft=x*3.1415927f;
-    float f=(float)((1-cos(ft))*0.5f);
-    return  a*(1-f)+b*f;
-
-}
-
-float interpolatedNoise(float x, float y, u32 uid)
-{
-    int integer_X=(int)x;
-    float fractional_X = x-integer_X;
-
-    int integer_Y=(int)y;
-    float fractional_Y=y-integer_Y;
-
-    float v1 = Noise(integer_X,integer_Y, uid);
-    float v2 = Noise(integer_X+1,integer_Y, uid);
-    float v3 = Noise(integer_X,integer_Y+1, uid);
-    float v4 = Noise(integer_X+1,integer_Y+1, uid);
-
-    float i1=interpolate(v1,v2,fractional_X);
-    float i2=interpolate(v3,v4,fractional_X);
-
-    return interpolate(i1,i2,fractional_Y);
-}
-
-float ridge(float h, float off)
-{
-        h = abs(h);
-        h = off - h;
-        h = h * h;
-        return h;
-}
-
-float ridgedMF(float x, float z, u32 uid)
-{
-    float sum = 0;
-    float amplitude = 0.5f;
-    float frequency = 1.0f;
-    float prev = 1.0f;
-
-    x*=hScale;
-    z*=hScale;
-
-    for (int i = 0; i < octaves; i++)
-    {
-        float n = ridge(Noise((float)(x*frequency),(float)(z*frequency), uid), offset);
-        sum += n * amplitude * prev;
-        prev = n;
-        frequency *= lacunarity;
-        amplitude *= gain;
-    }
-
-    return (float)sum*vScale;
-}
-
-float gRoughness = 32;
-#define gBigSize (pSize+pSize)
-
-float Displace(int x, int y, float SmallSize, int uid)  
-{  
-  
-    float Max = SmallSize/ gBigSize * (gRoughness * (Noise(x, y, x+y*SmallSize*uid) * 0.5f + 1.0f));  
-    return (Noise(x, y, (uid * (int)SmallSize + x) % (int)(uid - SmallSize + y)) * 0.5f) * Max; 
-}
-
-void DivideGrid(float *points, int x, int y, int width, int height, float c1, float c2, float c3, float c4, int uid)  
-{  
-    float Edge1, Edge2, Edge3, Edge4, Middle;  
-  
-    int newWidth = width / 2;  
-    int newHeight = height / 2;  
-  
-    if (width > 1 || height > 1)  
-    {  
-        Middle = ((c1 + c2 + c3 + c4) / 4);
-		Edge1 = ((c1 + c2) / 2);    //Calculate the edges by averaging the two corners of each edge.  
-		Edge2 = ((c2 + c3) / 2);  
-		Edge3 = ((c3 + c4) / 2);  
-		Edge4 = ((c4 + c1) / 2);
-		Middle += Displace(x, y, newWidth + newHeight, uid);  //Randomly displace the midpoint!
-        //Make sure that the midpoint doesn't accidentally "randomly displaced" past the boundaries!  
-        Middle= saturate(Middle);  
-        Edge1 = saturate(Edge1);  
-        Edge2 = saturate(Edge2);  
-        Edge3 = saturate(Edge3);  
-        Edge4 = saturate(Edge4);  
-        //Do the operation over again for each of the four new grids.
-		DivideGrid(points, x, y, newWidth, newHeight, c1, Edge1, Middle, Edge4, uid);  
-		DivideGrid(points, x + newWidth, y, width - newWidth, newHeight, Edge1, c2, Edge2, Middle, uid);  
-		DivideGrid(points, x + newWidth, y + newHeight, width - newWidth, height - newHeight, Middle, Edge2, c3, Edge3, uid);  
-		DivideGrid(points, x, y + newHeight, newWidth, height - newHeight, Edge4, Middle, Edge3, c4, uid); 
-    }  
-    else    //This is the "base case," where each grid piece is less than the size of a pixel.  
-    {  
-        //The four corners of the grid piece will be averaged and drawn as a single pixel.  
-        float c = saturate((c1 + c2 + c3 + c4) / 4);
-		c *= c;
-		c *= c;
-		if (c > 0.4)
-			c *= c*2;
-		if (c > 0.75) {
-			c *= c*1.01;
-		}
-
-		if (c < 0.0005) c = 0;
-
-		if (c > 0) {
-			c += Noise(uid*c,uid)*(c*0.075f);
-			c += Displace(x, y, newWidth + newHeight, uid);
-		}
-		c /= 128;
-
-        points[y*pSize+x] = c;  
-        if (width == 2)  
-        {  
-            points[y*pSize+(x+1)] = c;  
-        }  
-        if (height == 2)  
-        {  
-            points[(y+1)*pSize+x] = c;  
-        }  
-        if ((width == 2) && (height == 2))  
-        {  
-            points[(y+1)*pSize+(x+1)] = c;  
-        }  
-    }  
-}
-
-static float H=14.0;
-float exponent_array[octaves+1];
-static int first = TRUE;
-
-double fBm(float x, float y)
-{
-	float value, remainder;
-	int i;
-	value = 0.0;
-	/* inner loop of fractal construction */
-	for (i=0; i<octaves; i++) {
-		value += Noise(x, y) * pow( lacunarity, -H*i );
-		x *= lacunarity;
-		y *= lacunarity;
-	}
-	remainder = octaves - (int)octaves;
-	if ( remainder ) /* add in “octaves” remainder */
-	/* ‘i’ and spatial freq. are preset in loop above */
-	value += remainder * Noise(x, y) * pow( lacunarity, -H*i );
-	return value;
-}
-
-float RidgedMultifractal(float x, float y)
-{
-	float result, frequency, signal, weight;
-	int i;
-
-	/* precompute and store spectral weights */
-	if ( first ) {
-		/* seize required memory for exponent_array */
-		frequency = 1.0;
-		for (i=0; i<=octaves; i++) {
-			/* compute weight for each frequency */
-			exponent_array[i] = pow( frequency, -H );
-			frequency *= lacunarity;
-		}
-		first = FALSE;
-	}
-	/* get first octave */
-	signal = Noise(x, y);
-	/* get absolute value of signal (this creates the ridges) */
-	if ( signal < 0.0 ) signal = -signal;
-	/* invert and translate (note that “offset” should be  = 1.0) */
-	signal = offset - signal;
-	/* square the signal, to increase “sharpness” of ridges */
-	signal *= signal;
-	/* assign initial values */
-	result = signal;
-	weight = 1.0;
-	for( i=1; i<octaves; i++ ) {
-		/* increase the frequency */
-		x *= lacunarity;
-		y *= lacunarity;
-		/* weight successive contributions by previous signal */
-		weight = signal * gain;
-		if ( weight > 1.0 ) weight = 1.0;
-		if ( weight < 0.0 ) weight = 0.0;
-		signal = Noise(x, y);
-		if ( signal < 0.0 ) signal = -signal;
-		signal = offset - signal;
-		signal *= signal;
-		/* weight the contribution */
-		signal *= weight;
-		result += signal *exponent_array[i];
-		}
-	return( result );
-} /* RidgedMultifractal() */
 
 void DrawGeosphere(int m, int currModIndex)
 {
@@ -1517,12 +1252,12 @@ void DrawGeosphere(int m, int currModIndex)
 	renderSystem->GetDevice()->SetVertexDeclaration(chunk_declaration);
 
 	if (chunkheight[0] == NULL) {
-		if ( FAILED(D3DXCreateTexture(renderSystem->GetDevice(), 32, 32, 0, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &chunkheight[0])) ) {
+		if ( FAILED(D3DXCreateTexture(renderSystem->GetDevice(), chunk_size + 1 + 2, chunk_size + 1 + 2, 0, D3DUSAGE_RENDERTARGET, D3DFMT_R32F, D3DPOOL_DEFAULT, &chunkheight[0])) ) {
 			return;
 		}
 	}
 	if (chunkheight[1] == NULL) {
-		if ( FAILED(D3DXCreateTexture(renderSystem->GetDevice(), 32, 32, 0, D3DUSAGE_RENDERTARGET, D3DFMT_A8R8G8B8, D3DPOOL_DEFAULT, &chunkheight[1])) ) {
+		if ( FAILED(D3DXCreateTexture(renderSystem->GetDevice(), chunk_size + 1 + 2, chunk_size + 1 + 2, 0, D3DUSAGE_RENDERTARGET, D3DFMT_R32F, D3DPOOL_DEFAULT, &chunkheight[1])) ) {
 			return;
 		}
 	}
@@ -1602,13 +1337,17 @@ void DrawGeosphere(int m, int currModIndex)
 	effectList[currModIndex]->SetMatrix("scalemat",&modelList[m].scaleMat);
 	effectList[currModIndex]->SetMatrix("rotmat",&modelList[m].rotMat);
 	effectList[currModIndex]->SetValue("uid",&modelList[m].instance->globalvars.unique_Id, D3DX_DEFAULT);
+	float cvsize = chunk_size + 1;
+	effectList[currModIndex]->SetValue("cvsize", &cvsize, D3DX_DEFAULT);
 
 	PlanetDist = 10000000;
 	
-	//PlanetDist = GetDist(modelList[m].world._41, modelList[m].world._42, modelList[m].world._43) - GetDist(modelList[m].scaleMat._21, modelList[m].scaleMat._22, modelList[m].scaleMat._23);
+	//float georadius = GetDist(modelList[m].scaleMat._21, modelList[m].scaleMat._22, modelList[m].scaleMat._23);
+	//float mindist = modelList[m].dist - georadius;
 
 	effectList[currModIndex]->Begin(&pass,0);
-	DrawChunk(-1.0f, -1.0f, 1.0f, 1.0f, modelList[m].dist * 1.5, -1, m, currModIndex);
+	for(int side = 0; side <= 5; side++)
+		DrawChunk(0.0f, 0.0f, 2.0f, 1.0f, modelList[m].dist * 4, side, m, currModIndex);
 	effectList[currModIndex]->End();
 	
 }
@@ -1707,7 +1446,8 @@ bool InitD3D(HWND hWnd)
 	loadEffects();
 
 	checkExport();
-	GenerateChunks();
+	chunk = GenerateChunk(chunk, chunk_size - 1, 0);
+	chunk2 = GenerateChunk(chunk2, chunk_size - 1, 2);
 
 	if ((curheight-curwidth/1.6f)==0)
 		aspectfix=0;
