@@ -364,15 +364,15 @@ float getHeight(float3 v)
 float3 GetSide(int side, float3 p)
 {
     if (side == 0)
-        return float3( p.x, p.y, p.z);
+        return float3(-p.x, p.y, p.z);
     else if (side == 1)
-        return float3( p.x, p.z, p.y );
+        return float3( p.x, p.z, p.y);
     else if (side == 2)
-        return float3( p.x,-p.z, p.y);
+        return float3( p.y,-p.z, p.x);
     else if (side == 3)
         return float3( p.z, p.y, p.x);
     else if (side == 4)
-        return float3(-p.z, p.y, p.x);
+        return float3(-p.z, p.y,-p.x);
     else if (side == 5)
         return float3( p.x, p.y,-p.z);
     else
@@ -448,10 +448,11 @@ VS_OUTPUT V_Test(
 	v.x += x_off;
 	v.y += y_off;
 
-	v = GetSide(side, v);
+	float3 tan = MapToSphere(GetSide(side, float3(v.x + 0.0001, v.y, v.z)));
 
-	float4 vertex;
-	vertex.xyz = MapToSphere(v);
+	float4 vertex = float4(MapToSphere(GetSide(side, v)), 1.0);
+
+	tan = normalize(tan - vertex.xyz);
 
 	//float4 uv;
 	//uv.x = atan2(vertex.x, vertex.z) / (2.0 * M_PI) + 0.5;
@@ -463,45 +464,36 @@ VS_OUTPUT V_Test(
 	float4 buv = float4((pos.x + 1.0) * 0.5, (pos.y + 1.0) * 0.5,0.0,1.0);
 	buv.xy += 0.5 / (cvsize + 2);
 
+	vertex.xyz = mul(vertex.xyz, (float3x3)scalemat);
+
 	float height = tex2Dlod(s_chunkheight, buv).r;
-	//float height = getHeight(vertex.xyz);
+	vertex.xyz *= 1.0 + height;
 
 	float3 normal = normalize(vertex.xyz);
 
-	vertex.xyz *= 1.0 + height;
+	vertex = mul(vertex, worldmat);
 
-	vertex.xyz = mul(vertex, (float3x3)scalemat);
+	float3x3 matTangentSpace;
+		
+	normal = normalize(mul(normal, (float3x3)rotmat));
+	tan = normalize(mul(tan, (float3x3)rotmat));
 
-	if (height > 0.0) {
-		float d = 1.0 / (cvsize + 2);
-		float AA = tex2Dlod( s_chunkheight, buv + float4( d, 0, 0, 1 ) ).r;
-		float AB = tex2Dlod( s_chunkheight, buv + float4(-d, 0, 0, 1 ) ).r;
-		float BA = tex2Dlod( s_chunkheight, buv + float4( 0, d, 0, 1 ) ).r;
-		float BB = tex2Dlod( s_chunkheight, buv + float4( 0,-d, 0, 1 ) ).r;
-		float power = 128.0;//32 - (1.0 / height);
-		float2 nn;
-		nn.x = AA - AB; 
-		nn.y = BA - BB;
+	matTangentSpace[0] = tan;
+	matTangentSpace[1] = cross(tan, normal);
+	matTangentSpace[2] = normal;
 	
-		normal = normalize( float3( normal.x + clamp(power * nn.x, -1.0, 1.0), normal.y + clamp(power * nn.y, -1.0, 1.0), normal.z ) );
-	}
-
-	vertex = mul(float4(vertex.xyz, 1.0), worldmat);
-
-	//Out.tex_vu = uv.xy;
-
+	Out.tex_vu = buv.xy;
+	Out.lightDir = mul(matTangentSpace, normalize(light));
+	Out.eye = mul(matTangentSpace, -normalize(vertex.xyz));
     Out.position = mul(vertex, viewprojmat);
     Out.normal = normalize(mul(normal, (float3x3)rotmat)); 
     Out.color = float4(height,height,height,0.0);
-	
-	Out.lightDir = normalize(light);
-	Out.eye = -normalize(vertex.xyz);
 
     return Out;
 }
 
 float4 P_Test(
-	//float2 tex_vu	: TEXCOORD0,
+	float2 tex_vu	: TEXCOORD0,
     float3 normal	: TEXCOORD1,
     float3 lightDir : TEXCOORD2,
     float3 eye	: TEXCOORD3,
@@ -511,27 +503,47 @@ float4 P_Test(
 {
 
 	float4 tex;
-	//float r = tex2D(heightSampler, tex_vu).r;
+	
+	//tex = tex2D(s_tex, tex_vu);
+
+	float h  = tex2D(s_chunkheight, tex_vu).r;
+
+	float3 Scale = float3(1.0 / 32.0, 1.0 / 32.0, 512.0);
+	float2 dx = float2(0.0, Scale.y);
+	float2 dy = float2(Scale.x, 0.0);
+
+	float pc = h * Scale.z;
+	float pl = tex2D(s_chunkheight, tex_vu - dx).r * Scale.z;
+	float pr = tex2D(s_chunkheight, tex_vu + dx).r * Scale.z;
+	float pu = tex2D(s_chunkheight, tex_vu - dy).r * Scale.z;
+	float pd = tex2D(s_chunkheight, tex_vu + dy).r * Scale.z;
+
+	float3 s;
+	s  = normalize(float3(pu-pc, pc-pl, 1.0));
+	s += normalize(float3(pc-pd, pc-pl, 1.0));
+	s += normalize(float3(pc-pd, pr-pc, 1.0));
+	s += normalize(float3(pu-pc, pr-pc, 1.0));
+
+	float3 norm = normalize(s);
 
 	tex = float4(1.0,1.0,1.0,1.0);
-
 	
-	float nrmd_light = dot(normal, normalize(lightDir));
+	float nrmd_light = dot(norm, normalize(lightDir));
 
 
 	float4 diffuse;
 
-	if (color.r == 0.0)
-		diffuse = float4(0.1, 0.1, 0.3, 1.0) * nrmd_light;
+	if (color.g == 0.0)
+		diffuse = float4(0.1, 0.1, 0.3, 1.0) * tex * nrmd_light;
 	else
-		diffuse = (0.7 + color.r * 12.0) * nrmd_light;
+		diffuse = (0.7 + color.r * 12.0) * tex * nrmd_light;
 
 	diffuse = saturate(diffuse);
 
 	//float4 diffuse = color * nrmd_light;
 
-	if (color.r == 0.0) {
-		float3 R = normalize(reflect(-lightDir, normal));
+	if (color.g == 0.0) {
+		float3 R = normalize(reflect(-lightDir, norm));
 		float VdotR = saturate(dot(R, normalize(eye)));
 		VdotR /= 32.0 - VdotR * 32.0 + VdotR;
 		float4 specular = (lightcol * VdotR) * 0.25;
