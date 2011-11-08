@@ -1115,17 +1115,17 @@ int inline GetDist(float x, float y, float z)
 D3DXVECTOR3 GetSide(int side, D3DXVECTOR3 p)
 {
     if (side == 0)
-        return D3DXVECTOR3( p.x,  p.y,  p.z);
+        return D3DXVECTOR3(-p.x, p.y, p.z);
     else if (side == 1)
-        return D3DXVECTOR3( p.x,  p.z,  p.y);
+        return D3DXVECTOR3( p.x, p.z, p.y);
     else if (side == 2)
-        return D3DXVECTOR3( p.x, -p.z,  p.y);
+        return D3DXVECTOR3( p.y,-p.z, p.x);
     else if (side == 3)
-        return D3DXVECTOR3( p.z,  p.y,  p.x);
+        return D3DXVECTOR3( p.z, p.y, p.x);
     else if (side == 4)
-        return D3DXVECTOR3(-p.z,  p.y,  p.x);
+        return D3DXVECTOR3(-p.z, p.y,-p.x);
     else if (side == 5)
-        return D3DXVECTOR3( p.x,  p.y, -p.z);
+        return D3DXVECTOR3( p.x, p.y,-p.z);
     else
         return D3DXVECTOR3(0.0f, 0.0f, 0.0f);
 }
@@ -1233,10 +1233,10 @@ void DrawChunk(float xoff, float yoff, float width, float div, float mindist, in
 
 		ViewPort(true);
 
-		if (side & 1)
+		//if (side & 1)
 			renderSystem->SetRenderState(D3DRS_CULLMODE, CULL_CCW);
-		else
-			renderSystem->SetRenderState(D3DRS_CULLMODE, CULL_CW);
+		//else
+		//	renderSystem->SetRenderState(D3DRS_CULLMODE, CULL_CW);
 
 		effectList[currModIndex]->BeginPass(5);
 		chunk->DrawSubset(0);
@@ -1332,7 +1332,7 @@ void DrawGeosphere(int m, int currModIndex)
 		//effectList[currModIndex]->SetTexture("heightmap",heightmap[index]);
 		//effectList[currModIndex]->SetValue("predef",new float(0.0f), D3DX_DEFAULT);
 	}
-	
+	//effectList[currModIndex]->SetTexture("tex",textures[89]);
 	effectList[currModIndex]->SetMatrix("worldmat",&modelList[m].world);
 	effectList[currModIndex]->SetMatrix("scalemat",&modelList[m].scaleMat);
 	effectList[currModIndex]->SetMatrix("rotmat",&modelList[m].rotMat);
