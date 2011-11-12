@@ -1,3 +1,6 @@
+
+#define FRACTALS_IN_PIXEL_SHADER 1
+
 float4x4 viewprojmat;	// view*proj
 float4x4 worldmat;	// world
 float4x4 scalemat;	// scale
@@ -14,8 +17,9 @@ texture permTexture2d;
 
 texture chunkheight;
 
-float x_off, y_off, div, width, cvsize;
-int side, uid;
+float x_off, y_off, div, width, seed, dist;
+float h_map_size, chunk_size;
+int side;
 
 float time;
 
@@ -25,15 +29,15 @@ sampler s_chunkheight = sampler_state
     AddressU  = CLAMP;        
     AddressV  = CLAMP;
     MIPFILTER = NONE;
-    MINFILTER = LINEAR;
-    MAGFILTER = LINEAR;
+    MINFILTER = ANISOTROPIC;
+    MAGFILTER = ANISOTROPIC;
 };
 
 sampler s_grad = sampler_state 
 {
     texture = <permGrad>;
     AddressU  = WRAP;        
-    AddressV  = WRAP;
+    AddressV  = CLAMP;
     MIPFILTER = NONE;
     MINFILTER = POINT;
     MAGFILTER = POINT;
@@ -246,69 +250,85 @@ float4 P_Atmo(
 
 float3 fade(float3 t)
 {
-        //return t * t * t * (t * (t * 6 - 15) + 10); // new curve
-		return t * t * (3 - 2 * t);
+        return t * t * t * (t * (t * 6 - 15) + 10); // new curve
+		//return t * t * (3 - 2 * t);
 }
 
 float4 perm2d(float2 p)
 {
-        return tex2Dlod(permSampler2d, float4(p, 0.0, 0.0));
+	return tex2D(permSampler2d, p);
 }
 
-float4 perm3d(float3 p, float seed = 0)
+float4 perm3d(float3 p)
 {
-        return tex2Dlod(permSampler2d, float4(p.xy, 0.0, 0.0)) + p.z + seed;
+#ifdef FRACTALS_IN_PIXEL_SHADER
+	return tex2D(permSampler2d, p.xy) + p.z;
+#else
+	return tex2Dlod(permSampler2d, float4(p.xy, 0.0, 1.0)) + p.z;
+#endif
 }
 
 float gradperm(float x, float3 p)
 {
-        return dot(tex1Dlod(s_grad, float4(x, 0.0, 0.0, 0.0)).xyz, p);
+#ifdef FRACTALS_IN_PIXEL_SHADER
+	return dot(tex1D(s_grad, x).xyz, p);
+#else
+	return dot(tex2Dlod(s_grad, float4(x, 0.0, 0.0, 1.0)).xyz, p);
+#endif
 }
 
 const float dim = 1.0 / 256.0;
+const float3 goffsets[7] = {float3(-1, 0, 0),
+							float3( 0,-1, 0),
+							float3(-1,-1, 0),
+							float3( 0, 0,-1),
+							float3(-1, 0,-1),
+							float3( 0,-1,-1),
+							float3(-1,-1,-1)};
 
 // Improved 3d noise basis function
-float inoise(float3 p, float seed = 0)
+float inoise(float3 p)
 {
-        float3 P = fmod(floor(p), 256.0);       // FIND UNIT CUBE THAT CONTAINS POINT
-        p -= floor(p);                      // FIND RELATIVE X,Y,Z OF POINT IN CUBE.
-        float3 f = fade(p);                     // COMPUTE FADE CURVES FOR EACH OF X,Y,Z.
+	p += seed;
+	float3 P = fmod(floor(p), 256.0);   // FIND UNIT CUBE THAT CONTAINS POINT
+	p -= floor(p);                      // FIND RELATIVE X,Y,Z OF POINT IN CUBE.
+	float3 f = fade(p);                 // COMPUTE FADE CURVES FOR EACH OF X,Y,Z.
 
-        P = P * dim;
+	P = P * dim;
 
-    // HASH COORDINATES OF THE 8 CUBE CORNERS
-        float4 AA = perm3d(P, seed);
+	// HASH COORDINATES OF THE 8 CUBE CORNERS
+	float4 AA = perm3d(P);
 
-        // AND ADD BLENDED RESULTS FROM 8 CORNERS OF CUBE
-        return lerp( lerp( lerp( gradperm(AA.x, p ),
-                                gradperm(AA.z, p + float3(-1, 0, 0) ), f.x),
-                        lerp( gradperm(AA.y, p + float3(0, -1, 0) ),
-                                gradperm(AA.w, p + float3(-1, -1, 0) ), f.x), f.y),
+	// AND ADD BLENDED RESULTS FROM 8 CORNERS OF CUBE
+	return lerp( lerp( lerp( gradperm(AA.x, p ),
+							gradperm(AA.z, p + goffsets[0]), f.x),
+					lerp( gradperm(AA.y, p + goffsets[1]),
+							gradperm(AA.w, p + goffsets[2] ), f.x), f.y),
 
-                        lerp( lerp( gradperm(AA.x + dim, p + float3(0, 0, -1) ),
-                                gradperm(AA.z + dim, p + float3(-1, 0, -1) ), f.x),
-                        lerp( gradperm(AA.y + dim, p + float3(0, -1, -1) ),
-                                gradperm(AA.w + dim, p + float3(-1, -1, -1) ), f.x), f.y), f.z);
+					lerp( lerp( gradperm(AA.x + dim, p + goffsets[3]),
+							gradperm(AA.z + dim, p + goffsets[4]), f.x),
+					lerp( gradperm(AA.y + dim, p + goffsets[5]),
+							gradperm(AA.w + dim, p + goffsets[6]), f.x), f.y), f.z);
 }
 
-float fBm(float3 p, int octaves, float lacunarity = 2.0, float gain = 0.5, float seed = 0)
+float fBm(float3 p, int octaves, float lacunarity = 2.0, float gain = 0.5)
 {
         float freq = 1.0f, amp  = 0.5f;
         float sum  = 0.0;
         for(int i=0; i < octaves; i++) {
-                sum += inoise(p*freq, seed)*amp;
+                sum += inoise(p*freq)*amp;
                 freq *= lacunarity;
                 amp *= gain;
         }
         return sum;
 }
 
-float turbulence(float3 p, int octaves, float lacunarity = 2.0, float gain = 0.5, float seed = 0)
+float turbulence(float3 p, int octaves, float lacunarity = 2.0, float gain = 0.5)
 {
 		float freq = 1.0, amp = 1.0;
         float sum = 0.0; 
         for(int i=0; i < octaves; i++) {
-                sum += abs(inoise(p*freq, seed))*amp;
+                sum += abs(inoise(p*freq))*amp;
                 freq *= lacunarity;
                 amp *= gain;
         }
@@ -325,7 +345,7 @@ float ridge(float h, float offset)
     return h;
 }
 
-float ridgedmf(float3 p, int octaves, float lacunarity, float gain = 0.05, float offset = 1.0, float seed = 0)
+float ridgedmf(float3 p, int octaves, float lacunarity, float gain = 0.05, float offset = 1.0)
 {
         float sum = 0;
         float freq = 1.0;
@@ -333,7 +353,7 @@ float ridgedmf(float3 p, int octaves, float lacunarity, float gain = 0.05, float
         float prev = 1.0;
         for(int i=0; i < octaves; i++)
         {
-                float n = ridge(inoise(p*freq, seed), offset);
+                float n = ridge(inoise(p*freq), offset);
                 sum += n*amp*prev;
                 prev = n;
                 freq *= lacunarity;
@@ -342,23 +362,24 @@ float ridgedmf(float3 p, int octaves, float lacunarity, float gain = 0.05, float
         return sum;
 }
 
+const float hscale = (1.0 / 48.0);
+
 float getHeight(float3 v)
 {
-	float seed = frac(uid*0.000001) * 0.33;
-	float height = fBm(v, 5, 2.7, 0.5, seed);
+	float height = fBm(v, 5, 2.7, 0.5);
 	height = saturate(height);
 	if (height > 0.0) {
-		float montes = ridgedmf(v.yxz, 3, 8.7, 1.2, 0.6 + height, seed);
+		float montes = ridgedmf(v.yxz, 6, 2.7, 1.0, 1.0);
 		height += montes * height;
 		height = saturate(height);
 		//if (height < 0.2) {
-		//	float canions = ridgedmf(v.zxy, 3, 2.9521, 8.5, 0.3, seed);
+		//	float canions = ridgedmf(v.zxy, 3, 2.9521, 8.5, 0.3);
 		//	height -= canions * height;
 		//	height = saturate(height);
 		//}
 		
 	}
-    return height / 32;
+    return height * hscale;
 }
 
 float3 GetSide(int side, float3 p)
@@ -382,6 +403,7 @@ float3 GetSide(int side, float3 p)
 float3 MapToSphere(float3 v)
 {
 	float3 vertex;
+
 	vertex.x = v.x * sqrt(1.0 - v.y * v.y * 0.5 - v.z * v.z * 0.5 + v.y * v.y * v.z * v.z / 3.0);
 	vertex.y = v.y * sqrt(1.0 - v.z * v.z * 0.5 - v.x * v.x * 0.5 + v.z * v.z * v.x * v.x / 3.0);
 	vertex.z = v.z * sqrt(1.0 - v.x * v.x * 0.5 - v.y * v.y * 0.5 + v.x * v.x * v.y * v.y / 3.0);
@@ -398,36 +420,47 @@ VS_OUTPUT V_Height(
 {
     VS_OUTPUT Out = (VS_OUTPUT)0;
 
-	float3 v, p;
+	float3 vertex;
+
+	pos.xy *= (h_map_size) / (h_map_size - 2);
 
 	// divide
-	p.x = (pos.x + 1.0) / div - 1.0;
-	p.y = (pos.y + 1.0) / div - 1.0;
-	p.z = pos.z;
+	vertex.x = (pos.x + 1.0) / div - 1.0;
+	vertex.y = (pos.y + 1.0) / div - 1.0;
+	vertex.z = -1.0;
 
 	// offsets
-	p.x = p.x + x_off;
-	p.y = p.y + y_off;
+	vertex.x += x_off;
+	vertex.y += y_off;
 
-	v = GetSide(side, p);
+	vertex = MapToSphere(GetSide(side, vertex));
 
-	float4 vertex;
-	vertex.xyz = MapToSphere(v);
+	pos.xy *= (h_map_size - 2) / (h_map_size);
+	Out.position = float4(pos.x, -pos.y, 0.0, 1.0);
 
-	float height = getHeight(vertex.xyz);
-
-	pos.xy *= cvsize / (cvsize + 2);
-    Out.position = float4(pos.x, -pos.y, 0.0, 1.0);
-    Out.color = float4(height,height,height,0.0);
-	
+#ifdef FRACTALS_IN_PIXEL_SHADER
+    Out.normal = float3(vertex.x, vertex.y, vertex.z);
+#else
+	float height = getHeight(vertex);
+	Out.color = float4(height, height, height, 0.0);
+#endif
     return Out;
 }
 
 float4 P_Height(
+#ifdef FRACTALS_IN_PIXEL_SHADER
+	float3 vertex	: TEXCOORD1
+#else
     float4 color	: COLOR0
+#endif
   ) : COLOR0
 {
+#ifdef FRACTALS_IN_PIXEL_SHADER
+	float height = getHeight(vertex);
+	return float4(height, height, height, 0.0);
+#else
 	return color;
+#endif
 }
 
 VS_OUTPUT V_Test(
@@ -442,7 +475,7 @@ VS_OUTPUT V_Test(
 	// divide
 	v.x = (pos.x + 1.0) / div - 1.0;
 	v.y = (pos.y + 1.0) / div - 1.0;
-	v.z = pos.z;
+	v.z = -1.0;
 
 	// offsets
 	v.x += x_off;
@@ -452,6 +485,9 @@ VS_OUTPUT V_Test(
 
 	float4 vertex = float4(MapToSphere(GetSide(side, v)), 1.0);
 
+	if (abs(pos.z) > 1.0)
+		vertex.xyz *= (chunk_size - 2) / (chunk_size);
+
 	tan = normalize(tan - vertex.xyz);
 
 	//float4 uv;
@@ -460,15 +496,16 @@ VS_OUTPUT V_Test(
 	//uv.z = 0.0f;
 	//uv.w = 0.0f;
 
-	pos.xy *= cvsize / (cvsize + 2);
-	float4 buv = float4((pos.x + 1.0) * 0.5, (pos.y + 1.0) * 0.5,0.0,1.0);
-	buv.xy += 0.5 / (cvsize + 2);
+	pos.xy *= (chunk_size - 2) / (chunk_size);
+	float4 buv = float4((pos.x + 1.0) * 0.5, (pos.y + 1.0) * 0.5,0.0,0.0);
+	buv.xy += 0.5 / (h_map_size);
 
 	vertex.xyz = mul(vertex.xyz, (float3x3)scalemat);
 
 	float height = tex2Dlod(s_chunkheight, buv).r;
-	vertex.xyz *= 1.0 + height;
 
+	vertex.xyz *= 1.0 + height;
+	
 	float3 normal = normalize(vertex.xyz);
 
 	vertex = mul(vertex, worldmat);
@@ -482,41 +519,23 @@ VS_OUTPUT V_Test(
 	matTangentSpace[1] = cross(tan, normal);
 	matTangentSpace[2] = normal;
 	
-	Out.tex_vu = buv.xy;
+	Out.tex_vu = buv;
 	Out.lightDir = mul(matTangentSpace, normalize(light));
 	Out.eye = mul(matTangentSpace, -normalize(vertex.xyz));
     Out.position = mul(vertex, viewprojmat);
-    Out.normal = normalize(mul(normal, (float3x3)rotmat)); 
+    //Out.normal = normalize(mul(normal, (float3x3)rotmat)); 
     Out.color = float4(height,height,height,0.0);
 
-    return Out;
-}
+	float dscale = 1.0;//(1.0+(1.0-width)) * 2.0;
+	float3 Scale = float3(1.0 / (h_map_size), 1.0 / (h_map_size), 512.0 * dscale);
+	float4 dx = float4(0.0, Scale.y, 0.0, 0.0);
+	float4 dy = float4(Scale.x, 0.0, 0.0, 0.0);
 
-float4 P_Test(
-	float2 tex_vu	: TEXCOORD0,
-    float3 normal	: TEXCOORD1,
-    float3 lightDir : TEXCOORD2,
-    float3 eye	: TEXCOORD3,
-	float4 position : TEXCOORD4,
-    float4 color	: COLOR0
-  ) : COLOR0
-{
-
-	float4 tex;
-	
-	//tex = tex2D(s_tex, tex_vu);
-
-	float h  = tex2D(s_chunkheight, tex_vu).r;
-
-	float3 Scale = float3(1.0 / 32.0, 1.0 / 32.0, 512.0);
-	float2 dx = float2(0.0, Scale.y);
-	float2 dy = float2(Scale.x, 0.0);
-
-	float pc = h * Scale.z;
-	float pl = tex2D(s_chunkheight, tex_vu - dx).r * Scale.z;
-	float pr = tex2D(s_chunkheight, tex_vu + dx).r * Scale.z;
-	float pu = tex2D(s_chunkheight, tex_vu - dy).r * Scale.z;
-	float pd = tex2D(s_chunkheight, tex_vu + dy).r * Scale.z;
+	float pc = height * Scale.z;
+	float pl = tex2Dlod(s_chunkheight, buv - dx).r * Scale.z;
+	float pr = tex2Dlod(s_chunkheight, buv + dx).r * Scale.z;
+	float pu = tex2Dlod(s_chunkheight, buv - dy).r * Scale.z;
+	float pd = tex2Dlod(s_chunkheight, buv + dy).r * Scale.z;
 
 	float3 s;
 	s  = normalize(float3(pu-pc, pc-pl, 1.0));
@@ -524,26 +543,42 @@ float4 P_Test(
 	s += normalize(float3(pc-pd, pr-pc, 1.0));
 	s += normalize(float3(pu-pc, pr-pc, 1.0));
 
-	float3 norm = normalize(s);
+	Out.normal = normalize(s);
+
+    return Out;
+}
+
+float4 P_Test(
+	float2 tex_vu	: TEXCOORD0,
+    float3 lightDir : TEXCOORD2,
+	float3 normal	: TEXCOORD1,
+	float4 color	: COLOR0,
+    float3 eye	: TEXCOORD3
+  ) : COLOR0
+{
+
+	float4 tex;
+	
+	//tex = tex2D(s_tex, tex_vu);
+
+	float nrmd_light = dot(normal, normalize(lightDir));
 
 	tex = float4(1.0,1.0,1.0,1.0);
-	
-	float nrmd_light = dot(norm, normalize(lightDir));
-
 
 	float4 diffuse;
 
-	if (color.g == 0.0)
-		diffuse = float4(0.1, 0.1, 0.3, 1.0) * tex * nrmd_light;
+	float h = color.r * 32;
+	if (h < 0.01)
+		diffuse = float4(0.1+h*20, 0.1+h*20, 0.3+h*20, 1.0) * tex * nrmd_light;
 	else
-		diffuse = (0.7 + color.r * 12.0) * tex * nrmd_light;
+		diffuse =  (0.7 + color.r * 12.0) * tex * nrmd_light;
 
 	diffuse = saturate(diffuse);
 
 	//float4 diffuse = color * nrmd_light;
 
-	if (color.g == 0.0) {
-		float3 R = normalize(reflect(-lightDir, norm));
+	if (h < 0.01) {
+		float3 R = normalize(reflect(-lightDir, normal));
 		float VdotR = saturate(dot(R, normalize(eye)));
 		VdotR /= 32.0 - VdotR * 32.0 + VdotR;
 		float4 specular = (lightcol * VdotR) * 0.25;
