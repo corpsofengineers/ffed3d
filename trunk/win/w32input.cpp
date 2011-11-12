@@ -147,7 +147,7 @@ char *Commands[256] = {
 	"time_x2", "time_x4", "time_x8", "time_x16", "cam_zoomin", "cam_zoomout", "NULL", "eng_switch",
 	"NULL", "NULL", "env_ecm", "map_orbscheme", "pl_target", "NULL", "pl_gear", "NULL",
 	"NULL", "NULL", "pl_rolll", "pl_rollr", "pl_accel", "NULL", "pl_pitchd", "NULL",
-	"env_mdeploy", "NULL", "NULL", "pl_hjump", "NULL", "NULL", "int_shownames", "NULL",
+	"env_mdeploy", "fps", "NULL", "pl_hjump", "NULL", "NULL", "int_shownames", "NULL",
 	"NULL", "com_wing", "NULL", "NULL", "pl_pitchu", "env_evac", "env_decoy", "NULL",
 	"env_bomb", "pl_ltarget", "env_missile", "pl_yawl", "pl_yawr", "env_hanalis", "pl_inhibition", "UNKNOWN",
 	"NULL", "pl_fire", "NULL", "cam_switch", "pl_info", "pl_map", "pl_comm", "pl_bmode",

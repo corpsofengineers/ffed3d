@@ -818,6 +818,8 @@ void loadTextures() {
 	//	heightmap[i] = NULL;
 	//}
 
+	std::string dir = CUtility::GetTheCurrentDirectory();
+
 	chunkheight[0] = NULL;
 	chunkheight[1] = NULL;
 
@@ -856,17 +858,22 @@ void loadTextures() {
 
 
 	for (int i=0;i<1000;i++) {
-		sprintf_s(buf,"textures/tex%i.png",i);
-		if (FAILED(FFED3DCreateTextureFromFile(renderSystem->GetDevice(), buf, &textures[i]))) {
-			sprintf_s(buf,"textures/tex%i.dds",i);
-			if (FAILED(FFED3DCreateTextureFromFile(renderSystem->GetDevice(), buf, &textures[i]))) {
-				sprintf_s(buf,"textures/tex%i.tga",i);
-				if (FAILED(D3DXCreateTextureFromFile(renderSystem->GetDevice(), buf, &textures[i]))) {
+		sprintf_s(buf,"%s/textures/tex%i.png",dir.c_str(), i);
+		if (CUtility::DoesFileExist(buf) == false) {
+			sprintf_s(buf,"%s/textures/tex%i.dds",dir.c_str(),i);
+			if (CUtility::DoesFileExist(buf) == false) {
+				sprintf_s(buf,"%s/textures/tex%i.tga",dir.c_str(),i);
+				if (CUtility::DoesFileExist(buf) == false) {
 					textures[i]=NULL;
+					continue;
 				}
 			}
 		}
+		if (FAILED(FFED3DCreateTextureFromFile(renderSystem->GetDevice(), buf, &textures[i]))) {
+			textures[i]=NULL;
+		}
 	}
+
 	for (int i=0;i<6;i++) {
 		sprintf_s(buf,"textures/skybox%i.tga",i);
 		if (FAILED(D3DXCreateTextureFromFile(renderSystem->GetDevice(), buf, &skyboxtex[i]))) {
@@ -905,6 +912,8 @@ void loadEffects() {
 	LPD3DXBUFFER err=NULL;
 	char* data=NULL;
 
+	std::string dir = CUtility::GetTheCurrentDirectory();
+
 	sprintf_s(buf,"models/planet.fx");
 	if ( FAILED(D3DXCreateEffectFromFileA(renderSystem->GetDevice(), (LPCSTR)buf, 0, 0, 0/*D3DXSHADER_OPTIMIZATION_LEVEL3*/, 0, &effectPlanet, &err))) {
 		effectPlanet=NULL;
@@ -933,7 +942,11 @@ void loadEffects() {
 		if (Planet(i)) {
 			effectList[i] = effectPlanet;
 		} else {
-			sprintf_s(buf,"models/%i/effect.fx",i);
+			sprintf_s(buf,"%s/models/%i/effect.fx",dir.c_str(), i);
+			if (CUtility::DoesFileExist(buf) == false) {
+				effectList[i] = effectModels;
+				continue;
+			}
 			if ( FAILED(D3DXCreateEffectFromFileA(renderSystem->GetDevice(), (LPCSTR)buf, 0, 0, 0, 0, &effectList[i], &err))) {
 				effectList[i] = effectModels;
 				if (err) {
@@ -1027,12 +1040,13 @@ void doOrtoRT(int w, int h)
 	D3DXMatrixMultiply(&matViewProjOrto, &matIdentity, &matOrtho);
 }
 
-#define chunk_size 29
+#define chunk_size 32
+#define h_map_size 32
 
 IDirect3DVertexDeclaration9* chunk_declaration = NULL;
 ID3DXMesh *chunk, *chunk2;
 
-ID3DXMesh* GenerateChunk(ID3DXMesh* chunk, u32 size, u32 addition) 
+ID3DXMesh* GenerateChunk2(ID3DXMesh* chunk) 
 {
 
 	float width;
@@ -1040,9 +1054,7 @@ ID3DXMesh* GenerateChunk(ID3DXMesh* chunk, u32 size, u32 addition)
 	u32 w, h;
 	float x, y, z;
 
-	size += addition;
-
-	HRESULT res = D3DXCreateMeshFVF(size * size * 2, (size + 1) * (size + 1), 
+	HRESULT res = D3DXCreateMeshFVF(2, 4, 
 								D3DXMESH_MANAGED | D3DXMESH_32BIT | D3DXMESH_WRITEONLY, D3DFVF_XYZ, 
 								renderSystem->GetDevice(), &chunk);
 
@@ -1057,14 +1069,14 @@ ID3DXMesh* GenerateChunk(ID3DXMesh* chunk, u32 size, u32 addition)
 	D3DXVECTOR3 *pVertex=NULL;
 	chunk->LockVertexBuffer( 0, (void**)&pVertex );
 
-	width = 2.0f / (size - addition);
+	width = 2.0f;
 
-	y = -1.0f - (width * (addition / 2));
+	y = -1.0f;
 	z = -1.0f;
-	for(h = 0; h <= size; h++, y += width) 
+	for(h = 0; h <= 1; h++, y += width) 
 	{
-		x = -1.0f - (width * (addition / 2));
-		for(w = 0; w <= size; w++, x += width) 
+		x = -1.0f;
+		for(w = 0; w <= 1; w++, x += width) 
 		{
 			pVertex->x = x;
 			pVertex->y = y;
@@ -1078,22 +1090,110 @@ ID3DXMesh* GenerateChunk(ID3DXMesh* chunk, u32 size, u32 addition)
 	u32 *pIndex=NULL;
 	chunk->LockIndexBuffer( 0, (void**)&pIndex );
 
+	*pIndex = 0;
+	pIndex++;
+	*pIndex = 1;
+	pIndex++;
+	*pIndex = 3;
+	pIndex++;
+
+	*pIndex = 0;
+	pIndex++;
+	*pIndex = 3;
+	pIndex++;
+	*pIndex = 2;
+	pIndex++;
+
+	chunk->UnlockIndexBuffer();
+
+	chunk->OptimizeInplace(0, NULL, NULL, NULL, NULL);
+
+	return chunk;
+}
+
+ID3DXMesh* GenerateChunk(ID3DXMesh* chunk, u32 size) 
+{
+
+	float width;
+
+	u32 w, h;
+	float x, y, z;
+
+	u32 addition = 2;
+
+	size += addition;
+
+	HRESULT res = D3DXCreateMeshFVF((size - 1) * (size - 1) * 2, size * size, 
+								D3DXMESH_MANAGED | D3DXMESH_32BIT | D3DXMESH_WRITEONLY, D3DFVF_XYZ, 
+								renderSystem->GetDevice(), &chunk);
+
+	assert(res == D3D_OK);
+
+	if (chunk_declaration == NULL) {
+		D3DVERTEXELEMENT9 decl[MAX_FVF_DECL_SIZE];
+		chunk->GetDeclaration(decl);
+		renderSystem->CreateVertexDeclaration(&decl[0],&chunk_declaration);
+	}
+
+	D3DXVECTOR3 *pVertex=NULL;
+	chunk->LockVertexBuffer( 0, (void**)&pVertex );
+
+	width = 2.0f / (size - 1 - addition);
+
+	y = -1.0f - (width * (addition / 2));
+	z = -1.0f;
+	for(h = 0; h < size; h++, y += width) 
+	{
+		x = -1.0f - (width * (addition / 2));
+		for(w = 0; w < size; w++, x += width) 
+		{
+			z = -1.0f;
+			if (x < -1.0f) {
+				z = -2.0;
+				pVertex->x = -1.0f;
+			} else if (x > 1.0f) {
+				z = -2.0;
+				pVertex->x = 1.0f;
+			} else {
+				pVertex->x = x;
+			}
+
+			if (y < -1.0f) {
+				z = -2.0;
+				pVertex->y = -1.0f;
+			} else if (y > 1.0f) {
+				z = -2.0;
+				pVertex->y = 1.0f;
+			} else {
+				pVertex->y = y;
+			}
+			
+			pVertex->z = z;
+
+			pVertex++;
+		}
+	}
+	chunk->UnlockVertexBuffer();
+
+	u32 *pIndex=NULL;
+	chunk->LockIndexBuffer( 0, (void**)&pIndex );
+
 	u32 vcounter = 0;
 
-	for(h = 0; h < size; h++) 
+	for(h = 0; h < size - 1; h++) 
 	{
-		for(w = 0; w < size; w++) 
+		for(w = 0; w < size - 1; w++) 
 		{
 			*pIndex = vcounter + 0;
 			pIndex++;
 			*pIndex = vcounter + 1;
 			pIndex++;
-			*pIndex = vcounter + size + 1;
+			*pIndex = vcounter + size + 0;
 			pIndex++;
 
-			*pIndex = vcounter + size + 2;
-			pIndex++;
 			*pIndex = vcounter + size + 1;
+			pIndex++;
+			*pIndex = vcounter + size + 0;
 			pIndex++;
 			*pIndex = vcounter + 1;
 			pIndex++;
@@ -1104,12 +1204,14 @@ ID3DXMesh* GenerateChunk(ID3DXMesh* chunk, u32 size, u32 addition)
 	}
 	chunk->UnlockIndexBuffer();
 
+	chunk->OptimizeInplace(0, NULL, NULL, NULL, NULL);
+
 	return chunk;
 }
 
 int inline GetDist(float x, float y, float z)
 {
-	return sqrt(x * x + y * y + z * z);
+	return sqrtf(x * x + y * y + z * z);
 }
 
 D3DXVECTOR3 GetSide(int side, D3DXVECTOR3 p)
@@ -1136,6 +1238,8 @@ s32 PlanetDist = 10000000;
 int index;
 u32 heightmapUIDS[40];
 float heightmapbuf[40][pSize*pSize];
+float georadius;
+int calc_chunks;
 
 #define DOT(v1, v2) (v1[0] * v2[0] + v1[1] * v2[1] + v1[2] * v2[2])
 
@@ -1172,9 +1276,10 @@ void DrawChunk(float xoff, float yoff, float width, float div, float mindist, in
 	// skip back faced 
 	{
 		D3DXVECTOR3 nap = D3DXVECTOR3(r.x - modelList[m].world._41, r.y - modelList[m].world._42, r.z - modelList[m].world._43);
-		D3DXVECTOR3 forw = D3DXVECTOR3(0.0, 0.0, 1.0);
+		D3DXVECTOR3 forw = D3DXVECTOR3(0.0f, 0.0f, 1.0f);
 		D3DXVec3Normalize( &nap, &nap );
-		if (D3DXVec3Dot(&nap, &forw) > 0.75f) 
+		D3DXVec3Normalize( &forw, &forw );
+		if (D3DXVec3Dot(&nap, &forw) > 0.6f) 
 			return;
 	}
 
@@ -1182,14 +1287,18 @@ void DrawChunk(float xoff, float yoff, float width, float div, float mindist, in
 
 	PlanetDist = MIN(PlanetDist, dist);
 
-	// check frustum
-	for (int f = 0; f < 6; f++ )
-	{
-		if ( D3DXPlaneDotCoord( &m_frustum[f], &r) < -width * modelList[m].scaleMat._22 * 2.0f)
+	//if (r.z > width * 1.5f * modelList[m].scaleMat._22) {
+		// check frustum
+		for (int f = 0; f < 6; f++ )
 		{
-			return;
+			if ( D3DXPlaneDotCoord( &m_frustum[f], &r) < -width * 1.5f * modelList[m].scaleMat._22)
+			{
+				return;
+			}
 		}
-	}
+	//} else if (r.z < -width * 1.5f * modelList[m].scaleMat._22) {
+	//	return;
+	//}
 
 	if (div < 16384 && dist < mindist) {
 		float newwidth = width * 0.5f;
@@ -1198,6 +1307,8 @@ void DrawChunk(float xoff, float yoff, float width, float div, float mindist, in
 		DrawChunk(xoff				, yoff + newwidth	, newwidth, div * 2.0f, mindist * 0.5f, side, m, currModIndex);
 		DrawChunk(xoff + newwidth	, yoff + newwidth	, newwidth, div * 2.0f, mindist * 0.5f, side, m, currModIndex);
 	} else {			
+
+		calc_chunks++;
 
 		effectList[currModIndex]->SetValue("x_off",&xoff, D3DX_DEFAULT);
 		effectList[currModIndex]->SetValue("y_off",&yoff, D3DX_DEFAULT);
@@ -1252,12 +1363,12 @@ void DrawGeosphere(int m, int currModIndex)
 	renderSystem->GetDevice()->SetVertexDeclaration(chunk_declaration);
 
 	if (chunkheight[0] == NULL) {
-		if ( FAILED(D3DXCreateTexture(renderSystem->GetDevice(), chunk_size + 1 + 2, chunk_size + 1 + 2, 0, D3DUSAGE_RENDERTARGET, D3DFMT_R32F, D3DPOOL_DEFAULT, &chunkheight[0])) ) {
+		if ( FAILED(D3DXCreateTexture(renderSystem->GetDevice(), h_map_size, h_map_size, 0, D3DUSAGE_RENDERTARGET, D3DFMT_R32F, D3DPOOL_DEFAULT, &chunkheight[0])) ) {
 			return;
 		}
 	}
 	if (chunkheight[1] == NULL) {
-		if ( FAILED(D3DXCreateTexture(renderSystem->GetDevice(), chunk_size + 1 + 2, chunk_size + 1 + 2, 0, D3DUSAGE_RENDERTARGET, D3DFMT_R32F, D3DPOOL_DEFAULT, &chunkheight[1])) ) {
+		if ( FAILED(D3DXCreateTexture(renderSystem->GetDevice(), h_map_size, h_map_size, 0, D3DUSAGE_RENDERTARGET, D3DFMT_R32F, D3DPOOL_DEFAULT, &chunkheight[1])) ) {
 			return;
 		}
 	}
@@ -1336,18 +1447,27 @@ void DrawGeosphere(int m, int currModIndex)
 	effectList[currModIndex]->SetMatrix("worldmat",&modelList[m].world);
 	effectList[currModIndex]->SetMatrix("scalemat",&modelList[m].scaleMat);
 	effectList[currModIndex]->SetMatrix("rotmat",&modelList[m].rotMat);
-	effectList[currModIndex]->SetValue("uid",&modelList[m].instance->globalvars.unique_Id, D3DX_DEFAULT);
-	float cvsize = chunk_size + 1;
-	effectList[currModIndex]->SetValue("cvsize", &cvsize, D3DX_DEFAULT);
+	float seed = (float)modelList[m].instance->globalvars.unique_Id / 0xffffffff;
+	seed = seed - (int)seed;
+	effectList[currModIndex]->SetValue("seed",&seed, D3DX_DEFAULT);
+	float csize = chunk_size;
+	effectList[currModIndex]->SetValue("chunk_size", &csize, D3DX_DEFAULT);
+	float hsize = h_map_size;
+	effectList[currModIndex]->SetValue("h_map_size", &hsize, D3DX_DEFAULT);
+	effectList[currModIndex]->SetValue("dist", &modelList[m].dist, D3DX_DEFAULT);
 
 	PlanetDist = 10000000;
 	
-	//float georadius = GetDist(modelList[m].scaleMat._21, modelList[m].scaleMat._22, modelList[m].scaleMat._23);
-	//float mindist = modelList[m].dist - georadius;
+	//georadius = (modelList[m].scaleMat._11 + modelList[m].scaleMat._22 + modelList[m].scaleMat._33) / 3;
+	float mindist = modelList[m].dist * 2;//modelList[m].dist - georadius;
 
 	effectList[currModIndex]->Begin(&pass,0);
-	for(int side = 0; side <= 5; side++)
-		DrawChunk(0.0f, 0.0f, 2.0f, 1.0f, modelList[m].dist * 4, side, m, currModIndex);
+	for(int side = 0; side <= 5; side++) {
+		DrawChunk(0.0f			, 0.0f			, 1.0f, 2.0f, mindist, side, m, currModIndex);
+		DrawChunk(0.0f + 1.0f	, 0.0f			, 1.0f, 2.0f, mindist, side, m, currModIndex);
+		DrawChunk(0.0f			, 0.0f + 1.0f	, 1.0f, 2.0f, mindist, side, m, currModIndex);
+		DrawChunk(0.0f + 1.0f	, 0.0f + 1.0f	, 1.0f, 2.0f, mindist, side, m, currModIndex);
+	}
 	effectList[currModIndex]->End();
 	
 }
@@ -1446,8 +1566,8 @@ bool InitD3D(HWND hWnd)
 	loadEffects();
 
 	checkExport();
-	chunk = GenerateChunk(chunk, chunk_size - 1, 0);
-	chunk2 = GenerateChunk(chunk2, chunk_size - 1, 2);
+	chunk = GenerateChunk(chunk, chunk_size);
+	chunk2 = GenerateChunk2(chunk2);
 
 	if ((curheight-curwidth/1.6f)==0)
 		aspectfix=0;
@@ -1818,14 +1938,13 @@ void BuildViewFrustum()
     m_frustum[3].d = matViewProj._44 + matViewProj._42;
     D3DXPlaneNormalize(&m_frustum[3], &m_frustum[3]);
 
-    // Вычисление плоскостей
-    m_frustum[4].a = /*matViewProj._14 + */matViewProj._13; // Передняя плоскость
-    m_frustum[4].b = /*matViewProj._24 + */matViewProj._23;
-    m_frustum[4].c = /*matViewProj._34 + */matViewProj._33;
-    m_frustum[4].d = /*matViewProj._44 + */matViewProj._43;
+    m_frustum[4].a = matViewProj._13; // Ближняя плоскость
+    m_frustum[4].b = matViewProj._23;
+    m_frustum[4].c = matViewProj._33;
+    m_frustum[4].d = matViewProj._43;
     D3DXPlaneNormalize(&m_frustum[4], &m_frustum[4]);
 
-    m_frustum[5].a = matViewProj._14 - matViewProj._13; // Задняя плоскость
+    m_frustum[5].a = matViewProj._14 - matViewProj._13; // Дальняя плоскость
     m_frustum[5].b = matViewProj._24 - matViewProj._23;
     m_frustum[5].c = matViewProj._34 - matViewProj._33;
     m_frustum[5].d = matViewProj._44 - matViewProj._43;
@@ -1840,7 +1959,7 @@ void doPerspectiveNear()
 								 &D3DXVECTOR3(0.0f, 1.0f, 0.0f)); //Up Direction
 	renderSystem->GetDevice()->SetTransform(D3DTS_VIEW, &matView);
 
-	D3DXMatrixPerspectiveFovLH(&matProj, (float)D3DXToRadian(35), 2.0f, 0.1f, 300000);
+	D3DXMatrixPerspectiveFovLH(&matProj, (float)D3DXToRadian(35), 2.0f, 0.1f, 50000);
 	renderSystem->GetDevice()->SetTransform(D3DTS_PROJECTION, &matProj);
 
 	BuildViewFrustum();
@@ -1853,7 +1972,7 @@ void doPerspectiveFar()
 								 &D3DXVECTOR3(0.0f, 1.0f, 0.0f)); //Up Direction
 	renderSystem->GetDevice()->SetTransform(D3DTS_VIEW, &matView);
 
-	D3DXMatrixPerspectiveFovLH(&matProj, (float)D3DXToRadian(35), 2.0f, 0.1f, 300000);
+	D3DXMatrixPerspectiveFovLH(&matProj, (float)D3DXToRadian(35), 2.0f, 1.0f, 100000);
 	renderSystem->GetDevice()->SetTransform(D3DTS_PROJECTION, &matProj);
 
 	BuildViewFrustum();
@@ -2309,6 +2428,8 @@ void Render()
 	float dtime;
 	float lG;
 
+	calc_chunks = 0;
+
 	UpdateDeltaTime();
 
 	if(renderSystem->GetDevice()==NULL) {
@@ -2355,23 +2476,10 @@ void Render()
 
 	int aspectfactor=(curheight-curwidth/1.6f);
 
-	static int iFrames = 0;
-	static double sttime = 0.0;
-	iFrames++;
-	if (iFrames == 100) 
-	{
-		QueryPerformanceCounter(&nowtime);
-		float fps = float(iFrames/((nowtime.QuadPart - sttime)/ticks));
-		char cBuff[32];
-		sprintf(cBuff,"FFED3D FPS: %.1f", fps);
-		//SetWindowText(hWnd,cBuff);
-		sttime = (double)nowtime.QuadPart;
-		iFrames = 0;
-	}
-	char cBuff[200];
-	sprintf(cBuff,"FFED3D x: %f, y: %f, z: %f, size: %f", pl.x, pl.y, pl.z, plsize);
+	//char cBuff[200];
+	//sprintf(cBuff,"FFED3D x: %f, y: %f, z: %f, size: %f", pl.x, pl.y, pl.z, plsize);
 	//sprintf(cBuff,"FFED3D %i", lastPlanetLod);
-	SetWindowText(hWnd,cBuff);
+	//SetWindowText(hWnd,cBuff);
 
 	//if (*(unsigned char*)DATA_008809==254)
 	//	renderSystem->GetDevice()->Clear(0,NULL,D3DCLEAR_TARGET|D3DCLEAR_ZBUFFER,D3DCOLOR_XRGB(0,0,0),1.0f,0);	
@@ -2730,7 +2838,7 @@ void Render()
 			currMod=m;
 			D3DXMatrixInverse(&WorldInverse,NULL, &modelList[m].world);
 
-			if (DATA_PlayerObject && DATA_PlayerObject->uchar_57 == 0 && (Planet(currModIndex)==true || Rings(currModIndex)==true)) {
+			if (/*DATA_PlayerObject && DATA_PlayerObject->uchar_57 == 0 && */(Planet(currModIndex)==true || Rings(currModIndex)==true)) {
 				doPerspectiveFar();
 			} else {
 				doPerspectiveNear();
@@ -3073,4 +3181,18 @@ void Render()
 	clearBeforeRender=false;
 	if (incabin>=2)
 		incabin=0;
+
+	static int iFrames = 0;
+	static double sttime = 0.0;
+	iFrames++;
+	if (iFrames == 10) 
+	{
+		QueryPerformanceCounter(&nowtime);
+		float fps = float(iFrames/((nowtime.QuadPart - sttime)/ticks));
+		char cBuff[32];
+		sprintf(cBuff,"FFED3D FPS: %.1f, planets: %i vert", fps, calc_chunks * ((chunk_size * chunk_size) + (2 * 2)));
+		SetWindowText(hWnd,cBuff);
+		sttime = (double)nowtime.QuadPart;
+		iFrames = 0;
+	}
 }
