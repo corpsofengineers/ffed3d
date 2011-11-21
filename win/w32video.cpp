@@ -14,12 +14,18 @@
 D3DXVECTOR3 pl;
 float plsize;
 
+LPDIRECT3DTEXTURE9 console_Logo, console_Field_l, console_Field_c, console_Field_r;
+LPD3DXSPRITE console_Sprite;
+u8 console_enable = 0;
+extern char* console_comand;
+extern char* console_visual;
+extern int console_carPos;
+extern void keyToConsole (WPARAM key);
+
 static int exclusive = 0;
 static int fullscreen = 0;
 int aspectfix = 1;
 static int wireframe = 0;
-int console = 0;
-extern char* con_text;
 
 static int fswidth = 640;
 static int fsheight = 400;
@@ -165,6 +171,13 @@ int WINAPI WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	LPSTR lpCmdLine, int nCmdShow)
 {
 	hInst = hInstance;
+
+	console_comand = (char*)malloc (65);
+	memset (console_comand, 0, 65);
+
+	console_carPos = -1;
+	console_visual = (char*)malloc (66);
+	memset (console_visual, 0, 66);
 
 	LARGE_INTEGER time;
 	QueryPerformanceCounter(&time);
@@ -347,8 +360,6 @@ static void RestoreSurfaces()
 	VideoReset();
 }
 
-extern void printTyConsole (WPARAM shift);
-
 static LRESULT CALLBACK WndProc (HWND wnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
 	switch(msg)
@@ -392,6 +403,13 @@ static LRESULT CALLBACK WndProc (HWND wnd, UINT msg, WPARAM wparam, LPARAM lpara
 			break;
 
 		case WM_KEYDOWN:
+			
+			if (console_enable)
+			{
+				keyToConsole (wparam);
+				return 0L;
+			}
+
 			if (GetAsyncKeyState(VK_CONTROL) & 0x8000) {
 				if (wparam == VK_F9) {
 					modelexport = 1;
@@ -443,10 +461,6 @@ static LRESULT CALLBACK WndProc (HWND wnd, UINT msg, WPARAM wparam, LPARAM lpara
 				}
 				if (wparam == VK_DELETE){
 					plsize-=0.01;
-				}
-				if (console)
-				{
-					printTyConsole (wparam);
 				}
 
 			}
@@ -884,6 +898,12 @@ void loadTextures() {
 	if (FAILED(D3DXCreateTextureFromFile(renderSystem->GetDevice(), buf, &starstex))) {
 		starstex=NULL;
 	}
+
+	//Creating Textures for console
+	D3DXCreateTextureFromFile (renderSystem->GetDevice(), "textures/con_logo.tga", &console_Logo);
+	D3DXCreateTextureFromFile (renderSystem->GetDevice(), "textures/con_field_l.tga", &console_Field_l);
+	D3DXCreateTextureFromFile (renderSystem->GetDevice(), "textures/con_field_c.tga", &console_Field_c);
+	D3DXCreateTextureFromFile (renderSystem->GetDevice(), "textures/con_field_r.tga", &console_Field_r);
 }
 
 
@@ -1514,6 +1534,7 @@ bool InitD3D(HWND hWnd)
 
 	CreateLocalFont();
 	D3DXCreateSprite(renderSystem->GetDevice(),&textSprite);
+	D3DXCreateSprite (renderSystem->GetDevice(), &console_Sprite);
 	RECT tRect;
 	tRect.left = lpX;
 	tRect.top = lpY;
@@ -1649,7 +1670,7 @@ void DrawText(LPSTR pText, int x, int y, D3DCOLOR rgbFontColour)
     //m_pFont->End();
 }
 
-void DrawConText(LPSTR pText, int x, int y, D3DCOLOR rgbFontColour)
+void DrawConsoleText(LPSTR pText, int x, int y, D3DCOLOR rgbFontColour)
 {
 	RECT Rect;
 
@@ -3140,31 +3161,50 @@ void Render()
 	textSprite->End();
 	//renderSystem->SetRenderState( D3DRS_ALPHATESTENABLE, false);
 
-	//Консоль рисуем.
-	
-	if (console)
+	//draw console
+	if (console_enable)
 	{
-		float sx = curwidth/640.0f;
-		D3DXMATRIX *scale = new D3DXMATRIX;;
-		D3DXMatrixScaling (scale, sx, 1, 1);
-		textSprite->Begin (D3DXSPRITE_ALPHABLEND);
-		//textSprite->SetTransform (scale);
-		textSprite->Draw (textures[96], NULL, NULL, NULL, 0xffffffff);
-		//рисуем бффер
-		//рисуем строку ввода
-		DrawConText (">", 2, 480, 0xff00ff00);
-		DrawConText (con_text, 20, 480, 0xffffffff);
+		D3DXMATRIX* matrixScale = new D3DXMATRIX;;
 		
-		//выводим лог консоли
+		D3DXMatrixScaling (matrixScale, curwidth/256.0f, (curheight*0.4f)/256, 1);
+		console_Sprite->Begin (D3DXSPRITE_ALPHABLEND);
+		console_Sprite->SetTransform (matrixScale);
+		console_Sprite->Draw (textures[720], NULL, NULL, &D3DXVECTOR3(0, 10, 0), 0xCC000000);
 
+		D3DXMatrixScaling (matrixScale, 1, 1, 1);
+		console_Sprite->SetTransform (matrixScale);
+		console_Sprite->Draw (console_Logo, NULL, NULL, &D3DXVECTOR3(curwidth/2-128, (curheight-(int)(curwidth/1.6f))/2, 0), 0xFFFFFFFF);
+		
+		D3DXMatrixScaling (matrixScale, (curwidth-32)/128.0f, 1, 1);
+		console_Sprite->SetTransform (matrixScale);
+		console_Sprite->Draw (console_Field_c, NULL, NULL, &D3DXVECTOR3(0, curheight*0.4f+16, 0), 0xCCFFFFFF);
+
+		D3DXMatrixScaling (matrixScale, 1, 1, 1);
+		console_Sprite->SetTransform (matrixScale);
+		console_Sprite->Draw (console_Field_l, NULL, NULL, &D3DXVECTOR3(0, curheight*0.4f+16, 0), 0xCCFFFFFF);
+		console_Sprite->Draw (console_Field_r, NULL, NULL, &D3DXVECTOR3(curwidth-32, curheight*0.4f+16, 0), 0xCCFFFFFF);
+		
+		console_Sprite->End();
+
+		textSprite->Begin (D3DXSPRITE_ALPHABLEND);
+		
+		int consolePosY = curheight*0.39f;
 		scriptSystem* scr = scriptSystem::getSingleton();
-		int conPosY = 460;
 
 		for (int i=scr->getLogCount()-1;i>=0;i--)
 		{
-			DrawConText (scr->getLogString(i), 2, conPosY, D3DCOLOR_XRGB (220, 240, 255));
-			conPosY -= 20;
+			DrawConsoleText (scr->getLogString(i), 8, consolePosY, D3DCOLOR_XRGB (220, 240, 255));
+			consolePosY -= 20;
 		}
+
+		//DrawConsoleText ("#", 8, curheight*0.4f+32-(16*curwidth/640/2), D3DCOLOR_XRGB (220, 240, 255));
+
+		memcpy (console_visual, console_comand, console_carPos+1);
+		*(console_visual+console_carPos+1) = 166;
+		memcpy (console_visual+console_carPos+2, console_comand+console_carPos+1, strlen(console_comand)-console_carPos+1);
+		*(console_visual+strlen(console_comand)+1)=0;
+
+		DrawConsoleText (console_visual, 32, curheight*0.4f+32-(16*curwidth/640/2), D3DCOLOR_XRGB (220, 240, 255));
 
 		textSprite->End();
 	}
@@ -3189,9 +3229,9 @@ void Render()
 	{
 		QueryPerformanceCounter(&nowtime);
 		float fps = float(iFrames/((nowtime.QuadPart - sttime)/ticks));
-		char cBuff[32];
-		sprintf(cBuff,"FFED3D FPS: %.1f, planets: %i vert", fps, calc_chunks * ((chunk_size * chunk_size) + (2 * 2)));
-		SetWindowText(hWnd,cBuff);
+		//char cBuff[32];
+		//sprintf(cBuff,"FFED3D FPS: %.1f, planets: %i vert", fps, calc_chunks * ((chunk_size * chunk_size) + (2 * 2)));
+		//SetWindowText(hWnd,cBuff);
 		sttime = (double)nowtime.QuadPart;
 		iFrames = 0;
 	}

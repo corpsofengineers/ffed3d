@@ -217,92 +217,91 @@ static UCHAR pKeybStates[256];
 static int keybLastKey = 0xff;
 static ULONG pKeybTimes[256];
 
-int con_pos = 0;
-int c = 0;
-char* bufb,* bufe;
 
-void printTyConsole (WPARAM key)
+extern WingmanList_t WingmanArray;
+
+extern u8 console_enable;
+char* console_comand;
+char* console_visual;
+int console_carPos;
+
+void keyToConsole (WPARAM key) //преобразуем нажатые клавиши в текст в консольки с карреткой
 {
+	int len = strlen (console_comand);
 
+	//обработчики карректи
 	if (key == VK_LEFT)
 	{
-		if (con_pos > 0)
-		{
-			con_pos--;
-			c = 1;
-		}
+		if (console_carPos > -1)
+			console_carPos--;
+		return;
 	}
 
 	if (key == VK_RIGHT)
 	{
-		if (con_pos < strlen(con_text))
-		{
-			con_pos++;
-			c = 1;
-		}
+		if (console_carPos+1 < len)
+			console_carPos++;
+		return;
 	}
 
-	if (c)
+	if (key == VK_BACK)
 	{
-		bufb = NULL;
-		bufb = new char[con_pos+1];
-		memcpy (bufb, con_text, con_pos);
-		bufe = NULL;
-		bufe = new char[strlen(con_text)-con_pos+1];
-		memcpy (bufe, con_text+con_pos, strlen(con_text)-con_pos+1);
+		if (console_carPos > -1)
+		{
+			memcpy (console_comand+console_carPos, console_comand+console_carPos+1, len-console_carPos);
+			*(console_comand+len)=0;
+			console_carPos--;
+		}
+		return;
 	}
 
+	if (key == VK_DELETE)
+	{
+		if (console_carPos+1 < len)
+		{
+			memcpy (console_comand+console_carPos+1, console_comand+console_carPos+2, len-console_carPos+1);
+			*(console_comand+len)=0;
+		}
+		return;
+	}
 
 	if (key == VK_RETURN)
 	{
-		scriptSystem::getSingleton()->doString (con_text);
-		con_text[0] = '\0';
-		con_pos = 0;
-		c=0;
-	}
-
-	if (key == VK_BACK && con_pos > 0)
-	{
-		if (c)
-		{
-			bufb[con_pos-1] = '\0';
-			strcpy (con_text, bufb);
-			strcat (con_text, bufe);
-		} else
-		{
-			con_text[con_pos-1] = '\0';
-		}
-
-		con_pos--;
-	}
-
-	BYTE* keyboardState;
-	keyboardState = new BYTE[256];
+		scriptSystem::getSingleton()->doString (console_comand);
+		memset (console_comand, 0, 65);
+		console_carPos=-1;
 	
-	if (GetKeyboardState(keyboardState))
+	}
+
+	//преобразуем клавиши в строку текста
+	BYTE* keyboardState = new BYTE[256];
+
+	if (GetKeyboardState (keyboardState))
 	{
 		WORD wChar;
-		int ra = ToAscii (key, 0, keyboardState, &wChar, 1); 
-		if (ra > 0 && key != VK_BACK)
+		int ra = ToAscii (key, 0, keyboardState, &wChar, 1);
+		
+		if(ra > 0)
 		{
-			if (c)
-			{
-				bufb[con_pos] = wChar;
-				bufb[con_pos+1]='\0';
-				strcpy (con_text, bufb);
-				strcat (con_text, bufe);
-				con_pos++;
-			} else
-			{
-				con_text[con_pos+1] = '\0';
-				con_text[con_pos] = wChar;
-				con_pos++;
-			}		
-		}
-	}
-}
+			if (len == 64)
+				return;
 
-extern WingmanList_t WingmanArray;
+			if (console_carPos+1 == len) //пишем в конец строки
+			{
+				*(console_comand+len) = wChar;
+			} else if(console_carPos+1 < len) //пишем в середину строки
+			{
+				memcpy (console_comand+console_carPos+2, console_comand+console_carPos+1, len-console_carPos+1);
+				*(console_comand+console_carPos+1) = wChar;
+			}
+
+			*(console_comand+len+1) = 0;
+			console_carPos++;
+		}
+
+	}
+
+}
 
 void InputKeybReadStates (UCHAR *pKeys)
 {
@@ -314,24 +313,20 @@ void InputKeybReadStates (UCHAR *pKeys)
 	rval = pDIKeyb->GetDeviceState (256, (void *)pCur);
 	if (rval != DI_OK) return;
 
-	// онсоль!
-
-	if (pCur[DIK_GRAVE] == 0x80 && pCur[DIK_LCONTROL] == 0x80 && pKeybTimes[41] < TimerGetTimeStamp())
+	if (pCur[DIK_LCONTROL] == 0x80 && pCur[DIK_GRAVE] == 0x80 && pKeybTimes[41] < TimerGetTimeStamp())
 	{
-		if (!console)
-		{
-			console = 1;
-		} else
-		{
-			console = 0;
-		}
+		if (!console_enable)
+			console_enable++;
+		else
+			console_enable--;
 		pKeybTimes[41] = TimerGetTimeStamp() + repeatdelay;
+		keybLastKey = 255;
 		return;
 	}
 
-	if (console)
+	if (console_enable)
 	{
-		//printTyConsole (pCur);
+		//тут будет скроллинг текста и управление буфером ввода/вывода консоли
 		return;
 	}
 
