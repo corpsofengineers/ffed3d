@@ -23,6 +23,7 @@ extern char* console_visual;
 extern int console_carPos;
 extern int console_LogP;
 extern void keyToConsole (WPARAM key);
+int test = 0;
 
 static int exclusive = 0;
 static int fullscreen = 0;
@@ -3237,9 +3238,10 @@ void Render()
 	{
 		QueryPerformanceCounter(&nowtime);
 		float fps = float(iFrames/((nowtime.QuadPart - sttime)/ticks));
-		//char cBuff[32];
+		char cBuff[32];
 		//sprintf(cBuff,"FFED3D FPS: %.1f, planets: %i vert", fps, calc_chunks * ((chunk_size * chunk_size) + (2 * 2)));
-		//SetWindowText(hWnd,cBuff);
+		sprintf (cBuff, "FFED3D test=%i", test);
+		SetWindowText(hWnd,cBuff);
 		sttime = (double)nowtime.QuadPart;
 		iFrames = 0;
 	}
