@@ -222,12 +222,49 @@ extern WingmanList_t WingmanArray;
 
 extern u8 console_enable;
 char* console_comand;
+char* console_history[20];
+int console_historyC = 0;
+int console_historyPos = -1;
 char* console_visual;
 int console_carPos;
+int console_LogP = 1;
 
 void keyToConsole (WPARAM key) //преобразуем нажатые клавиши в текст в консольки с карреткой
 {
 	int len = strlen (console_comand);
+
+	//история
+	if (key == VK_UP)
+	{
+		if (console_historyPos > 0)
+		{
+			console_historyPos--;
+			memcpy (console_comand, console_history[console_historyPos], 65);
+			console_carPos = strlen (console_comand)-1;
+		}
+	}
+
+	if (key == VK_DOWN)
+	{
+		if (console_historyPos < console_historyC-1)
+		{
+			console_historyPos++;
+			memcpy (console_comand, console_history[console_historyPos], 65);
+			console_carPos = strlen (console_comand)-1;
+		}
+	}
+
+	if (key == VK_PRIOR)
+	{
+		if (console_LogP < scriptSystem::getSingleton()->getLogCount())
+			console_LogP++;
+	}
+
+	if (key == VK_NEXT)
+	{
+		if (console_LogP > 1)
+			console_LogP--;
+	}
 
 	//обработчики карректи
 	if (key == VK_LEFT)
@@ -242,6 +279,16 @@ void keyToConsole (WPARAM key) //преобразуем нажатые клавиши в текст в консольки
 		if (console_carPos+1 < len)
 			console_carPos++;
 		return;
+	}
+
+	if (key == VK_HOME)
+	{
+		console_carPos = -1;
+	}
+
+	if (key == VK_END)
+	{
+		console_carPos = strlen (console_comand)-1;
 	}
 
 	if (key == VK_BACK)
@@ -268,6 +315,14 @@ void keyToConsole (WPARAM key) //преобразуем нажатые клавиши в текст в консольки
 	if (key == VK_RETURN)
 	{
 		scriptSystem::getSingleton()->doString (console_comand);
+
+		memcpy (console_history[console_historyC], console_comand, 65);
+		
+		if (console_historyC < 19)
+			console_historyC++;
+
+		console_historyPos = console_historyC;
+
 		memset (console_comand, 0, 65);
 		console_carPos=-1;
 	

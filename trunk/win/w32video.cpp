@@ -18,8 +18,10 @@ LPDIRECT3DTEXTURE9 console_Logo, console_Field_l, console_Field_c, console_Field
 LPD3DXSPRITE console_Sprite;
 u8 console_enable = 0;
 extern char* console_comand;
+extern char* console_history[20];
 extern char* console_visual;
 extern int console_carPos;
+extern int console_LogP;
 extern void keyToConsole (WPARAM key);
 
 static int exclusive = 0;
@@ -174,6 +176,12 @@ int WINAPI WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
 	console_comand = (char*)malloc (65);
 	memset (console_comand, 0, 65);
+
+	for (int i = 0; i < 20; i++)
+	{
+		console_history[i] = (char *)malloc (65);
+		memset (console_history[i], 0, 65);
+	}
 
 	console_carPos = -1;
 	console_visual = (char*)malloc (66);
@@ -3191,7 +3199,7 @@ void Render()
 		int consolePosY = curheight*0.39f;
 		scriptSystem* scr = scriptSystem::getSingleton();
 
-		for (int i=scr->getLogCount()-1;i>=0;i--)
+		for (int i=scr->getLogCount()-console_LogP;i>=0;i--)
 		{
 			DrawConsoleText (scr->getLogString(i), 8, consolePosY, D3DCOLOR_XRGB (220, 240, 255));
 			consolePosY -= 20;
