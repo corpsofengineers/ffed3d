@@ -325,7 +325,8 @@ void keyToConsole (WPARAM key) //преобразуем нажатые клавиши в текст в консольки
 
 		memset (console_comand, 0, 65);
 		console_carPos=-1;
-	
+		
+		return;
 	}
 
 	//преобразуем клавиши в строку текста
