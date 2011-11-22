@@ -27,6 +27,8 @@ public:
 	static int logic_and (lua_State *L);
 	static int logic_shiftright (lua_State *L);
 	static int logic_shiftleft (lua_State *L);
+	static int *nonLua[256];
+	static char *nonLuaScr[256];
 
 	//LUA PUSHING METHODS
 	void newInteger (__int64 arg);
