@@ -7,11 +7,13 @@
 scriptSystem* scriptSystem::_self = NULL;
 
 extern int test;
+extern float test2;
+extern char *test3[256];
 
 
 char *scriptSystem::nonLuaScr [256]= 
 {
-	"test", "test2", "", "", "", "", "", "", 
+	"test/int", "test2/float", "test3/str", "", "", "", "", "", 
 	"", "", "", "", "", "", "", "",
 	"", "", "", "", "", "", "", "", 
 	"", "", "", "", "", "", "", "",
@@ -45,9 +47,9 @@ char *scriptSystem::nonLuaScr [256]=
 	"", "", "", "", "", "", "", ""
 };
 
-int *scriptSystem::nonLua [256]= 
+void *scriptSystem::nonLua [256]= 
 {
-	&test, &test, NULL, NULL, NULL, NULL, NULL, NULL, 
+	&test, &test2, test3, NULL, NULL, NULL, NULL, NULL, 
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
@@ -149,26 +151,77 @@ int scriptSystem::doString (char* string)
 	
 	if (luaL_dostring (luaVM, string))
 	{
-		char *comm = new char (strlen (string));
-		strcpy (comm, string);
-		
-		strtok (comm, " ");
-		
+		char *comIn = new char (strlen (string));
+		strcpy (comIn, string);
+		strtok (comIn, " ");
+		char *argIn = new char (strlen (string));
+		strcpy (argIn, string);
+		argIn = strpbrk (argIn, " ");
+
 		ret = 1;
 
 		for (int i = 0; i < 256; i++)
 		{
-			if (strcmp (comm, scriptSystem::nonLuaScr[i]) == 0)
-			{
-				char* arg = strpbrk (string, " ");
-				
-				*(scriptSystem::nonLua[i]) = atoi (arg);
+			char *comConst = new char (strlen (scriptSystem::nonLuaScr[i]));
+			strcpy (comConst, scriptSystem::nonLuaScr[i]);
+			strtok (comConst, "/");
 
+			if (!strcmp (comConst, comIn))
+			{
 				ret = 0;
+
+				char *argConst = new char (strlen (scriptSystem::nonLuaScr[i]));
+				strcpy (argConst, scriptSystem::nonLuaScr[i]);
+				argConst = strpbrk (argConst, "/");
+
+				if (!strcmp (argConst, "/str"))
+				{
+					memcpy (scriptSystem::nonLua[i], argIn+1, strlen(argIn)-1);
+					break;
+				}
+
+				if (!strcmp (argConst, "/int"))
+				{
+				
+					for (int q = 0; q < strlen (argIn); q++)
+					{
+						if (isalpha (argIn[q]) || argIn[q] == '.')
+						{
+							char *err = new char;
+							sprintf (err, "%s must be a int value", comIn);
+							this->AddToLog (err);
+							return ret;
+						}
+					}
+					
+					int arg = atoi (argIn);
+					memcpy (scriptSystem::nonLua[i], &arg, sizeof (int));
+				}
+
+				if (!strcmp (argConst, "/float"))
+				{
+	
+					for (int q = 0; q < strlen (argIn); q++)
+					{
+						if (isalpha (argIn[q]))
+						{
+							char *err = new char;
+							sprintf (err, "%s must be a float value", comIn);
+							this->AddToLog (err);
+							return ret;
+						}
+					}
+					float arg = atof (argIn);
+					memcpy (scriptSystem::nonLua[i], &arg, sizeof (float));
+				}
+
 				break;
-			} 
+			}
+
 		}
+
 	}
+
 
 	if (ret == 1)
 	{
