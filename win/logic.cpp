@@ -1,5 +1,6 @@
 #include <math.h>
 #include "ffe3d.h"
+#include "../ffecfg.h"
 #include <time.h>
 #include <d3d9.h>
 
@@ -100,6 +101,58 @@ scriptSystem::scriptSystem (void):
 	luaVM(0),
 	error(0)
 {
+		//serching ttx scripts and parse into game engine
+	char *path = new char [MAX_PATH];
+	CfgStruct ttx;
+
+	for (int i = 0; i < 100; i++)
+	{
+		sprintf (path, "Models/%i/ttx.ini", i);	
+		//MessageBox (0, path, 0, 0);
+		DWORD dwAttr = GetFileAttributes (path);
+	
+		if (dwAttr != 0xFFFFFFFF)
+		{
+			ShipDef_t *ship_def = GetModel(i)->Shipdef_ptr;
+			CfgOpen (&ttx, path);
+			CfgFindSection (&ttx, "SHIP");
+			CfgGetKeyVal (&ttx, "forwardthrust", (int *)&ship_def->ForwardThrust);
+			CfgGetKeyVal (&ttx, "rearthrust", (int *)&ship_def->RearThrust);
+			CfgGetKeyVal (&ttx, "lasers", (int *)&ship_def->Lasers);
+			CfgGetKeyVal (&ttx, "fuelscoop", (int *)&ship_def->FuelScoop);
+			CfgGetKeyVal (&ttx, "mass", (int *)&ship_def->Mass);
+			CfgGetKeyVal (&ttx, "capacity", (int *)&ship_def->Capacity);
+			CfgGetKeyVal (&ttx, "price", (int *)&ship_def->Price);
+			CfgGetKeyVal (&ttx, "scale", (int *)&ship_def->Scale);
+			CfgGetKeyVal (&ttx, "description", (int *)&ship_def->Description);
+			CfgGetKeyVal (&ttx, "crew", (int *)&ship_def->Crew);
+			CfgGetKeyVal (&ttx, "missiles", (int *)&ship_def->Missiles);
+			CfgGetKeyVal (&ttx, "drive", (int *)&ship_def->Drive);
+			CfgGetKeyVal (&ttx, "integraldrive", (int *)&ship_def->IntegralDrive);
+			CfgGetKeyVal (&ttx, "elitebonus", (int *)&ship_def->EliteBonus);
+			
+			CfgGetKeyVal (&ttx, "frontMount_x", (int *)&ship_def->frontMount_x);
+			CfgGetKeyVal (&ttx, "frontMount_y", (int *)&ship_def->frontMount_y);	
+			CfgGetKeyVal (&ttx, "frontMount_z", (int *)&ship_def->frontMount_z);
+
+			CfgGetKeyVal (&ttx, "backMount_x", (int *)&ship_def->backMount_x);
+			CfgGetKeyVal (&ttx, "backMount_y", (int *)&ship_def->backMount_y);
+			CfgGetKeyVal (&ttx, "backMount_z", (int *)&ship_def->backMount_z);
+
+			CfgGetKeyVal (&ttx, "leftMount_x", (int *)&ship_def->leftMount_x);
+			CfgGetKeyVal (&ttx, "leftMount_y", (int *)&ship_def->leftMount_y);
+			CfgGetKeyVal (&ttx, "leftMount_z", (int *)&ship_def->leftMount_z);
+
+			CfgGetKeyVal (&ttx, "rightMount_x", (int *)&ship_def->rightMount_x);
+			CfgGetKeyVal (&ttx, "rightMount_y", (int *)&ship_def->rightMount_y);
+			CfgGetKeyVal (&ttx, "rightMount_z", (int *)&ship_def->rightMount_z);
+
+			CfgClose (&ttx);
+		}
+
+	}
+
+
 	luaVM = lua_open();
 
 	consoleText = new char* [256];
