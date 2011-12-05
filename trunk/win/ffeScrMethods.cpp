@@ -1,4 +1,5 @@
 #include "ffe3d.h"
+#include "../ffecfg.h"
 
 //decl
 extern ModelInstance_t *WingmanShipSpawn (u8 leader,  u32 modelNum);
